@@ -1,0 +1,111 @@
+/* ============================================================================
+   SASI v3 — folha de estilo raiz.
+   Tailwind 4 é "CSS-first": o tema inteiro mora AQUI, no bloco @theme.
+   Não existe tailwind.config.ts.
+
+   Tokens portados do sasi-design-system (2 temas co-iguais):
+   - Clinical (claro, padrão): canvas #EEF1F6, accent azul
+   - Tactical (escuro): canvas #0F172A, accent vermelho
+   Troca de tema: atributo data-theme="tactical" no <html>.
+   ========================================================================== */
+
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is([data-theme='tactical'] *));
+
+@theme {
+  /* ---- fontes: IBM Plex. Número clínico SEMPRE em mono tabular ---- */
+  --font-sans: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  /* ---- gravidade (escala clínica de 5 níveis) ---- */
+  --color-gravidade-estavel: #16a34a;
+  --color-gravidade-estavel-bg: #f0fdf4;
+  --color-gravidade-watcher: #d97706;
+  --color-gravidade-watcher-bg: #fffbeb;
+  --color-gravidade-instavel: #ea580c;
+  --color-gravidade-instavel-bg: #fff7ed;
+  --color-gravidade-critico: #dc2626;
+  --color-gravidade-critico-bg: #fef2f2;
+  --color-gravidade-obito: #64748b;
+  --color-gravidade-obito-bg: #f8fafc;
+
+  /* ---- sistemas de órgão (7 painéis da evolução) ---- */
+  --color-sistema-neuro: #7c3aed;
+  --color-sistema-resp: #0284c7;
+  --color-sistema-hemo: #e11d48;
+  --color-sistema-tgi: #d97706;
+  --color-sistema-renal: #65a30d;
+  --color-sistema-hemato: #db2777;
+  --color-sistema-infecto: #0d9488;
+
+  /* ---- semáforo de severidade visual (espelha o enum do banco) ---- */
+  --color-semaforo-green: #16a34a;
+  --color-semaforo-yellow: #d97706;
+  --color-semaforo-red: #dc2626;
+}
+
+/* ---- variáveis de tema (Clinical = padrão) ---- */
+:root {
+  --background: #eef1f6;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --muted: #e2e8f0;
+  --muted-foreground: #64748b;
+  --border: #cbd5e1;
+  --ring: #2563eb;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+}
+
+/* ---- tema Tactical (escuro, plantão noturno) ---- */
+[data-theme='tactical'] {
+  --background: #0f172a;
+  --foreground: #e2e8f0;
+  --card: #1e293b;
+  --card-foreground: #e2e8f0;
+  --primary: #dc2626;
+  --primary-foreground: #ffffff;
+  --muted: #334155;
+  --muted-foreground: #94a3b8;
+  --border: #334155;
+  --ring: #dc2626;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+}
+
+/* expõe as variáveis de tema como cores utilitárias do Tailwind */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  body {
+    background: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+  }
+  /* todo número clínico: mono, tabular, sem ambiguidade de dígito */
+  [data-clinical-number] {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+}
