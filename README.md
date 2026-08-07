@@ -1,5 +1,7 @@
 # SASI v3 — War Room de UTI
 
+> Rebuild do SASI — menos bagunça, mais código.
+
 Sistema de Apoio à Situação Intensiva. Dashboard de plantão para UTI de 33 leitos:
 grid de leitos por acuidade, evolução por sistemas, SOFA/Sepsis-3, stewardship de
 antimicrobiano e passagem de plantão.
