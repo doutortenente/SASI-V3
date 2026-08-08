@@ -87,6 +87,20 @@ de todos os pacientes para qualquer usuário logado. As 7 views do schema já t�
 
 ## Migration
 
+**Onde mora o quê** (arrumado em 08-ago-2026):
+
+| Pasta | O quê |
+|---|---|
+| `supabase/migrations/` | só migration **realmente aplicada** no banco vivo, com o mesmo carimbo de data que está em `supabase_migrations.schema_migrations`. É a pasta que o `pnpm db:push` lê e executa |
+| `supabase/schema-referencia/` | `10_schema_producao_v3.sql` — o schema **do zero**, nunca aplicado neste banco. Serve de estado-alvo para conferência, **não** para rodar |
+
+O schema do zero estava dentro de `migrations/` com o nome `20260807000000_...`. Ali, um `pnpm db:push`
+tentaria criar do zero tabelas que já existem, num banco com 15 pacientes reais.
+
+⚠️ **12 migrations antigas (26-jun a 30-jul) existem no banco e não no repositório.** O repositório
+reproduz o *schema* (pelo arquivo de referência), mas não replica o *histórico*. Recuperáveis de
+`supabase_migrations.schema_migrations`, que guarda o SQL de cada uma.
+
 - Nome `YYYYMMDDHHmmss_descricao.sql`, SQL em minúsculas, idempotente (`if not exists`).
 - Comando destrutivo (`drop`, `delete`, `alter ... drop column`) vai **comentado**, com o motivo na linha de cima.
 - Depois de aplicar: `pnpm gen:types` para regenerar `src/types/supabase.ts`. Schema novo com tipo velho compila
