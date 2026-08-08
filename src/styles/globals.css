@@ -3,10 +3,20 @@
    Tailwind 4 é "CSS-first": o tema inteiro mora AQUI, no bloco @theme.
    Não existe tailwind.config.ts.
 
-   Tokens portados do sasi-design-system (2 temas co-iguais):
-   - Clinical (claro, padrão): canvas #EEF1F6, accent azul
-   - Tactical (escuro): canvas #0F172A, accent vermelho
-   Troca de tema: atributo data-theme="tactical" no <html>.
+   Portado do `sasi-design-system` do v2 (448 KB, 6 arquivos de token),
+   agora COMPLETO. A versão anterior deste arquivo trouxe 1 camada de cor por
+   nível de gravidade; o sistema original tem 3 (solid / bg / text), mais a
+   rampa do SOFA, os 7 selos de terapia, 4 níveis de superfície, 3 de borda,
+   4 de texto, a escala tipográfica de painel e as sombras em camada.
+   Sem essas camadas o card não tem hierarquia: tudo pesa igual e o olho não
+   acha o paciente grave.
+
+   2 temas co-iguais, trocados pelo atributo data-theme no <html>:
+   - Clinical (claro, padrão): canvas #EEF1F6, comando azul
+   - Tactical (escuro, plantão noturno): canvas #0F172A, comando vermelho
+
+   Os nomes de token existentes (gravidade-*, sistema-*, semaforo-*) foram
+   MANTIDOS: `BedCard` e `formatters/clinico.ts` já dependem deles.
    ========================================================================== */
 
 @import 'tailwindcss';
@@ -15,71 +25,299 @@
 @custom-variant dark (&:is([data-theme='tactical'] *));
 
 @theme {
-  /* ---- fontes: IBM Plex. Número clínico SEMPRE em mono tabular ---- */
-  --font-sans: 'IBM Plex Sans', system-ui, sans-serif;
-  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  /* ---- fontes: IBM Plex, self-hospedada por next/font (ver layout.tsx).
+         Número clínico SEMPRE em mono tabular — dígito ambíguo em dose mata. */
+  --font-sans: var(--fonte-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--fonte-mono), ui-monospace, 'SF Mono', Menlo, monospace;
 
-  /* ---- gravidade (escala clínica de 5 níveis) ---- */
-  --color-gravidade-estavel: #16a34a;
-  --color-gravidade-estavel-bg: #f0fdf4;
-  --color-gravidade-watcher: #d97706;
-  --color-gravidade-watcher-bg: #fffbeb;
-  --color-gravidade-instavel: #ea580c;
-  --color-gravidade-instavel-bg: #fff7ed;
+  /* ---- escala tipográfica calibrada para painel denso ----
+         Menor que a escala padrão do Tailwind de propósito: 33 leitos têm que
+         caber na tela sem o olho ter que rolar para achar o grave. */
+  --text-2xs: 0.625rem; /* 10px — eyebrow, texto de selo */
+  --text-2xs--line-height: 1.15;
+  --text-xs: 0.6875rem; /* 11px — legenda, célula de tabela */
+  --text-xs--line-height: 1.35;
+  --text-sm: 0.8125rem; /* 13px — corpo dentro do card */
+  --text-sm--line-height: 1.4;
+  --text-base: 0.9375rem; /* 15px — corpo padrão */
+  --text-base--line-height: 1.55;
+  --text-md: 1.0625rem; /* 17px — título de card */
+  --text-md--line-height: 1.35;
+  --text-lg: 1.25rem; /* 20px — título de painel */
+  --text-lg--line-height: 1.25;
+  --text-xl: 1.5rem; /* 24px — número do leito */
+  --text-xl--line-height: 1.15;
+  --text-2xl: 2rem; /* 32px — numeral herói (SOFA) */
+  --text-2xl--line-height: 1.1;
+  --text-3xl: 2.5rem; /* 40px — display */
+  --text-3xl--line-height: 1.05;
+
+  --tracking-eyebrow: 0.08em;
+
+  /* ---- raios: card macio, controle e selo descem a escala ---- */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+
+  /* ---- motion: painel de instrumento, movimento contido ---- */
+  --ease-out-sasi: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 120ms;
+  --dur-base: 220ms;
+  --dur-slow: 360ms;
+
+  /* ======================================================================
+     GRAVIDADE — escala clínica de 5 níveis, 3 camadas cada.
+     `solid` pinta barra e ponto · `bg` preenche selo · `text` escreve nele.
+     ====================================================================== */
+  --color-gravidade-estavel: #10b981;
+  --color-gravidade-estavel-bg: #d1fae5;
+  --color-gravidade-estavel-text: #065f46;
+  --color-gravidade-watcher: #f59e0b;
+  --color-gravidade-watcher-bg: #fef3c7;
+  --color-gravidade-watcher-text: #92400e;
+  --color-gravidade-instavel: #f97316;
+  --color-gravidade-instavel-bg: #ffedd5;
+  --color-gravidade-instavel-text: #9a3412;
   --color-gravidade-critico: #dc2626;
-  --color-gravidade-critico-bg: #fef2f2;
-  --color-gravidade-obito: #64748b;
-  --color-gravidade-obito-bg: #f8fafc;
+  --color-gravidade-critico-bg: #fee2e2;
+  --color-gravidade-critico-text: #991b1b;
+  /* Óbito é cinza, nunca verde: verde em tela de comando significa "estável",
+     e um paciente morto não é um paciente estável. */
+  --color-gravidade-obito: #475569;
+  --color-gravidade-obito-bg: #e2e8f0;
+  --color-gravidade-obito-text: #334155;
 
-  /* ---- sistemas de órgão (7 painéis da evolução) ---- */
-  --color-sistema-neuro: #7c3aed;
-  --color-sistema-resp: #0284c7;
-  --color-sistema-hemo: #e11d48;
-  --color-sistema-tgi: #d97706;
-  --color-sistema-renal: #65a30d;
-  --color-sistema-hemato: #db2777;
-  --color-sistema-infecto: #0d9488;
+  /* ---- rampa do SOFA (cor do número, por faixa) ---- */
+  --color-sofa-baixo: #059669;
+  --color-sofa-medio: #d97706;
+  --color-sofa-alto: #ea580c;
+  --color-sofa-critico: #dc2626;
+
+  /* ---- sistemas de órgão (7 painéis da evolução), 3 camadas ---- */
+  --color-sistema-neuro: #7e22ce;
+  --color-sistema-neuro-bg: #faf5ff;
+  --color-sistema-neuro-bar: #a855f7;
+  --color-sistema-resp: #0369a1;
+  --color-sistema-resp-bg: #f0f9ff;
+  --color-sistema-resp-bar: #0ea5e9;
+  --color-sistema-hemo: #be123c;
+  --color-sistema-hemo-bg: #fff1f2;
+  --color-sistema-hemo-bar: #f43f5e;
+  --color-sistema-tgi: #b45309;
+  --color-sistema-tgi-bg: #fffbeb;
+  --color-sistema-tgi-bar: #f59e0b;
+  --color-sistema-renal: #4d7c0f;
+  --color-sistema-renal-bg: #f7fee7;
+  --color-sistema-renal-bar: #84cc16;
+  --color-sistema-hemato: #be185d;
+  --color-sistema-hemato-bg: #fdf2f8;
+  --color-sistema-hemato-bar: #ec4899;
+  --color-sistema-infecto: #0f766e;
+  --color-sistema-infecto-bg: #f0fdfa;
+  --color-sistema-infecto-bar: #14b8a6;
+
+  /* ---- selos de terapia e dispositivo ---- */
+  --color-selo-dva-bg: #ffe4e6;
+  --color-selo-dva-text: #9f1239;
+  --color-selo-sed-bg: #f3e8ff;
+  --color-selo-sed-text: #6b21a8;
+  --color-selo-vm-bg: #e0f2fe;
+  --color-selo-vm-text: #0c4a6e;
+  --color-selo-vni-bg: #f0f9ff;
+  --color-selo-vni-text: #0369a1;
+  --color-selo-atb-bg: #ccfbf1;
+  --color-selo-atb-text: #115e59;
+  --color-selo-pend-bg: #fef3c7;
+  --color-selo-pend-text: #92400e;
+  --color-selo-sepse-bg: #dc2626;
+  --color-selo-sepse-text: #ffffff;
 
   /* ---- semáforo de severidade visual (espelha o enum do banco) ---- */
-  --color-semaforo-green: #16a34a;
-  --color-semaforo-yellow: #d97706;
+  --color-semaforo-green: #10b981;
+  --color-semaforo-yellow: #f59e0b;
   --color-semaforo-red: #dc2626;
 }
 
-/* ---- variáveis de tema (Clinical = padrão) ---- */
+/* ============================================================================
+   Tema CLINICAL (claro) — o padrão.
+   ========================================================================== */
 :root {
-  --background: #eef1f6;
-  --foreground: #0f172a;
-  --card: #ffffff;
-  --card-foreground: #0f172a;
-  --primary: #2563eb;
-  --primary-foreground: #ffffff;
-  --muted: #e2e8f0;
-  --muted-foreground: #64748b;
-  --border: #cbd5e1;
-  --ring: #2563eb;
-  --destructive: #dc2626;
+  /* 4 níveis de superfície: sem eles todo bloco flutua no mesmo plano */
+  --superficie-app: #eef1f6;
+  --superficie-card: #ffffff;
+  --superficie-elevada: #f4f6fa;
+  --superficie-afundada: #e8edf3;
+
+  /* 3 níveis de borda: fio dentro do card ≠ borda do card ≠ divisor forte */
+  --borda-sutil: #e7ecf2;
+  --borda-padrao: #dbe3ec;
+  --borda-forte: #c4cdd9;
+
+  /* 4 níveis de texto: a hierarquia do card mora aqui */
+  --texto-titulo: #0f172a;
+  --texto-corpo: #334155;
+  --texto-suave: #64748b;
+  --texto-tenue: #94a3b8;
+  --texto-sobre-acento: #ffffff;
+
+  --acento: #2563eb;
+  --acento-hover: #1d4ed8;
+  --acento-suave: #e8f0fe;
+  --acento-texto: #1d4ed8;
+  --anel-foco: rgba(37, 99, 235, 0.35);
+
+  /* A barra de comando é navy nos DOIS temas — é a marca, não o tema */
+  --chrome-bg: linear-gradient(170deg, #13294a 0%, #0b1d35 100%);
+  --chrome-texto: #e6edf6;
+  --chrome-suave: #8aa1bd;
+  --chrome-borda: rgba(255, 255, 255, 0.08);
+
+  --sucesso: #059669;
+  --aviso: #d97706;
+  --perigo: #dc2626;
+
+  /* Sombra em camada: o card descola do fundo sem precisar de borda grossa */
+  --sombra-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.07);
+  --sombra-elevada: 0 4px 16px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.05);
+  --sombra-pop: 0 16px 48px rgba(15, 23, 42, 0.16), 0 2px 8px rgba(15, 23, 42, 0.08);
+
+  /* aliases que o shadcn/ui espera */
+  --background: var(--superficie-app);
+  --foreground: var(--texto-titulo);
+  --card: var(--superficie-card);
+  --card-foreground: var(--texto-titulo);
+  --primary: var(--acento);
+  --primary-foreground: var(--texto-sobre-acento);
+  --muted: var(--superficie-afundada);
+  --muted-foreground: var(--texto-suave);
+  --border: var(--borda-padrao);
+  --ring: var(--acento);
+  --destructive: var(--perigo);
   --destructive-foreground: #ffffff;
 }
 
-/* ---- tema Tactical (escuro, plantão noturno) ---- */
+/* ============================================================================
+   Tema TACTICAL (escuro) — plantão noturno.
+   Gravidade, SOFA, sistema e selo são REAFINADOS para fundo escuro: a mesma
+   intensidade clínica tem que ler igual nos dois temas. Reaproveitar a cor
+   clara no escuro apaga o contraste justamente no paciente grave.
+   ========================================================================== */
 [data-theme='tactical'] {
-  --background: #0f172a;
-  --foreground: #e2e8f0;
-  --card: #1e293b;
-  --card-foreground: #e2e8f0;
-  --primary: #dc2626;
-  --primary-foreground: #ffffff;
-  --muted: #334155;
-  --muted-foreground: #94a3b8;
-  --border: #334155;
-  --ring: #dc2626;
-  --destructive: #ef4444;
+  --superficie-app: #0f172a;
+  --superficie-card: #1e293b;
+  --superficie-elevada: #334155;
+  --superficie-afundada: #0b1220;
+
+  --borda-sutil: #273449;
+  --borda-padrao: #475569;
+  --borda-forte: #64748b;
+
+  --texto-titulo: #f8fafc;
+  --texto-corpo: #cbd5e1;
+  --texto-suave: #94a3b8;
+  --texto-tenue: #64748b;
+  --texto-sobre-acento: #ffffff;
+
+  --acento: #dc2626;
+  --acento-hover: #b91c1c;
+  --acento-suave: rgba(220, 38, 38, 0.14);
+  --acento-texto: #fca5a5;
+  --anel-foco: rgba(220, 38, 38, 0.4);
+
+  --chrome-bg: linear-gradient(170deg, #0c1a30 0%, #060e1c 100%);
+  --chrome-texto: #e2e8f0;
+  --chrome-suave: #7d93b0;
+  --chrome-borda: rgba(255, 255, 255, 0.06);
+
+  --sucesso: #10b981;
+  --aviso: #f59e0b;
+  --perigo: #ef4444;
+
+  --sombra-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3);
+  --sombra-elevada: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --sombra-pop: 0 16px 48px rgba(0, 0, 0, 0.55);
+
   --destructive-foreground: #ffffff;
 }
 
-/* expõe as variáveis de tema como cores utilitárias do Tailwind */
+/* Gravidade no escuro: preenchimento profundo + texto claro */
+[data-theme='tactical'] {
+  --color-gravidade-estavel-bg: #064e3b;
+  --color-gravidade-estavel-text: #6ee7b7;
+  --color-gravidade-watcher-bg: #78350f;
+  --color-gravidade-watcher-text: #fcd34d;
+  --color-gravidade-instavel-bg: #7c2d12;
+  --color-gravidade-instavel-text: #fdba74;
+  --color-gravidade-critico-bg: #7f1d1d;
+  --color-gravidade-critico-text: #fca5a5;
+  --color-gravidade-obito-bg: #1e293b;
+  --color-gravidade-obito-text: #94a3b8;
+
+  --color-sofa-baixo: #34d399;
+  --color-sofa-medio: #fcd34d;
+  --color-sofa-alto: #fb923c;
+  --color-sofa-critico: #f87171;
+
+  --color-sistema-neuro: #d8b4fe;
+  --color-sistema-neuro-bg: rgba(168, 85, 247, 0.12);
+  --color-sistema-resp: #7dd3fc;
+  --color-sistema-resp-bg: rgba(14, 165, 233, 0.12);
+  --color-sistema-hemo: #fda4af;
+  --color-sistema-hemo-bg: rgba(244, 63, 94, 0.12);
+  --color-sistema-tgi: #fcd34d;
+  --color-sistema-tgi-bg: rgba(245, 158, 11, 0.12);
+  --color-sistema-renal: #bef264;
+  --color-sistema-renal-bg: rgba(132, 204, 22, 0.12);
+  --color-sistema-hemato: #f9a8d4;
+  --color-sistema-hemato-bg: rgba(236, 72, 153, 0.12);
+  --color-sistema-infecto: #5eead4;
+  --color-sistema-infecto-bg: rgba(20, 184, 166, 0.12);
+
+  --color-selo-dva-bg: rgba(136, 19, 55, 0.45);
+  --color-selo-dva-text: #fda4af;
+  --color-selo-sed-bg: rgba(88, 28, 135, 0.45);
+  --color-selo-sed-text: #d8b4fe;
+  --color-selo-vm-bg: rgba(12, 74, 110, 0.45);
+  --color-selo-vm-text: #7dd3fc;
+  --color-selo-vni-bg: rgba(12, 74, 110, 0.25);
+  --color-selo-vni-text: #38bdf8;
+  --color-selo-atb-bg: rgba(19, 78, 74, 0.45);
+  --color-selo-atb-text: #5eead4;
+  --color-selo-pend-bg: rgba(120, 53, 15, 0.45);
+  --color-selo-pend-text: #fcd34d;
+}
+
+/* Expõe as variáveis de tema como utilitários do Tailwind
+   (`bg-superficie-card`, `text-texto-suave`, `shadow-card`…) */
 @theme inline {
+  --color-superficie-app: var(--superficie-app);
+  --color-superficie-card: var(--superficie-card);
+  --color-superficie-elevada: var(--superficie-elevada);
+  --color-superficie-afundada: var(--superficie-afundada);
+
+  --color-borda-sutil: var(--borda-sutil);
+  --color-borda-padrao: var(--borda-padrao);
+  --color-borda-forte: var(--borda-forte);
+
+  --color-texto-titulo: var(--texto-titulo);
+  --color-texto-corpo: var(--texto-corpo);
+  --color-texto-suave: var(--texto-suave);
+  --color-texto-tenue: var(--texto-tenue);
+
+  --color-acento: var(--acento);
+  --color-acento-suave: var(--acento-suave);
+  --color-acento-texto: var(--acento-texto);
+
+  --color-chrome-texto: var(--chrome-texto);
+  --color-chrome-suave: var(--chrome-suave);
+
+  --color-sucesso: var(--sucesso);
+  --color-aviso: var(--aviso);
+  --color-perigo: var(--perigo);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -92,20 +330,96 @@
   --color-ring: var(--ring);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+
+  --shadow-card: var(--sombra-card);
+  --shadow-elevada: var(--sombra-elevada);
+  --shadow-pop: var(--sombra-pop);
 }
 
 @layer base {
   * {
-    border-color: var(--color-border);
+    border-color: var(--borda-padrao);
   }
+
   body {
-    background: var(--color-background);
-    color: var(--color-foreground);
+    background: var(--superficie-app);
+    color: var(--texto-corpo);
     font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
-  /* todo número clínico: mono, tabular, sem ambiguidade de dígito */
+
+  /* Todo número clínico: mono, tabular, sem ambiguidade de dígito.
+     Coluna de números que "dança" entre linhas esconde a diferença que importa. */
   [data-clinical-number] {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
+  }
+
+  /* Foco visível sempre: plantão se opera muito por teclado. */
+  :focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--anel-foco);
+  }
+}
+
+@layer components {
+  /* Rótulo de sobrancelha: caixa alta pequena com espaçamento largo.
+     É o que separa "PENDÊNCIAS" do número sem gastar altura. */
+  .sasi-eyebrow {
+    font-size: var(--text-2xs);
+    line-height: 1.15;
+    font-weight: 700;
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+    color: var(--texto-suave);
+  }
+
+  /* Barra de comando (navy nos dois temas). */
+  .sasi-chrome {
+    background: var(--chrome-bg);
+    color: var(--chrome-texto);
+    border-bottom: 1px solid var(--chrome-borda);
+  }
+}
+
+/* ============================================================================
+   Movimento: contido. UMA animação de atenção — a pulsação do crítico.
+   Se tudo pulsa, nada chama atenção.
+   ========================================================================== */
+@keyframes sasi-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sasi-critical-pulse {
+  0%,
+  100% {
+    box-shadow: var(--sombra-card), 0 0 0 0 rgba(220, 38, 38, 0.55);
+  }
+  50% {
+    box-shadow: var(--sombra-card), 0 0 0 7px rgba(220, 38, 38, 0);
+  }
+}
+
+.sasi-fade-in {
+  animation: sasi-fade-in var(--dur-slow) var(--ease-out-sasi) both;
+}
+
+.sasi-critical-pulse {
+  animation: sasi-critical-pulse 2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sasi-fade-in,
+  .sasi-critical-pulse {
+    animation: none !important;
   }
 }

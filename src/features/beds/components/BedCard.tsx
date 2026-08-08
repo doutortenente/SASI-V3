@@ -3,29 +3,37 @@
  *
  * Componente EXIBE, não calcula: acuidade, semáforo e divergência chegam
  * prontos de `triagemDeLeitos`. Nenhum cálculo clínico mora aqui.
+ *
+ * O visual segue o `LeitoCard` do `sasi-design-system` do v2: barra de
+ * gravidade grossa à esquerda, número do leito como âncora, SOFA como numeral
+ * herói, e os selos de terapia numa fileira só. A versão anterior deste
+ * arquivo tinha tudo no mesmo peso de texto — em 33 leitos, isso obriga a ler
+ * card por card para achar o grave.
  */
+import { GravityBadge } from '@/components/clinical/GravityBadge';
+import { SofaBadge } from '@/components/clinical/SofaBadge';
+import { TherapyBadge } from '@/components/clinical/TherapyBadge';
 import type { Acuidade } from '@/lib/clinical/sasi';
 import {
   CLASSE_SEMAFORO,
   SEM_DADO,
   dataComIdade,
-  direcao,
   numeroDoLeito,
   rotuloInfusao,
   txt,
 } from '@/lib/formatters/clinico';
-import type { Dispositivos, Isolamento } from '@/types';
+import type { Dispositivos, InfusaoOuTexto, Isolamento } from '@/types';
 import type { LeitoNaGrade } from '@/features/beds/types';
 
-/** Borda esquerda por acuidade — o olho acha o grave antes de ler. */
-const BORDA_ACUIDADE: Record<Acuidade, string> = {
-  CRITICO: 'border-l-gravidade-critico',
-  INSTAVEL: 'border-l-gravidade-instavel',
-  VIGILANCIA: 'border-l-gravidade-watcher',
-  ESTAVEL: 'border-l-gravidade-estavel',
+/** Barra esquerda por acuidade — o olho acha o grave antes de ler. */
+const BARRA_ACUIDADE: Record<Acuidade, string> = {
+  CRITICO: 'bg-gravidade-critico',
+  INSTAVEL: 'bg-gravidade-instavel',
+  VIGILANCIA: 'bg-gravidade-watcher',
+  ESTAVEL: 'bg-gravidade-estavel',
   // Óbito tem token próprio (cinza). Nunca verde: verde na tela de comando
   // significa "estável", e um paciente morto não é um paciente estável.
-  OBITO: 'border-l-gravidade-obito',
+  OBITO: 'bg-gravidade-obito',
 };
 
 const ROTULO_ISOLAMENTO: Record<Isolamento, string | null> = {
@@ -48,113 +56,176 @@ function dispositivosAtivos(d: Dispositivos | null): string[] {
     .map((k) => ROTULO_DISPOSITIVO[k]!);
 }
 
+/*
+  NÃO filtrar por `d.droga`: no banco vivo `dvas` é lista de TEXTO puro
+  ("Dobutamina 5 ml/h"), que não tem esse campo. O filtro por campo descartava
+  100% das drogas vasoativas em silêncio — o mesmo defeito de "dose que sumia
+  da passagem" do v2. Aqui só sai o que é vazio de verdade.
+*/
+function infusoesReais(lista: InfusaoOuTexto[] | null | undefined): InfusaoOuTexto[] {
+  return (lista ?? []).filter((d) => (typeof d === 'string' ? d.trim() !== '' : Boolean(d?.droga)));
+}
+
 export function BedCard({ leito, agoraISO }: { leito: LeitoNaGrade; agoraISO: string }) {
   const dispositivos = dispositivosAtivos(leito.dispositivos);
   const isolamento = leito.isolation ? ROTULO_ISOLAMENTO[leito.isolation] : null;
-  /*
-    NÃO filtrar por `d.droga`: no banco vivo `dvas` é lista de TEXTO puro
-    ("Dobutamina 5 ml/h"), que não tem esse campo. O filtro por campo descartava
-    100% das drogas vasoativas em silêncio — o mesmo defeito de "dose que sumia
-    da passagem" do v2. Aqui só sai o que é vazio de verdade.
-  */
-  const dvas = (leito.dvas ?? []).filter((d) =>
-    typeof d === 'string' ? d.trim() !== '' : Boolean(d?.droga),
-  );
+  const dvas = infusoesReais(leito.dvas);
+  const sedativos = infusoesReais(leito.sedativos);
+
+  // Via aérea artificial: o selo VM sai de dispositivo, não de campo próprio —
+  // a view não tem coluna de ventilação.
+  const emVM = Boolean(leito.dispositivos?.iot || leito.dispositivos?.tqt);
+  const pendencias = leito.pendencias_abertas ?? 0;
+  const critico = leito.acuidade === 'CRITICO';
 
   return (
     <article
-      className={`bg-card text-card-foreground border-border rounded-xl border border-l-4 p-4 ${BORDA_ACUIDADE[leito.acuidade]}`}
+      className={`bg-superficie-card text-texto-corpo border-borda-padrao shadow-card hover:shadow-elevada relative flex flex-col overflow-hidden rounded-xl border pl-4 transition-shadow duration-200 ${critico ? 'sasi-critical-pulse' : ''}`}
       aria-label={`Leito ${leito.leito}, acuidade ${leito.acuidade}`}
     >
-      {/* Cabeçalho: leito, semáforo, acuidade */}
-      <header className="flex items-baseline justify-between gap-2">
-        <h3 className="font-mono text-lg font-semibold tabular-nums">{numeroDoLeito(leito.leito)}</h3>
-        <div className="flex items-center gap-2">
-          <span className="text-muted-foreground text-xs font-medium tracking-wide">{leito.acuidade}</span>
-          <span
-            className={`size-3 shrink-0 rounded-full ${CLASSE_SEMAFORO[leito.semaforo]}`}
-            aria-label={`Semáforo ${leito.semaforo}`}
-          />
-        </div>
-      </header>
+      {/* Barra de gravidade: 6px cheios, do topo ao pé do card. */}
+      <span
+        className={`absolute inset-y-0 left-0 w-1.5 ${BARRA_ACUIDADE[leito.acuidade]}`}
+        aria-hidden="true"
+      />
 
-      {/*
-        Divergência de dado: o semáforo guardado no banco discorda da gravidade.
-        A tela pinta o derivado da gravidade e AVISA — não corrige o banco.
-      */}
-      {leito.divergenciaDeSemaforo && (
-        <p className="text-destructive mt-2 text-xs font-medium">
-          Dado inconsistente: gravidade {txt(leito.gravidade)}, semáforo gravado{' '}
-          {txt(leito.severidade_visual)}. A tela mostra o derivado da gravidade. Conferir no cadastro.
-        </p>
-      )}
+      <div className="flex flex-col gap-3 p-3.5">
+        {/* Linha 1 — leito, gravidade, semáforo */}
+        <header className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <p className="sasi-eyebrow">{leito.uti ?? SEM_DADO}</p>
+            <h3 data-clinical-number className="text-texto-titulo text-xl leading-none font-bold">
+              {numeroDoLeito(leito.leito ?? '')}
+            </h3>
+          </div>
+          <div className="flex shrink-0 items-center gap-1.5">
+            <GravityBadge nivel={leito.acuidade} tamanho="sm" />
+            <span
+              className={`size-2.5 shrink-0 rounded-full ${CLASSE_SEMAFORO[leito.semaforo]}`}
+              aria-label={`Semáforo ${leito.semaforo}`}
+            />
+          </div>
+        </header>
 
-      {/* Identificação */}
-      <p className="mt-2 truncate text-sm font-medium" title={leito.nome ?? undefined}>
-        {txt(leito.nome)}
-      </p>
-      <p className="text-muted-foreground text-xs">
-        {leito.idade == null ? SEM_DADO : `${leito.idade} anos`} · {txt(leito.dias_internacao)} dias de internação
-      </p>
-      <p className="mt-1 line-clamp-2 text-xs" title={leito.hd ?? undefined}>
-        {txt(leito.hd)}
-      </p>
+        {/*
+          Divergência de dado: o semáforo guardado no banco discorda da
+          gravidade. A tela pinta o derivado da gravidade e AVISA — não
+          corrige o banco.
+        */}
+        {leito.divergenciaDeSemaforo && (
+          <p className="bg-gravidade-critico-bg text-gravidade-critico-text rounded-sm px-2 py-1 text-2xs font-medium">
+            Dado inconsistente: gravidade {txt(leito.gravidade)}, semáforo gravado{' '}
+            {txt(leito.severidade_visual)}. A tela mostra o derivado da gravidade. Conferir no cadastro.
+          </p>
+        )}
 
-      {/* Números. SOFA ausente mostra travessão — nunca 0, nunca estimado. */}
-      <dl className="mt-3 grid grid-cols-3 gap-2 text-center">
-        <div>
-          <dt className="text-muted-foreground text-[10px] tracking-wide">SOFA</dt>
-          <dd className="font-mono text-base tabular-nums">{txt(leito.sofa_total)}</dd>
+        {/* Linha 2 — identificação */}
+        <div className="min-w-0">
+          <p className="text-texto-titulo truncate text-sm font-semibold" title={leito.nome ?? undefined}>
+            {txt(leito.nome)}
+          </p>
+          <p className="text-texto-suave text-xs">
+            {leito.idade == null ? SEM_DADO : `${leito.idade} anos`} · {txt(leito.dias_internacao)} dias
+            internado
+          </p>
+          <p className="text-texto-corpo mt-1 line-clamp-2 text-xs" title={leito.hd ?? undefined}>
+            {txt(leito.hd)}
+          </p>
         </div>
-        <div>
-          <dt className="text-muted-foreground text-[10px] tracking-wide">SOFA 24h</dt>
-          <dd className="font-mono text-xs tabular-nums">{direcao(leito.delta_sofa_24h)}</dd>
-        </div>
-        <div>
-          <dt className="text-muted-foreground text-[10px] tracking-wide">Pendências</dt>
-          <dd className="font-mono text-base tabular-nums">{txt(leito.pendencias_abertas)}</dd>
-        </div>
-      </dl>
 
-      {/*
-        Drogas vasoativas COM A DATA do lançamento.
-        Sem data, "Noradrenalina 0,3" numa tela de comando é lido como
-        "está correndo agora". Se a última evolução é de dias atrás, isso é
-        história e não conduta — e o card estaria mentindo por omissão.
-      */}
-      {dvas.length > 0 && (
-        <p className="text-muted-foreground mt-3 text-[10px] tracking-wide">
-          Infusões lançadas em {dataComIdade(leito.ultima_evolucao, agoraISO)}
-        </p>
-      )}
-      {dvas.length > 0 && (
-        <ul className="mt-1 space-y-0.5">
-          {dvas.map((d, i) => {
-            const rotulo = rotuloInfusao(d);
-            return (
-              <li key={`${rotulo}-${i}`} className="text-sistema-hemo font-mono text-xs">
-                {rotulo}
+        {/*
+          Linha 3 — números. SOFA ausente mostra travessão, nunca 0.
+          Hoje 0 de 16 evoluções têm `sofa_total`: o travessão é o normal.
+        */}
+        <dl className="border-borda-sutil bg-superficie-elevada grid grid-cols-2 gap-px overflow-hidden rounded-md border">
+          <div className="bg-superficie-card flex flex-col gap-1 px-2.5 py-2">
+            <dt className="sasi-eyebrow">SOFA</dt>
+            <dd>
+              <SofaBadge escore={leito.sofa_total} delta={leito.delta_sofa_24h} />
+            </dd>
+          </div>
+          <div className="bg-superficie-card flex flex-col gap-1 px-2.5 py-2">
+            <dt className="sasi-eyebrow">Pendências</dt>
+            <dd
+              data-clinical-number
+              className={`text-xl leading-none font-semibold ${pendencias > 0 ? 'text-gravidade-watcher' : 'text-texto-tenue'}`}
+            >
+              {txt(leito.pendencias_abertas)}
+            </dd>
+          </div>
+        </dl>
+
+        {/* Linha 4 — selos de terapia, o resumo de um segundo */}
+        {(dvas.length > 0 || sedativos.length > 0 || emVM || pendencias > 0 || isolamento) && (
+          <ul className="flex flex-wrap gap-1">
+            {isolamento && (
+              <li>
+                <TherapyBadge tipo="pend" rotulo={`Isolamento ${isolamento}`} />
               </li>
-            );
-          })}
-        </ul>
-      )}
+            )}
+            {dvas.length > 0 && (
+              <li>
+                <TherapyBadge tipo="dva" contagem={dvas.length} />
+              </li>
+            )}
+            {sedativos.length > 0 && (
+              <li>
+                <TherapyBadge tipo="sed" contagem={sedativos.length} />
+              </li>
+            )}
+            {emVM && (
+              <li>
+                <TherapyBadge tipo="vm" />
+              </li>
+            )}
+            {pendencias > 0 && (
+              <li>
+                <TherapyBadge tipo="pend" contagem={pendencias} />
+              </li>
+            )}
+          </ul>
+        )}
 
-      {/* Selos: isolamento primeiro, que muda a conduta de quem entra no box. */}
-      {(isolamento || dispositivos.length > 0) && (
-        <ul className="mt-3 flex flex-wrap gap-1">
-          {isolamento && (
-            <li className="bg-gravidade-watcher-bg text-gravidade-watcher rounded px-1.5 py-0.5 text-[10px] font-semibold">
-              Isolamento {isolamento}
-            </li>
-          )}
-          {dispositivos.map((d) => (
-            <li key={d} className="bg-muted text-muted-foreground rounded px-1.5 py-0.5 font-mono text-[10px]">
-              {d}
-            </li>
-          ))}
-        </ul>
-      )}
+        {/*
+          Drogas vasoativas COM A DATA do lançamento.
+          Sem data, "Noradrenalina 0,3" numa tela de comando é lido como
+          "está correndo agora". Se a última evolução é de dias atrás, isso é
+          história e não conduta — e o card estaria mentindo por omissão.
+        */}
+        {dvas.length > 0 && (
+          <div className="border-borda-sutil border-t pt-2">
+            <p className="sasi-eyebrow">Infusões · {dataComIdade(leito.ultima_evolucao, agoraISO)}</p>
+            <ul className="mt-1 space-y-0.5">
+              {dvas.map((d, i) => {
+                const rotulo = rotuloInfusao(d);
+                return (
+                  <li
+                    key={`${rotulo}-${i}`}
+                    data-clinical-number
+                    className="text-sistema-hemo text-xs font-medium"
+                  >
+                    {rotulo}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
+
+        {/* Dispositivos: informação de fundo, peso visual mínimo. */}
+        {dispositivos.length > 0 && (
+          <ul className="flex flex-wrap gap-1">
+            {dispositivos.map((d) => (
+              <li
+                key={d}
+                className="bg-superficie-afundada text-texto-suave text-2xs rounded-xs px-1.5 py-0.5 font-medium"
+              >
+                {d}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </article>
   );
 }
