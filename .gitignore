@@ -45,3 +45,6 @@ pnpm-debug.log*
 supabase/.branches
 supabase/.temp
 supabase/.env
+
+# worktrees locais — nunca versionados
+.claude/worktrees/
