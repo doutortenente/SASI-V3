@@ -15,13 +15,6 @@ dist/
 *.pem
 *.key
 
-# ---- PHI: dado de paciente real NUNCA entra no repositório ----
-# (regra dura — PHI é dado identificável de paciente. Vazar isso é problema legal, não só técnico.)
-_material/
-90-PHI-LOCAL/
-**/amostras/
-*.phi.*
-
 # ---- teste e cobertura ----
 coverage/
 .nyc_output/
@@ -34,8 +27,6 @@ blob-report/
 .vercel
 .turbo
 .idea/
-.vscode/*
-!.vscode/extensions.json
 .DS_Store
 *.log
 npm-debug.log*
