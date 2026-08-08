@@ -80,6 +80,22 @@ export interface Infusao {
   started_at?: string;
 }
 
+/**
+ * Uma infusão como ela REALMENTE vem do banco vivo.
+ *
+ * Medido em 08-ago-2026: `evolucoes.dvas` / `vw_dashboard_uti.dvas` contêm
+ * **texto puro** nos registros existentes — `["Tridil 12 ml/h"]`,
+ * `["Dobutamina 5 ml/h", "Noradrenalina suspensa"]` — e não objetos `Infusao`.
+ * A forma rica (`Infusao`) é o que a skill de ingestão grava; a forma texto é
+ * herança do v2 e é o que está no banco hoje.
+ *
+ * Tipar só como `Infusao[]` fez a tela DESCARTAR EM SILÊNCIO toda droga
+ * vasoativa (o filtro procurava o campo `droga`, que texto não tem) — o mesmo
+ * defeito de "dose que sumia da passagem" registrado no histórico do v2.
+ * Quem consome tem que tratar as duas formas.
+ */
+export type InfusaoOuTexto = Infusao | string;
+
 /** patient_summary.interconsultas[] */
 export interface Interconsulta { especialidade: string; data?: string; status?: 'pendente' | 'concluida' | string; notas?: string; }
 /** patient_summary.programacao[] */
@@ -269,7 +285,9 @@ export interface VwDashboardUti {
   idade: number | null; peso: number | null; hd: string | null; gravidade: Gravidade;
   status_leito: StatusLeito; data_adm: string; dias_internacao: number | null;
   evolucao_id: string | null; ultima_evolucao: string | null;
-  sofa_total: number | null; sofa_snapshot: Json | null; dvas: Infusao[] | null; sedativos: Infusao[] | null;
+  sofa_total: number | null; sofa_snapshot: Json | null;
+  // Texto puro no banco hoje, objeto quando vem da ingestão — ver InfusaoOuTexto.
+  dvas: InfusaoOuTexto[] | null; sedativos: InfusaoOuTexto[] | null;
   delta_sofa_24h: number | null; pendencias_abertas: number;
   dispositivos: Dispositivos; isolation: Isolamento; out_of_range_count: number; severidade_visual: SeveridadeVisual;
 }
