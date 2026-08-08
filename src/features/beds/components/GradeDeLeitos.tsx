@@ -12,7 +12,14 @@ import type { Uti } from '@/types';
 
 const ORDEM_UTI: Uti[] = ['UTI2', 'UTI3', 'UTI4'];
 
-export function GradeDeLeitos({ leitos }: { leitos: LeitoNaGrade[] }) {
+export function GradeDeLeitos({
+  leitos,
+  agoraISO,
+}: {
+  leitos: LeitoNaGrade[];
+  /** Instante da renderização, vindo da página: um relógio só para toda a grade. */
+  agoraISO: string;
+}) {
   if (leitos.length === 0) {
     return (
       <p className="text-muted-foreground rounded-xl border border-dashed p-8 text-center text-sm">
@@ -28,7 +35,17 @@ export function GradeDeLeitos({ leitos }: { leitos: LeitoNaGrade[] }) {
         const daUti = leitos.filter((l) => l.uti === uti);
         if (daUti.length === 0) return null;
 
-        const excedentes = daUti.length - LEITOS_POR_UTI[uti];
+        /*
+          Confere o NÚMERO do leito, não a quantidade de ocupados.
+          A guarda anterior comparava `daUti.length` com a capacidade — e um
+          leito numerado fora da faixa passava batido enquanto houvesse vaga
+          na conta. Foi assim que UTI2-L13 (a UTI2 vai só até L12) apareceu
+          no painel sem nenhum aviso.
+        */
+        const foraDaFaixa = daUti.filter((l) => {
+          const n = Number(/-L(\d{2})$/.exec(l.leito)?.[1]);
+          return !Number.isFinite(n) || n < 1 || n > LEITOS_POR_UTI[uti];
+        });
 
         return (
           <section key={uti} aria-labelledby={`titulo-${uti}`}>
@@ -41,18 +58,20 @@ export function GradeDeLeitos({ leitos }: { leitos: LeitoNaGrade[] }) {
               </span>
               {/*
                 A unidade tem número fixo de leitos (UTI2 12 · UTI3 13 · UTI4 8).
-                Mais leitos ocupados do que existem é erro de cadastro, não superlotação.
+                Leito numerado fora dessa faixa é erro de cadastro, não superlotação.
               */}
-              {excedentes > 0 && (
+              {foraDaFaixa.length > 0 && (
                 <span className="text-destructive text-xs font-medium">
-                  {excedentes} leito(s) além dos {LEITOS_POR_UTI[uti]} que a unidade tem — conferir numeração
+                  Fora da numeração da unidade (vai até L
+                  {String(LEITOS_POR_UTI[uti]).padStart(2, '0')}):{' '}
+                  {foraDaFaixa.map((l) => l.leito).join(', ')} — conferir cadastro
                 </span>
               )}
             </header>
             <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {daUti.map((l) => (
                 <li key={l.paciente_id}>
-                  <BedCard leito={l} />
+                  <BedCard leito={l} agoraISO={agoraISO} />
                 </li>
               ))}
             </ul>

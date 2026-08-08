@@ -8,6 +8,7 @@ import type { Acuidade } from '@/lib/clinical/sasi';
 import {
   CLASSE_SEMAFORO,
   SEM_DADO,
+  dataComIdade,
   direcao,
   numeroDoLeito,
   rotuloInfusao,
@@ -22,6 +23,9 @@ const BORDA_ACUIDADE: Record<Acuidade, string> = {
   INSTAVEL: 'border-l-gravidade-instavel',
   VIGILANCIA: 'border-l-gravidade-watcher',
   ESTAVEL: 'border-l-gravidade-estavel',
+  // Óbito tem token próprio (cinza). Nunca verde: verde na tela de comando
+  // significa "estável", e um paciente morto não é um paciente estável.
+  OBITO: 'border-l-gravidade-obito',
 };
 
 const ROTULO_ISOLAMENTO: Record<Isolamento, string | null> = {
@@ -44,7 +48,7 @@ function dispositivosAtivos(d: Dispositivos | null): string[] {
     .map((k) => ROTULO_DISPOSITIVO[k]!);
 }
 
-export function BedCard({ leito }: { leito: LeitoNaGrade }) {
+export function BedCard({ leito, agoraISO }: { leito: LeitoNaGrade; agoraISO: string }) {
   const dispositivos = dispositivosAtivos(leito.dispositivos);
   const isolamento = leito.isolation ? ROTULO_ISOLAMENTO[leito.isolation] : null;
   /*
@@ -112,9 +116,19 @@ export function BedCard({ leito }: { leito: LeitoNaGrade }) {
         </div>
       </dl>
 
-      {/* Drogas vasoativas correndo — a dose nunca é omitida. */}
+      {/*
+        Drogas vasoativas COM A DATA do lançamento.
+        Sem data, "Noradrenalina 0,3" numa tela de comando é lido como
+        "está correndo agora". Se a última evolução é de dias atrás, isso é
+        história e não conduta — e o card estaria mentindo por omissão.
+      */}
       {dvas.length > 0 && (
-        <ul className="mt-3 space-y-0.5">
+        <p className="text-muted-foreground mt-3 text-[10px] tracking-wide">
+          Infusões lançadas em {dataComIdade(leito.ultima_evolucao, agoraISO)}
+        </p>
+      )}
+      {dvas.length > 0 && (
+        <ul className="mt-1 space-y-0.5">
           {dvas.map((d, i) => {
             const rotulo = rotuloInfusao(d);
             return (

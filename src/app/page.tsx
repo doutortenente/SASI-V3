@@ -14,6 +14,9 @@ export const dynamic = 'force-dynamic';
 
 export default async function WarRoomPage() {
   const leitos = await lerLeitosOcupados();
+  // Um relógio só para toda a grade, passado para baixo: os componentes ficam
+  // puros e testáveis, e a idade das infusões é medida contra o mesmo instante.
+  const agoraISO = new Date().toISOString();
 
   const criticos = leitos.filter((l) => l.acuidade === 'CRITICO').length;
   const instaveis = leitos.filter((l) => l.acuidade === 'INSTAVEL').length;
@@ -52,7 +55,7 @@ export default async function WarRoomPage() {
         )}
       </header>
 
-      <GradeDeLeitos leitos={leitos} />
+      <GradeDeLeitos leitos={leitos} agoraISO={agoraISO} />
     </main>
   );
 }

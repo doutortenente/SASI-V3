@@ -58,7 +58,16 @@ export function semaforoDivergente(row: LinhaSemaforo): boolean {
   return row.severidade_visual !== semaforoDe(row);
 }
 
-export type Acuidade = 'CRITICO' | 'INSTAVEL' | 'VIGILANCIA' | 'ESTAVEL';
+/**
+ * OBITO é um tier próprio, não um grau de gravidade.
+ *
+ * Antes caía no ramo padrão de `severidadeVisualDe` e virava semáforo verde +
+ * acuidade ESTAVEL — a tela dizia "estável" sobre um paciente morto. Não é
+ * gravidade baixa: é ausência de paciente a tratar. Fica fora da fila de
+ * atendimento (último no ranque) mas com rótulo próprio, nunca disfarçado de
+ * estável.
+ */
+export type Acuidade = 'CRITICO' | 'INSTAVEL' | 'VIGILANCIA' | 'ESTAVEL' | 'OBITO';
 
 type LinhaTriagem = Pick<
   VwDashboardUti,
@@ -66,14 +75,25 @@ type LinhaTriagem = Pick<
 >;
 
 /** Deriva tier de acuidade de limiares fisiológicos (não do status declarado). */
-export function acuidadeDe(row: LinhaTriagem): Acuidade {
+export function acuidadeDe(row: LinhaTriagem & { gravidade?: Gravidade }): Acuidade {
+  // Óbito antes de tudo: nenhum limiar fisiológico se aplica, e cair no ramo
+  // padrão faria a tela rotular um paciente morto como ESTAVEL.
+  if (row.gravidade === 'obito') return 'OBITO';
   if (row.severidade_visual === 'red') return 'CRITICO';
   if ((row.delta_sofa_24h ?? 0) >= 2 || (row.out_of_range_count ?? 0) >= 3) return 'INSTAVEL';
   if (row.severidade_visual === 'yellow' || (row.out_of_range_count ?? 0) > 0) return 'VIGILANCIA';
   return 'ESTAVEL';
 }
 
-const RANK: Record<Acuidade, number> = { CRITICO: 0, INSTAVEL: 1, VIGILANCIA: 2, ESTAVEL: 3 };
+// OBITO por último: não há conduta a priorizar. Mas com rótulo próprio — ver o
+// comentário do tipo Acuidade sobre por que ele não pode virar ESTAVEL.
+const RANK: Record<Acuidade, number> = {
+  CRITICO: 0,
+  INSTAVEL: 1,
+  VIGILANCIA: 2,
+  ESTAVEL: 3,
+  OBITO: 4,
+};
 
 /** Ordena leitos por acuidade (mais grave primeiro) — base do War Room/SITREP. */
 export function triagem<T extends LinhaTriagem>(rows: T[]): Array<T & { acuidade: Acuidade }> {
