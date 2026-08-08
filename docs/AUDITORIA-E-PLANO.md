@@ -75,10 +75,15 @@ Verificado nesta data: `pnpm typecheck` ✅ · `pnpm lint` ✅ · `pnpm test` 11
 
 ## 3. Sequência de fases (do RUNBOOK v3, adaptada ao banco novo)
 
+> ⚠️ **Corrigido em 08-ago-2026.** Não existe "projeto Supabase novo": a conta tem **um** projeto,
+> `idswehsvvqczzkiatuzu`, em produção desde 30-jul com pacientes reais. O `fpemjplgtyhztowwemfz` que esta tabela
+> citava nunca existiu. **E o login foi riscado pelo operador** — a numeração de fases abaixo diverge da do
+> `CLAUDE.md`; onde as duas se contradisserem, vale a decisão registrada no `CLAUDE.md`, não o número da fase.
+
 | Fase | Entrega | Insumo de `_material/` |
 |---|---|---|
 | F0 ✅ | esqueleto + schema como migration + lógica base testada | feito hoje |
-| F1 | aplicar migration no projeto Supabase novo (`fpemjplgtyhztowwemfz`) + `pnpm gen:types` + login | `RUNBOOK-migracao-v3.md` |
+| F1 | ~~aplicar migration no projeto Supabase novo~~ + `pnpm gen:types` ✅ | `RUNBOOK-migracao-v3.md` |
 | F2 | War Room: grid de leitos sobre `vw_dashboard_uti` + realtime | design system (LeitoCard) + `triagem()` já portada |
 | F3 | Ficha do paciente (evolução por sistemas) + pendências | templates ficha + queries do v2 |
 | F4 | SOFA/Sepsis-3: recriar motor v2 módulo a módulo com Vitest | `sofa.ts`/`sepsis.ts` do motor + `sasi-sofa-ruleset.md` como contrato |
