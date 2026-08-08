@@ -26,7 +26,8 @@
 --   * As 11 dev_bypass — ativas de propósito (CLAUDE.md: uso solo).
 --   * RLS continua LIGADA nas 13 tabelas.
 --
--- VOLTA COMPLETA: migrations/rollback/20260808_restaura_policies_de_dono.sql
+-- VOLTA COMPLETA: supabase/rollback/20260808_restaura_policies_de_dono.sql
+-- (fora de migrations/ de propósito: aquela pasta é executada por pnpm db:push)
 -- ============================================================================
 
 drop policy if exists alerts_all_own       on public.alerts_log;

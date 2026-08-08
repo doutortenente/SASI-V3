@@ -100,7 +100,8 @@ testado com paciente sintético e revertido). `pnpm check` verde e `pnpm build` 
 ### Faxina do banco (08-ago-2026) — avisos de desempenho: 204 → 22
 
 Duas migrations aplicadas no banco vivo, com volta atrás escrita em
-`supabase/migrations/rollback/20260808_restaura_policies_de_dono.sql`:
+`supabase/rollback/20260808_restaura_policies_de_dono.sql` (fora de `migrations/` de propósito — aquela pasta é
+executada pelo `pnpm db:push`, e um script de volta atrás lá dentro recriaria o que acabou de sair):
 
 - **12 policies de dono removidas** das 9 tabelas que têm `dev_bypass` (`20260808121730`). Estavam dormentes de
   fato, não por suposição: os 15 pacientes têm `user_id` null (15 de 15), então `auth.uid() = user_id` nunca era

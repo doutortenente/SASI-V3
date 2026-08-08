@@ -48,8 +48,8 @@ Duas armadilhas descobertas ao aplicar a Seção B, que o anexo não previa:
 
 | # | Defeito | Onde |
 |---|---|---|
-| 1 | **`user_id` null cegaria o app** se a `dev_bypass` saísse. As 17 policies de dono já existem no banco e hoje estão **dormentes**: `auth.uid()` é null, `user_id` é null, e null = null dá null, não `true`. Medido: 15 pacientes no banco, **0 visíveis** só pela regra de dono. É também a origem dos 180 avisos de `multiple_permissive_policies` | policies vivas |
-| 2 | **`evolucoes` carrega dois modelos de conduta ao mesmo tempo**: `impressao`/`conduta` como `text[]` e `problemas_ativos`/`condutas_sistemas` como jsonb. Duplicação herdada do v2, não resolvida | migration 203-206 |
+| 1 | ~~17 policies de dono dormentes + 180 avisos~~ **RESOLVIDO em 08-ago** (`20260808121730`): 12 das 16 foram removidas — as das 9 tabelas que têm `dev_bypass`. `multiple_permissive_policies` foi de 180 para **0**; total de avisos de desempenho de 204 para 22. Acesso inalterado (policy permissiva é aditiva por OR, e `dev_bypass` usa `true`), conferido contando antes/depois. **Ainda de pé o fato de fundo:** `user_id` é null nos 15 pacientes, então se a `dev_bypass` saísse o app ficaria cego — voltar as policies **não** basta, é preciso preencher `user_id` primeiro. Volta atrás em `supabase/rollback/20260808_restaura_policies_de_dono.sql`. Preservadas: as 4 de `memorias` (não tem `dev_bypass`; apagar trancaria a tabela) e `evento_tipo_ref_read` | policies vivas |
+| 2 | **`evolucoes` tem dois modelos de conduta no molde, mas só um em uso**: `conduta` (`text[]`) em 7 evoluções, `condutas_sistemas` (jsonb) em **0**. Medido em 08-ago. A duplicação é de schema, não de dado — unificar custa menos do que a nota antiga sugeria | migration 203-206 |
 | 3 | **8 tabelas usam `FOR ALL`** em vez das 4 policies separadas (`evolucoes`, `eventos_clinicos`, `pendencias`, `atbs`, `culturas`, `antibiograma`, `alerts_log`, `ingest_audit_log`). Contraria a regra abaixo — mas com um usuário só, não separa nada na prática. **Não é prioridade** | policies vivas |
 | 4 | **`11_migracao_do_vivo.sql` vive só em `_material/`**, fora do repo. O cabeçalho da migration o cita como se estivesse aqui | migration 21 |
 
@@ -86,6 +86,20 @@ Duas armadilhas descobertas ao aplicar a Seção B, que o anexo não previa:
 de todos os pacientes para qualquer usuário logado. As 7 views do schema já têm.
 
 ## Migration
+
+**Onde mora o quê** (arrumado em 08-ago-2026):
+
+| Pasta | O quê |
+|---|---|
+| `supabase/migrations/` | só migration **realmente aplicada** no banco vivo, com o mesmo carimbo de data que está em `supabase_migrations.schema_migrations`. É a pasta que o `pnpm db:push` lê e executa |
+| `supabase/schema-referencia/` | `10_schema_producao_v3.sql` — o schema **do zero**, nunca aplicado neste banco. Serve de estado-alvo para conferência, **não** para rodar |
+
+O schema do zero estava dentro de `migrations/` com o nome `20260807000000_...`. Ali, um `pnpm db:push`
+tentaria criar do zero tabelas que já existem, num banco com 15 pacientes reais.
+
+⚠️ **12 migrations antigas (26-jun a 30-jul) existem no banco e não no repositório.** O repositório
+reproduz o *schema* (pelo arquivo de referência), mas não replica o *histórico*. Recuperáveis de
+`supabase_migrations.schema_migrations`, que guarda o SQL de cada uma.
 
 - Nome `YYYYMMDDHHmmss_descricao.sql`, SQL em minúsculas, idempotente (`if not exists`).
 - Comando destrutivo (`drop`, `delete`, `alter ... drop column`) vai **comentado**, com o motivo na linha de cima.
