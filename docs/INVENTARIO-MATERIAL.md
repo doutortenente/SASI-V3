@@ -42,6 +42,18 @@ e mapa envelhece. Confirme com `ls` e abra a fonte.
 | **Contratos JSONB** (dispositivos, riscos_flags, patient_summary, sistemas Máx–Mín, dvas, prescricao) | `EXTRACAO-CLINICA-SASI/sasi (cópia)/sasi-v2/src/types/clinical.ts` (578 linhas, o mais completo) | O schema do v3 tem os campos flexíveis, não o formato de dentro deles. Já parcialmente portado em `src/types/clinical.ts` |
 | **`payload-example.json`** — fixture SEM dado real | `01-pacote-skills-medicas/sasi-ingest-export/assets/payload-example.json` | Serve de semente de teste de integração sem risco de PHI |
 
+### Conflito de fonte já resolvido: setas ↑↓ são PROIBIDAS
+
+Duas fontes do material se contradizem. **Vence `00-estilo-texto-clinico.md`**, porque ele saiu de auditoria
+das evoluções reais do operador; o `readme.md` do design system é convenção genérica de UI.
+
+| Fonte | Diz | Vale? |
+|---|---|---|
+| `01-pacote-skills-medicas/sasi-ingest-export/references/00-estilo-texto-clinico.md` | seta ↑ ↓ = **proibida** em texto clínico | **SIM** |
+| `SASI-DESING.../sasi-design-system/readme.md` | "vetor ↑/↓/=" no problema ativo | não — revogada |
+
+Escreva a direção em palavra: "lactato em queda", "creatinina subindo", "PAM estável". Nunca o símbolo.
+
 ## 3. Duas doutrinas de segurança nascidas de incidente real
 
 | Incidente | Correção | Onde |
@@ -57,7 +69,7 @@ Sem reimplementar as duas no v3, os mesmos incidentes voltam.
 |---|---|
 | Tokens de cor clínicos em hex: 5 níveis de gravidade, rampa do SOFA, 7 sistemas orgânicos, 7 selos de terapia | `SASI-DESING-E_MOTOR-CLINICO-v2 (cópia)/sasi-design-system/tokens/colors.css` |
 | 13 componentes com contrato de API completo em `.prompt.md` (LeitoCard, VitalStat, ProblemRow, GravityBadge, TherapyBadge…) | `SASI-DESING.../sasi-design-system/` |
-| Convenção de conteúdo pt-BR: vetor ↑/↓/= no problema ativo, conduta sempre com meta numérica | `SASI-DESING.../sasi-design-system/readme.md` |
+| Convenção de conteúdo pt-BR: conduta sempre com meta numérica | `SASI-DESING.../sasi-design-system/readme.md` — **a parte deste arquivo que pede "vetor ↑/↓/=" está REVOGADA**, ver o conflito abaixo |
 
 ## 5. Já resolvido no v3 — não migrar
 

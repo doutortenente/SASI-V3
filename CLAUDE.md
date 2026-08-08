@@ -60,6 +60,8 @@ Proposta de reabrir fase riscada é retrabalho: a decisão já foi tomada e est�
 - Estado de servidor = TanStack Query · estado de UI = Zustand. Não misturar.
 - shadcn/ui: `pnpm dlx shadcn@latest add <comp>` → `src/components/ui/` (gerado, fora do lint).
 - Sinais vitais sempre Máx–Mín · leito no formato `UTI#-L##` · granularidade de tempo = o plantão (`ts::date`).
+- **Seta ↑ ↓ é proibida em texto clínico.** A direção vai em palavra: "lactato em queda",
+  "creatinina subindo", "PAM estável". Vale para código, comentário, doc e qualquer texto gerado pelo app.
 - `_material/` e `**/amostras/` têm dado real de paciente e estão fora do git. Não copiar de lá para `src/`
   nem para `tests/` — fixture de teste é sintética.
 
