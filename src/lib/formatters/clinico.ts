@@ -99,6 +99,28 @@ export function rotuloInfusao(inf: InfusaoOuTexto): string {
   return `${droga} ${SEM_DADO}`;
 }
 
+/**
+ * Data curta de quando o dado foi lançado, com a idade em dias.
+ *
+ * Existe porque droga vasoativa sem data mente por omissão: "Noradrenalina
+ * 0,3" numa tela de comando é lido como "está correndo AGORA". Se a última
+ * evolução é de 7 dias atrás, é história, não conduta atual.
+ *
+ * `agoraISO` entra por parâmetro para a função ser pura e testável.
+ */
+export function dataComIdade(iso: string | null | undefined, agoraISO: string): string {
+  if (!iso) return SEM_DADO;
+  const t = new Date(iso).getTime();
+  const agora = new Date(agoraISO).getTime();
+  if (!Number.isFinite(t) || !Number.isFinite(agora)) return SEM_DADO;
+
+  const dia = new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+  const dias = Math.floor((agora - t) / 86_400_000);
+  if (dias <= 0) return `${dia} (hoje)`;
+  if (dias === 1) return `${dia} (ontem)`;
+  return `${dia} (há ${dias} dias)`;
+}
+
 /** Classe de cor do semáforo. Token do tema — jamais hex em componente. */
 export const CLASSE_SEMAFORO: Record<SeveridadeVisual, string> = {
   red: 'bg-semaforo-red',
