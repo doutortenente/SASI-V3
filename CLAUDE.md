@@ -97,10 +97,34 @@ enum nativo, `save_ficha` na versão de produção, extensões fora do `public`.
 pontos — tipos gerados batendo com o schema, e `save_ficha` gravando (evolução, pendência, enums e array,
 testado com paciente sintético e revertido). `pnpm check` verde e `pnpm build` compilando.
 
+### Faxina do banco (08-ago-2026) — avisos de desempenho: 204 → 22
+
+Duas migrations aplicadas no banco vivo, com volta atrás escrita em
+`supabase/migrations/rollback/20260808_restaura_policies_de_dono.sql`:
+
+- **12 policies de dono removidas** das 9 tabelas que têm `dev_bypass` (`20260808121730`). Estavam dormentes de
+  fato, não por suposição: os 15 pacientes têm `user_id` null (15 de 15), então `auth.uid() = user_id` nunca era
+  verdadeiro. Policy permissiva é aditiva (OR); com `dev_bypass` (`using true`) do outro lado, remover não muda
+  o acesso. Resultado medido: `multiple_permissive_policies` 180 → **0**, acesso idêntico (9 leitos no painel,
+  15 pacientes, 16 evoluções, 335 eventos, 55 pendências antes e depois).
+  **Preservados:** as 4 policies de `memorias` (não tem `dev_bypass` — apagar trancaria a tabela),
+  `evento_tipo_ref_read`, as 11 `dev_bypass` e a RLS ligada nas 13 tabelas.
+- **Índice duplicado removido** (`20260808121654`): `idx_eventos_user` era idêntico a
+  `idx_eventos_clinicos_user_id` — mesma tabela, mesma coluna, mesmo btree.
+
+Os 22 avisos restantes são todos INFO e ficam de propósito: 20 são "índice nunca usado" (o app ainda não
+existe para usá-los — apagar seria remover a estrada porque não passou carro) e 2 são "FK sem índice" em
+tabelas de 25 e 3 linhas, onde o planejador varre tudo e ignora índice.
+
 ### Aberto
 
-1. `evolucoes` carrega os dois modelos de conduta ao mesmo tempo (`text[]` e jsonb) — duplicação herdada do v2.
-2. As 17 policies de dono estão **dormentes** (sem login, `auth.uid()` é null): custam 180 avisos de desempenho
-   e não protegem nada. Apagar seria ganho puro — **aguarda ordem do operador, não fazer por conta própria**.
+1. `evolucoes` tem as duas gavetas de conduta no schema (`text[]` e jsonb), mas **só uma está em uso**:
+   7 evoluções usam `conduta` (`text[]`) e **zero** usam `condutas_sistemas` (jsonb). Medido em 08-ago.
+   A duplicação é de molde, não de dado — o custo de unificar é menor do que a nota antiga sugeria.
+2. **SOFA não é calculado em nenhuma evolução: 0 de 16 têm `sofa_total`.** O bloqueio é de dado a montante
+   (bilirrubina e PaO2/FiO2 nunca capturadas), não de código. A tela mostra "—" e nunca inventa.
 3. Motor de SOFA/Sepsis-3 em TypeScript e as regras de tendência — a peça existe no material
    (ver `docs/INVENTARIO-MATERIAL.md` §1).
+4. 19 eventos na fila `vw_eventos_pendentes_revisao` (confiança abaixo de 0,7) aguardando revisão humana.
+5. `repo_index.categorias` é uma view SECURITY DEFINER (único ERRO do advisor de segurança). Vem do script de
+   índice do workspace, não do schema clínico — resolver no script que a cria, não aqui.
