@@ -7,13 +7,14 @@ import 'server-only';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
-// TODO(gen:types): após aplicar a migration no banco, rodar `pnpm gen:types`
-// e tipar com createServerClient<Database>.
+import type { Database } from '@/types/supabase';
+
+// `<Database>` = o cliente passa a conhecer tabelas, colunas e enums do banco.
 export async function getSupabaseServer() {
   const cookieStore = await cookies();
-  return createServerClient(
+  return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
       cookies: {
         getAll: () => cookieStore.getAll(),

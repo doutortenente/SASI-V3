@@ -25,15 +25,20 @@ Node 24 via nvm (`.nvmrc`). Gerenciador: **pnpm** (o v2 usa npm — não confund
 
 ## Escopo fechado — não reabrir
 
-O operador riscou do roadmap, em `plano-sasi-V3.2` (linhas 42-56 e 297-314):
+| O quê | Situação |
+|---|---|
+| **Login e RLS de produção** | **riscado** — não propor tela de login nem fluxo de autenticação |
+| **OCR dentro do app** | **riscado** — a extração continua fora, por skill |
+| **FHIR** | **riscado** — o mapa FHIR fica arquivado em `PLANO-SASI-v3.md §5` |
 
-| Fase | O quê | Situação |
-|---|---|---|
-| F3 | login e RLS de produção | **riscada** — não propor tela de login nem fluxo de autenticação |
-| F4 | OCR dentro do app | **riscada** — a extração continua fora, por skill |
-| F5 | FHIR | **riscada** — o mapa FHIR fica arquivado em `PLANO-SASI-v3.md §5` |
+**Motivo do login estar riscado, nas palavras do operador (08-ago-2026): "só eu uso essa merda de aplicativo".**
+Um usuário, uso solo. A `dev_bypass` fica ativa **de propósito**, e as policies de dono ficam dormentes.
+Segurança multiusuário aqui é teatro — não reportar como defeito, não propor remover a `dev_bypass`.
 
-Proposta de reabrir fase riscada é retrabalho: a decisão já foi tomada e está registrada.
+⚠️ **Cuidado com o número da fase.** Dois documentos numeram diferente e se contradizem: aqui o login era "F3,
+riscada", e `docs/AUDITORIA-E-PLANO.md:81` (mais recente) lista login dentro da **F1**, como fase ativa. Uma
+sessão já travou o trabalho do operador três vezes citando a numeração errada. **Vale a decisão acima, não o
+número.** Na dúvida, pergunte — não bloqueie.
 
 ## Mapa
 
@@ -46,7 +51,7 @@ Proposta de reabrir fase riscada é retrabalho: a decisão já foi tomada e est�
 | `src/stores/` | estado de UI (Zustand). Estado vindo do banco NÃO mora aqui |
 | `src/types/` | `clinical.ts` (à mão, dono dos contratos JSONB) · `supabase.ts` (gerado) · `index.ts` (porta) |
 | `src/styles/globals.css` | o tema inteiro (Tailwind 4 é CSS-first, via `@theme`) |
-| `supabase/migrations/` | schema v3: 13 tabelas, 14 enums, 7 views, 41 policies |
+| `supabase/migrations/` | schema **do zero** (13 tabelas, 14 enums, 7 views, 41 policies). **Não** é retrato do banco vivo |
 | `docs/` | `INVENTARIO-MATERIAL.md` (o que já existe) · `AUDITORIA-E-PLANO.md` (fases) |
 
 ## Regras técnicas
@@ -75,10 +80,27 @@ Proposta de reabrir fase riscada é retrabalho: a decisão já foi tomada e est�
 
 ## Estado
 
-F0 concluída: esqueleto, schema como migration e lógica clínica base com 11 testes passando.
+### YOU MUST: a migration não é o sistema
 
-Aberto, com a peça já existente no material (ver `docs/INVENTARIO-MATERIAL.md`):
+`supabase/migrations/20260807000000_schema_inicial_v3.sql` descreve um banco **do zero**. O banco **vivo**
+(`idswehsvvqczzkiatuzu`) está em produção desde 30-jul, com pacientes reais, e vai à frente do arquivo.
 
-1. `vw_sofa_diario` está só como comentário na migration (linha 752) — o motor de SOFA/dia não foi escrito.
-2. `alert_rules` e `trend_rules` nascem vazias: **nenhum alerta dispara**. As 25 regras com DOI existem no material.
-3. `evolucoes` carrega os dois modelos de conduta ao mesmo tempo (`text[]` e jsonb) — duplicação herdada do v2.
+**Antes de chamar qualquer coisa de defeito, consulte o banco.** Já foram reportadas como buraco, e nenhuma era:
+`vw_sofa_diario` "não escrita" (existe, 6.660 caracteres, omitida da migration de propósito), `alert_rules` e
+`trend_rules` "vazias" (25 e 3 regras ativas), `evento_tipo_ref` "sem doutrina" (56 códigos, 37 com faixa
+fisiológica, 5 com LOINC). Detalhe em `.claude/rules/supabase.md`.
+
+### F0 concluída (08-ago-2026)
+
+Esqueleto, lógica clínica base com 11 testes, e o modelo de dados aplicado no banco vivo: 16 colunas viraram
+enum nativo, `save_ficha` na versão de produção, extensões fora do `public`. Critério de aceite provado nos dois
+pontos — tipos gerados batendo com o schema, e `save_ficha` gravando (evolução, pendência, enums e array,
+testado com paciente sintético e revertido). `pnpm check` verde e `pnpm build` compilando.
+
+### Aberto
+
+1. `evolucoes` carrega os dois modelos de conduta ao mesmo tempo (`text[]` e jsonb) — duplicação herdada do v2.
+2. As 17 policies de dono estão **dormentes** (sem login, `auth.uid()` é null): custam 180 avisos de desempenho
+   e não protegem nada. Apagar seria ganho puro — **aguarda ordem do operador, não fazer por conta própria**.
+3. Motor de SOFA/Sepsis-3 em TypeScript e as regras de tendência — a peça existe no material
+   (ver `docs/INVENTARIO-MATERIAL.md` §1).
