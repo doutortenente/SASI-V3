@@ -53,9 +53,16 @@ export default async function WarRoomPage() {
       </header>
 
       <main className="mx-auto max-w-[1600px] p-4 sm:p-6">
-        <section aria-label="Resumo da unidade" className="mb-6">
+        <section aria-label="Resumo do plantão" className="mb-6">
+          {/*
+            A contagem é do PLANTÃO, não da unidade: o operador assume 6 a 12
+            pacientes, não os 33 leitos do serviço. Uma tentativa de desenhar a
+            planta inteira foi descartada por isso — leito que ele não assumiu
+            não está "vago", está fora do sistema, e pintar de vago seria
+            afirmar uma coisa que a tela não sabe.
+          */}
           <dl className="flex flex-wrap gap-2">
-            <StatPill rotulo="Ocupados" valor={leitos.length} />
+            <StatPill rotulo="Pacientes" valor={leitos.length} />
             <StatPill rotulo="Críticos" valor={criticos} tom={criticos > 0 ? 'critico' : 'neutro'} />
             <StatPill rotulo="Instáveis" valor={instaveis} tom={instaveis > 0 ? 'instavel' : 'neutro'} />
             <StatPill
