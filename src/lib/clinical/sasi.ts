@@ -31,6 +31,33 @@ export function foraDaFaixa(valor: number, ref: Pick<EventoTipoRef, 'faixa_min' 
   return false;
 }
 
+// ---------------------------------------------------------------------------
+// Semáforo exibido: por que a tela NÃO confia na coluna `severidade_visual`
+// ---------------------------------------------------------------------------
+// O gatilho sync_severidade_visual só recalcula o semáforo quando a gravidade
+// muda E o semáforo NÃO foi tocado na mesma operação — para respeitar ajuste
+// manual. Efeito colateral: quem grava gravidade e semáforo juntos (a ingestão
+// faz isso) consegue deixar os dois em desacordo, e o valor errado fica.
+//
+// Medido no banco vivo em 08-ago-2026: 6 pacientes com semáforo contradizendo
+// a gravidade, 1 deles ATIVO — crítico pintado de verde na tela de comando.
+//
+// Decisão: a tela deriva o semáforo da gravidade (fonte primária, escrita pelo
+// médico) e SINALIZA o desacordo. Não corrige o banco: "flags gritam, não
+// consertam" — quem decide dado clínico é o médico, não a tela.
+
+type LinhaSemaforo = Pick<VwDashboardUti, 'gravidade' | 'severidade_visual'>;
+
+/** O semáforo que a tela deve pintar: sempre derivado da gravidade. */
+export function semaforoDe(row: Pick<VwDashboardUti, 'gravidade'>): SeveridadeVisual {
+  return severidadeVisualDe(row.gravidade);
+}
+
+/** true quando o semáforo guardado no banco discorda do derivado da gravidade. */
+export function semaforoDivergente(row: LinhaSemaforo): boolean {
+  return row.severidade_visual !== semaforoDe(row);
+}
+
 export type Acuidade = 'CRITICO' | 'INSTAVEL' | 'VIGILANCIA' | 'ESTAVEL';
 
 type LinhaTriagem = Pick<
@@ -53,6 +80,40 @@ export function triagem<T extends LinhaTriagem>(rows: T[]): Array<T & { acuidade
   return rows
     .map((r) => ({ ...r, acuidade: acuidadeDe(r) }))
     .sort((a, b) => RANK[a.acuidade] - RANK[b.acuidade]);
+}
+
+/** O que a triagem do War Room acrescenta a cada linha da view. */
+export interface TriadoParaGrade {
+  /** Semáforo a pintar — derivado da gravidade, não lido da coluna. */
+  semaforo: SeveridadeVisual;
+  /** A coluna `severidade_visual` do banco discorda do derivado. */
+  divergenciaDeSemaforo: boolean;
+  acuidade: Acuidade;
+}
+
+/**
+ * Triagem do War Room: deriva o semáforo da gravidade, calcula a acuidade sobre
+ * esse valor derivado (e não sobre a coluna, que pode estar em desacordo),
+ * sinaliza o desacordo e ordena o mais grave primeiro.
+ *
+ * Empate de acuidade desempata por leito, para a grade não dançar entre
+ * carregamentos — leito trocando de lugar na tela de comando é erro de leitura
+ * esperando acontecer.
+ */
+export function triagemDeLeitos<T extends LinhaSemaforo & LinhaTriagem & { leito: string }>(
+  rows: T[],
+): Array<T & TriadoParaGrade> {
+  return rows
+    .map((r) => {
+      const semaforo = semaforoDe(r);
+      return {
+        ...r,
+        semaforo,
+        divergenciaDeSemaforo: r.severidade_visual !== semaforo,
+        acuidade: acuidadeDe({ ...r, severidade_visual: semaforo }),
+      };
+    })
+    .sort((a, b) => RANK[a.acuidade] - RANK[b.acuidade] || a.leito.localeCompare(b.leito));
 }
 
 /** Dias de terapia de ATB (D-day), igual à view vw_dias_atb_ativo. */

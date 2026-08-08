@@ -6,7 +6,7 @@
  * Consultar as 4 tabelas separado e juntar no navegador seria mais lento e daria
  * resultado inconsistente (cada consulta chega num instante diferente).
  */
-import type { Acuidade } from '@/lib/clinical/sasi';
+import type { TriadoParaGrade } from '@/lib/clinical/sasi';
 import type {
   Dispositivos,
   Gravidade,
@@ -17,10 +17,15 @@ import type {
   VwDashboardUti,
 } from '@/types';
 
-/** Uma linha da grade de leitos, já triada. */
-export interface LeitoNaGrade extends VwDashboardUti {
-  acuidade: Acuidade;
-}
+/**
+ * Uma linha da grade de leitos, já triada.
+ *
+ * `TriadoParaGrade` acrescenta `semaforo` (derivado da gravidade),
+ * `divergenciaDeSemaforo` (a coluna do banco discorda) e `acuidade`.
+ * O card pinta `semaforo`, NÃO `severidade_visual` — ver o comentário em
+ * `lib/clinical/sasi.ts`, seção "Semáforo exibido".
+ */
+export interface LeitoNaGrade extends VwDashboardUti, TriadoParaGrade {}
 
 /** Filtro da grade. Todo campo é opcional: ausente = não filtra. */
 export interface FiltroLeitos {
