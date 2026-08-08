@@ -2,7 +2,7 @@
 
 > Rebuild do SASI — menos bagunça, mais código.
 
-Sistema de Apoio à Situação Intensiva. Dashboard de plantão para UTI de 33 leitos:
+Sistema de Apoio à Situação Intensiva. Dashboard de plantão para UTI de 34 leitos:
 grid de leitos por acuidade, evolução por sistemas, SOFA/Sepsis-3, stewardship de
 antimicrobiano e passagem de plantão.
 

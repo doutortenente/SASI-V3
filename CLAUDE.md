@@ -1,6 +1,8 @@
 # SASI v3
 
-Dashboard de UTI, 33 leitos (UTI2 12 · UTI3 13 · UTI4 8). Next.js 16 + TypeScript 6 + Tailwind 4 + Supabase.
+Dashboard de UTI, 34 leitos (UTI2 13 · UTI3 13 · UTI4 8 — a UTI 2 ganhou o L13 em ago-2026).
+O operador assume de 6 a 12 pacientes por plantão, não a unidade inteira: contagem de tela é do
+PLANTÃO, não do serviço. Next.js 16 + TypeScript 6 + Tailwind 4 + Supabase.
 Substitui o SASI v2, que está em produção em `sasi-uti.vercel.app`.
 Operador: médico intensivista, iniciante em programação, dislexia — todo termo de dev leva tradução de 1 linha.
 
