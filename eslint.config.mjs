@@ -13,6 +13,10 @@ export default tseslint.config(
       '.next/**',
       'node_modules/**',
       '_material/**',
+      // Worktree = cópia de trabalho paralela do repo, criada dentro de `.claude/`.
+      // Sem esta linha o lint varre o `node_modules` e o `.next` da cópia (12.612
+      // arquivos medidos em 08-ago-2026) e reporta milhares de erros que não são nossos.
+      '.claude/**',
       'next-env.d.ts',
       'src/types/supabase.ts', // gerado pelo Supabase — não editar na mão
       'src/components/ui/**', // gerado pelo shadcn/ui

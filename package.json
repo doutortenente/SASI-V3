@@ -3,9 +3,9 @@
   "version": "3.0.0",
   "private": true,
   "type": "module",
-  "description": "SASI v3 — dashboard de UTI. Next.js App Router + Supabase. Zero alucinação: dado sem fonte é null.",
+  "description": "SASI v3 — painel de plantão de UTI. Next.js App Router + Supabase. Zero alucinação: dado sem fonte é null.",
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=24.0.0"
   },
   "packageManager": "pnpm@11.20.0",
   "scripts": {

@@ -1,4 +1,4 @@
-import type { NextConfig } from 'next';
+import type {NextConfig} from 'next';
 
 /**
  * Configuração do Next.js 16.
@@ -7,31 +7,31 @@ import type { NextConfig } from 'next';
  *   Numa UTI, link quebrado é tempo perdido à beira-leito.
  */
 const nextConfig: NextConfig = {
-  reactStrictMode: true,
+    reactStrictMode: true,
 
-  // Rotas viram tipos: <Link href="/leito/999"> só compila se a rota existir.
-  typedRoutes: true,
+    // Rotas viram tipos: <Link href="/leito/999"> só compila se a rota existir.
+    typedRoutes: true,
 
-  typescript: {
-    // Build QUEBRA se houver erro de tipo. Nunca ligar isso pra "destravar deploy".
-    // (No Next 16 o lint saiu do build — roda separado via `pnpm lint`.)
-    ignoreBuildErrors: false,
-  },
+    typescript: {
+        // Build QUEBRA se houver erro de tipo. Nunca ligar isso pra "destravar deploy".
+        // (No Next 16 o lint saiu do build — roda separado via `pnpm lint`.)
+        ignoreBuildErrors: false,
+    },
 
-  // Cabeçalhos de segurança: dado clínico não pode ser embutido em site de terceiro.
-  async headers() {
-    return [
-      {
-        source: '/:path*',
-        headers: [
-          { key: 'X-Frame-Options', value: 'DENY' },
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
-        ],
-      },
-    ];
-  },
+    // Cabeçalhos de segurança: dado clínico não pode ser embutido em site de terceiro.
+    async headers() {
+        return [
+            {
+                source: '/:path*',
+                headers: [
+                    {key: 'X-Frame-Options', value: 'DENY'},
+                    {key: 'X-Content-Type-Options', value: 'nosniff'},
+                    {key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin'},
+                    {key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()'},
+                ],
+            },
+        ];
+    },
 };
 
 export default nextConfig;

@@ -2,7 +2,10 @@
   "mcpServers": {
     "next-devtools": {
       "command": "npx",
-      "args": ["-y", "next-devtools-mcp@latest"]
+      "args": [
+        "-y",
+        "next-devtools-mcp@latest"
+      ]
     },
     "supabase": {
       "command": "npx",
@@ -14,6 +17,10 @@
       "env": {
         "SUPABASE_ACCESS_TOKEN": "${SUPABASE_SECRET_KEY}"
       }
+    },
+    "webstorm": {
+      "url": "http://127.0.0.1:64542/stream",
+      "type": "http"
     }
   }
 }

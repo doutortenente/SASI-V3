@@ -13,11 +13,11 @@
 
 /** Resultado de uma leitura que pode não dar certo. `null` = não dá para saber. */
 export interface Medida {
-  valor: number | null;
-  /** Aviso para a tela quando a leitura foi ambígua ou suspeita. */
-  aviso?: string | undefined;
-  /** O texto original, para o médico conferir contra a fonte. */
-  original: string;
+    valor: number | null;
+    /** Aviso para a tela quando a leitura foi ambígua ou suspeita. */
+    aviso?: string | undefined;
+    /** O texto original, para o médico conferir contra a fonte. */
+    original: string;
 }
 
 /**
@@ -30,29 +30,29 @@ export interface Medida {
  * Sem essa regra, "1.2" (digitado em inglês) viraria 12.
  */
 export function parseNumeroBR(bruto: string | number | null | undefined): number | null {
-  if (bruto === null || bruto === undefined) return null;
-  if (typeof bruto === 'number') return Number.isFinite(bruto) ? bruto : null;
+    if (bruto === null || bruto === undefined) return null;
+    if (typeof bruto === 'number') return Number.isFinite(bruto) ? bruto : null;
 
-  const s = bruto.trim();
-  if (s === '') return null;
+    const s = bruto.trim();
+    if (s === '') return null;
 
-  // Tira tudo que não é dígito, vírgula, ponto ou sinal (unidades coladas, "≈", etc).
-  const limpo = s.replace(/[^\d,.\-+]/g, '');
-  if (limpo === '' || limpo === '-' || limpo === '+') return null;
+    // Tira tudo que não é dígito, vírgula, ponto ou sinal (unidades coladas, "≈", etc).
+    const limpo = s.replace(/[^\d,.\-+]/g, '');
+    if (limpo === '' || limpo === '-' || limpo === '+') return null;
 
-  let normalizado: string;
-  if (limpo.includes(',')) {
-    // Tem vírgula: ela é o decimal, e todo ponto é milhar.
-    normalizado = limpo.replace(/\./g, '').replace(',', '.');
-  } else if (/^[+-]?\d{1,3}(\.\d{3})+$/.test(limpo)) {
-    // Sem vírgula, mas com grupos de 3 depois de cada ponto: milhar. "113.000"
-    normalizado = limpo.replace(/\./g, '');
-  } else {
-    normalizado = limpo;
-  }
+    let normalizado: string;
+    if (limpo.includes(',')) {
+        // Tem vírgula: ela é o decimal, e todo ponto é milhar.
+        normalizado = limpo.replace(/\./g, '').replace(',', '.');
+    } else if (/^[+-]?\d{1,3}(\.\d{3})+$/.test(limpo)) {
+        // Sem vírgula, mas com grupos de 3 depois de cada ponto: milhar. "113.000"
+        normalizado = limpo.replace(/\./g, '');
+    } else {
+        normalizado = limpo;
+    }
 
-  const n = Number(normalizado);
-  return Number.isFinite(n) ? n : null;
+    const n = Number(normalizado);
+    return Number.isFinite(n) ? n : null;
 }
 
 /**
@@ -68,26 +68,26 @@ export function parseNumeroBR(bruto: string | number | null | undefined): number
  * grandeza — e AVISA quando o palpite cai na zona ambígua.
  */
 export function coercePlaquetas(
-  bruto: string | number | null | undefined,
-  unidadeDeclarada?: '×10³/µL' | '/µL',
+    bruto: string | number | null | undefined,
+    unidadeDeclarada?: '×10³/µL' | '/µL',
 ): Medida {
-  const original = String(bruto ?? '');
-  const n = parseNumeroBR(bruto);
-  if (n === null || n <= 0) return { valor: null, original };
+    const original = String(bruto ?? '');
+    const n = parseNumeroBR(bruto);
+    if (n === null || n <= 0) return {valor: null, original};
 
-  if (unidadeDeclarada === '×10³/µL') return { valor: n, original };
-  if (unidadeDeclarada === '/µL') return { valor: n / 1000, original };
+    if (unidadeDeclarada === '×10³/µL') return {valor: n, original};
+    if (unidadeDeclarada === '/µL') return {valor: n / 1000, original};
 
-  // Sem unidade declarada: decidir pela ordem de grandeza.
-  // Plaqueta humana vai de ~2 a ~2000 ×10³/µL, ou ~2.000 a ~2.000.000 /µL.
-  if (n >= 1000) return { valor: n / 1000, original };
-  if (n <= 2000) return { valor: n, original };
+    // Sem unidade declarada: decidir pela ordem de grandeza.
+    // Plaqueta humana vai de ~2 a ~2000 ×10³/µL, ou ~2.000 a ~2.000.000 /µL.
+    if (n >= 1000) return {valor: n / 1000, original};
+    if (n <= 2000) return {valor: n, original};
 
-  return {
-    valor: null,
-    original,
-    aviso: `Plaquetas "${original}" sem unidade e fora das duas faixas plausíveis — confirmar se é /µL ou ×10³/µL`,
-  };
+    return {
+        valor: null,
+        original,
+        aviso: `Plaquetas "${original}" sem unidade e fora das duas faixas plausíveis — confirmar se é /µL ou ×10³/µL`,
+    };
 }
 
 /**
@@ -98,21 +98,21 @@ export function coercePlaquetas(
  * em insuficiência respiratória grave em SOFA respiratório zero.
  */
 export function coerceFiO2(bruto: string | number | null | undefined): Medida {
-  const original = String(bruto ?? '');
-  const n = parseNumeroBR(bruto);
-  if (n === null || n <= 0) return { valor: null, original };
+    const original = String(bruto ?? '');
+    const n = parseNumeroBR(bruto);
+    if (n === null || n <= 0) return {valor: null, original};
 
-  // Fração: 0,21 a 1,0 -> vira percentual.
-  if (n > 0 && n <= 1) return { valor: n * 100, original };
+    // Fração: 0,21 a 1,0 -> vira percentual.
+    if (n > 0 && n <= 1) return {valor: n * 100, original};
 
-  if (n >= 21 && n <= 100) return { valor: n, original };
+    if (n >= 21 && n <= 100) return {valor: n, original};
 
-  // Abaixo de 21% não existe em ar respirável; acima de 100% não existe.
-  return {
-    valor: null,
-    original,
-    aviso: `FiO2 "${original}" fora da faixa possível (21% a 100%, ou fração de 0,21 a 1,0)`,
-  };
+    // Abaixo de 21% não existe em ar respirável; acima de 100% não existe.
+    return {
+        valor: null,
+        original,
+        aviso: `FiO2 "${original}" fora da faixa possível (21% a 100%, ou fração de 0,21 a 1,0)`,
+    };
 }
 
 /**
@@ -124,45 +124,45 @@ export function coerceFiO2(bruto: string | number | null | undefined): Medida {
  * não medida.
  */
 export interface DebitoUrinario {
-  mlPorKgPorHora: number | null;
-  mlEm24h: number | null;
-  /** true quando o volume de 24 h veio de extrapolação, não de coleta completa. */
-  extrapolado: boolean;
-  aviso?: string | undefined;
+    mlPorKgPorHora: number | null;
+    mlEm24h: number | null;
+    /** true quando o volume de 24 h veio de extrapolação, não de coleta completa. */
+    extrapolado: boolean;
+    aviso?: string | undefined;
 }
 
 export function calcularDebitoUrinario(
-  volumeMl: string | number | null | undefined,
-  pesoKg: string | number | null | undefined,
-  horas: string | number | null | undefined,
+    volumeMl: string | number | null | undefined,
+    pesoKg: string | number | null | undefined,
+    horas: string | number | null | undefined,
 ): DebitoUrinario {
-  const vol = parseNumeroBR(volumeMl);
-  const peso = parseNumeroBR(pesoKg);
-  const h = parseNumeroBR(horas);
+    const vol = parseNumeroBR(volumeMl);
+    const peso = parseNumeroBR(pesoKg);
+    const h = parseNumeroBR(horas);
 
-  if (vol === null || vol < 0 || h === null || h <= 0) {
-    return { mlPorKgPorHora: null, mlEm24h: null, extrapolado: false };
-  }
+    if (vol === null || vol < 0 || h === null || h <= 0) {
+        return {mlPorKgPorHora: null, mlEm24h: null, extrapolado: false};
+    }
 
-  const mlEm24h = Math.round((vol / h) * 24);
-  const extrapolado = h < 24;
+    const mlEm24h = Math.round((vol / h) * 24);
+    const extrapolado = h < 24;
 
-  if (peso === null || peso <= 0) {
+    if (peso === null || peso <= 0) {
+        return {
+            mlPorKgPorHora: null,
+            mlEm24h,
+            extrapolado,
+            aviso: 'Sem peso: volume de 24 h calculado, mas mL/kg/h não — peso não se estima',
+        };
+    }
+
+    const mlPorKgPorHora = Math.round((vol / peso / h) * 100) / 100;
     return {
-      mlPorKgPorHora: null,
-      mlEm24h,
-      extrapolado,
-      aviso: 'Sem peso: volume de 24 h calculado, mas mL/kg/h não — peso não se estima',
+        mlPorKgPorHora,
+        mlEm24h,
+        extrapolado,
+        aviso: extrapolado
+            ? `Coleta de ${h} h projetada para 24 h — o valor diário é estimativa, não medida`
+            : undefined,
     };
-  }
-
-  const mlPorKgPorHora = Math.round((vol / peso / h) * 100) / 100;
-  return {
-    mlPorKgPorHora,
-    mlEm24h,
-    extrapolado,
-    aviso: extrapolado
-      ? `Coleta de ${h} h projetada para 24 h — o valor diário é estimativa, não medida`
-      : undefined,
-  };
 }

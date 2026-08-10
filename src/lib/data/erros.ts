@@ -12,19 +12,19 @@
  * a exceção sobe até `app/error.tsx` e a tela mostra a falha, não um vazio.
  */
 export class FalhaDeLeitura extends Error {
-  readonly fonte: string;
-  readonly causaOriginal: string | undefined;
+    readonly fonte: string;
+    readonly causaOriginal: string | undefined;
 
-  constructor(fonte: string, causaOriginal?: string) {
-    super(
-      `Falha ao ler ${fonte} do banco. A tela NÃO tem dado para mostrar — ` +
-        `isto não significa que o dado não existe.` +
-        (causaOriginal ? ` Causa: ${causaOriginal}` : ''),
-    );
-    this.name = 'FalhaDeLeitura';
-    this.fonte = fonte;
-    this.causaOriginal = causaOriginal;
-  }
+    constructor(fonte: string, causaOriginal?: string) {
+        super(
+            `Falha ao ler ${fonte} do banco. A tela NÃO tem dado para mostrar — ` +
+            `isto não significa que o dado não existe.` +
+            (causaOriginal ? ` Causa: ${causaOriginal}` : ''),
+        );
+        this.name = 'FalhaDeLeitura';
+        this.fonte = fonte;
+        this.causaOriginal = causaOriginal;
+    }
 }
 
 /**
@@ -35,10 +35,10 @@ export class FalhaDeLeitura extends Error {
  * Array vazio é resultado LEGÍTIMO: "nenhum leito ocupado" é um fato.
  */
 export function exigirDado<T>(
-  resposta: { data: T | null; error: { message: string } | null },
-  fonte: string,
+    resposta: { data: T | null; error: { message: string } | null },
+    fonte: string,
 ): T {
-  if (resposta.error) throw new FalhaDeLeitura(fonte, resposta.error.message);
-  if (resposta.data === null || resposta.data === undefined) throw new FalhaDeLeitura(fonte);
-  return resposta.data;
+    if (resposta.error) throw new FalhaDeLeitura(fonte, resposta.error.message);
+    if (resposta.data === null || resposta.data === undefined) throw new FalhaDeLeitura(fonte);
+    return resposta.data;
 }

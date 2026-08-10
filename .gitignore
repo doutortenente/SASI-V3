@@ -39,3 +39,10 @@ supabase/.env
 
 # worktrees locais — nunca versionados
 .claude/worktrees/
+
+# ---- DADO REAL DE PACIENTE — nunca entra no git (repo é PÚBLICO) ----
+# `_material/` tem 327 arquivos do v1/v2; 3 deles (em **/amostras/) têm nome,
+# prontuário, leito e prescrição de paciente real.
+_material/
+**/amostras/
+90-PHI-LOCAL/
