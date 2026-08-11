@@ -1,17 +1,32 @@
-# SASI v3
+# SASI V4
 
 Painel de plantão de UTI. Next.js 16 · React 19 · TypeScript 6 · Tailwind 4 · Supabase.
-Substitui o v2, hoje em produção em `sasi-uti.vercel.app`.
 
 Quem usa: **um** médico intensivista, sozinho, em plantão noturno. Iniciante em programação,
 dislexia — todo termo de dev leva tradução de 1 linha na primeira vez que aparece.
 
+Desenho completo, com o porquê de cada decisão: **`docs/ARQUITETURA.md`**. Leia antes de propor
+estrutura nova.
+
+## Por que o V4 existe
+
+A dor não é "ver os leitos". É **escrever a evolução e passar o plantão** — hoje feito duas
+vezes: rabiscado no papel à beira do leito, transcrito no fim do turno.
+
+**O V4 existe para matar o papel.** Funcionalidade que não serve a isso é acessória e espera.
+
+| #   | Tela            | O que faz                                                          | Onde                      |
+| --- | --------------- | ------------------------------------------------------------------ | ------------------------- |
+| 1   | **Meu plantão** | Seus pacientes: leito, o que tem, o que mudou, o que está pendente | Tela grande e celular     |
+| 2   | **Captura**     | Registra vital, evento, conduta, pendência. Poucos toques, uma mão | Celular, andando          |
+| 3   | **Fechamento**  | Monta a evolução e a passagem, para revisar e copiar               | Tela grande, fim do turno |
+
 ## Os dois números que mais confundem
 
-| | |
-|---|---|
-| O serviço tem | **34 leitos** — UTI 2 com 13, UTI 3 com 13, UTI 4 com 8 |
-| Ele assume por plantão | **6 a 12 pacientes**, nunca a unidade inteira |
+|                        |                                                         |
+| ---------------------- | ------------------------------------------------------- |
+| O serviço tem          | **34 leitos** — UTI 2 com 13, UTI 3 com 13, UTI 4 com 8 |
+| Ele assume por plantão | **6 a 12 pacientes**, nunca a unidade inteira           |
 
 Toda contagem de tela e de passagem é do **plantão dele**, não do serviço. Tela que desenha os
 34 leitos e pinta de "vago" o que não está no banco está mentindo: aquele leito não está vago,
@@ -19,43 +34,63 @@ está fora do sistema dele.
 
 ## Vetado — não propor de novo
 
-| O quê | Situação |
-|---|---|
-| **SBAR** e formato de passagem importado de fora | vetado pelo operador |
-| **Login e RLS de produção** | riscado — uso solo, "só eu uso essa merda de aplicativo" |
-| **OCR dentro do app** | riscado — a extração continua fora, por skill |
-| **FHIR** | riscado |
-| **`tailwind.config.ts`** | não existe no Tailwind 4 — o tema mora em `globals.css` |
+| O quê                                            | Situação                                                 |
+| ------------------------------------------------ | -------------------------------------------------------- |
+| **SBAR** e formato de passagem importado de fora | vetado pelo operador                                     |
+| **Login e RLS de produção**                      | riscado — uso solo, "só eu uso essa merda de aplicativo" |
+| **OCR dentro do app**                            | riscado — a extração continua fora, por skill            |
+| **FHIR**                                         | riscado                                                  |
+| **`tailwind.config.ts`**                         | não existe no Tailwind 4 — o tema mora em `globals.css`  |
 
 A `dev_bypass` fica ligada **de propósito**. Não reportar como falha, não propor remover.
 
 ## Comandos
 
 ```bash
-pnpm dev        # Next 16 + Turbopack, porta 3000
-pnpm check      # typecheck + lint + teste — antes de todo commit
-pnpm build      # antes de considerar entrega pronta
+pnpm dev        # sobe o app em desenvolvimento, porta 3000
+pnpm check      # checagem de tipo + de estilo + testes — antes de todo commit
+pnpm build      # monta o app como vai para produção — antes de considerar entrega pronta
 pnpm gen:types  # regenera src/types/supabase.ts (só depois de aplicar migration)
+pnpm db:diff <nome>  # escreve nova migration a partir do que mudou no banco local
+pnpm db:push         # aplica as migrations pendentes no banco
 ```
 
 Node 24 (`.nvmrc`). Gerenciador **pnpm** — o v2 usa npm, não confundir os dois repos.
 
+Medido em 11-ago-2026: `pnpm test` = **126 testes em 6 arquivos**, todos passando (número de
+09-ago confirmado). `pnpm typecheck` **falha**: 5 erros, todos em
+`src/components/clinical/SystemPanel.tsx` — arquivo novo, ainda não commitado. Enquanto ele não
+fechar, `pnpm check` para aí. Não é regressão do que já estava no repo.
+
 ## Onde mora o quê
 
-| Pasta | Papel |
-|---|---|
-| `src/app/` | rotas (App Router): `/` war-room, `beds/`, `patients/`, `rounds/`, `api/` |
-| `src/features/<dominio>/` | um domínio por pasta: `components/`, `hooks/`, `services/`, `types.ts` |
-| `src/components/clinical/` · `core/` | peças de UI portadas do design system do v2 |
-| `src/components/ui/` | gerado pelo shadcn (`pnpm dlx shadcn@latest add <comp>`) — fora do lint |
-| `src/lib/clinical/` | cálculo clínico: função pura, com teste, fonte no cabeçalho |
-| `src/lib/supabase/` | `client.ts` (navegador) · `server.ts` · `realtime.ts` (ao vivo) |
-| `src/lib/formatters/` | texto clínico. Casa única — não redeclarar em componente |
-| `src/stores/` | estado de UI (Zustand). Dado vindo do banco NÃO mora aqui |
-| `src/types/` | `clinical.ts` (à mão) · `supabase.ts` (gerado — não editar) |
-| `src/styles/globals.css` | o tema inteiro — Tailwind 4 é CSS-first |
-| `supabase/migrations/` | migrations. **Não** é retrato do banco vivo |
-| `tests/` | `unit/` (Vitest) · `e2e/` (Playwright) |
+| Pasta                                | Papel                                                                   |
+| ------------------------------------ | ----------------------------------------------------------------------- |
+| `src/app/`                           | rotas (App Router). Só a raiz existe — ver nota abaixo                  |
+| `src/features/<dominio>/`            | um domínio por pasta: `components/`, `hooks/`, `services/`, `types.ts`  |
+| `src/components/clinical/` · `core/` | peças de UI portadas do design system do v2                             |
+| `src/components/ui/`                 | gerado pelo shadcn (`pnpm dlx shadcn@latest add <comp>`) — fora do lint |
+| `src/lib/clinical/`                  | cálculo clínico: função pura, com teste, fonte no cabeçalho             |
+| `src/lib/supabase/`                  | `client.ts` (navegador) · `server.ts` · `realtime.ts` (ao vivo)         |
+| `src/lib/formatters/`                | texto clínico. Casa única — não redeclarar em componente                |
+| `src/lib/ai/`                        | casa reservada da geração de texto do Fechamento — **ainda não existe** |
+| `src/stores/`                        | estado de UI (Zustand). Dado vindo do banco NÃO mora aqui               |
+| `src/types/`                         | `clinical.ts` (à mão) · `supabase.ts` (gerado — não editar)             |
+| `src/styles/globals.css`             | o tema inteiro — Tailwind 4 é CSS-first                                 |
+| `supabase/migrations/`               | migrations. **Não** é retrato do banco vivo                             |
+| `tests/`                             | `unit/` (Vitest) · `e2e/` (Playwright, pasta ainda vazia)               |
+
+Medido em 11-ago-2026: `src/app/` tem só `page.tsx`, `layout.tsx` e `error.tsx` na raiz —
+nenhuma das 3 telas tem rota ainda. As pastas `beds/`, `patients/`, `rounds/`, `war-room/` e
+`api/` estão **vazias**: são nomes herdados do V3, não trabalho começado.
+
+Teste não mora todo em `tests/`: dos 6 arquivos, 5 ficam **ao lado do código** em `src/`
+(`sofa.test.ts` junto de `sofa.ts`). O Vitest varre `tests/unit/**` e `src/**/*.test.ts(x)` — os
+dois valem, mas teste de cálculo clínico vai junto do cálculo.
+
+`supabase/migrations/` tem 6 arquivos, todos de 08-ago-2026, prefixo `f0_` (a fase que adotou
+enums, criou `save_ficha_producao` e tirou as extensões do schema `public`). Nome no padrão
+`YYYYMMDDHHmmss_descricao.sql` — é o que `pnpm db:diff <nome>` gera.
 
 ## Regras que não se negociam
 
@@ -68,15 +103,43 @@ Node 24 (`.nvmrc`). Gerenciador **pnpm** — o v2 usa npm, não confundir os doi
   queda". Vale para código, comentário, doc e texto gerado pelo app.
 - Falha de leitura do banco **lança exceção**, nunca vira lista vazia. "Nenhum alerta" e "não
   consegui perguntar" são clinicamente opostos.
+- Texto gerado por IA é **rascunho revisável**. Nada vira registro definitivo sem o médico aprovar.
 - Sinal vital sempre Máx–Mín · leito no formato `UTI#-L##` · granularidade de tempo é o plantão.
 - Estado de servidor = TanStack Query · estado de UI = Zustand. Não misturar.
 - `any` e `console.log` são erro de lint. Import interno por `@/`. Tipo por `import type`.
 
+## Camada de IA — a fronteira (alvo, ainda não construído)
+
+Medido em 11-ago-2026: **nenhuma** dessas bibliotecas está no `package.json` — nem LangChain,
+nem LangGraph, nem AI SDK. A tabela abaixo é a divisão combinada para quando a camada nascer,
+não o estado de hoje.
+
+| Metade                  | Quem faz                                                    |
+| ----------------------- | ----------------------------------------------------------- |
+| Raciocínio, no servidor | LangChain / LangGraph                                       |
+| Ponte                   | adaptador oficial do AI SDK                                 |
+| Exibição, na tela       | AI SDK + AI Elements (`json-render` para a ficha revisável) |
+
+Raciocínio não vai para o AI SDK; exibição não vai para o LangChain. Os dois fazendo a mesma
+tarefa no mesmo arquivo é duplicação — o trabalho para e a fronteira é restabelecida.
+
 ## Variáveis de ambiente
 
 O código lê `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (formato novo
-de chave — medido em 08-ago-2026, 3 usos). A `ANON_KEY` legada existe no `.env.local` mas o app
-não a lê. Modelo completo com as 12 chaves: `.env.example`.
+de chave). A `ANON_KEY` legada existe no `.env.local` mas o app não a lê. Modelo completo:
+`.env.example`.
+
+**Este repositório é público.** O `.mcp.json` é versionado e não pode conter credencial — o
+conector do banco sobe por `~/projetos/scripts/sasi/mcp_supabase_wrapper.sh`, que carrega o cofre
+em tempo de execução. Duas chaves diferentes, confundidas com frequência:
+
+| Chave                   | O que é                      | Serve para                                    |
+| ----------------------- | ---------------------------- | --------------------------------------------- |
+| `SUPABASE_SECRET_KEY`   | chave do **projeto**         | o app ler e gravar no banco                   |
+| `SUPABASE_ACCESS_TOKEN` | token da **conta** (`sbp_…`) | o conector listar tabelas e aplicar migration |
+
+Só a primeira está no `.env.example`. O `SUPABASE_ACCESS_TOKEN` não aparece lá de propósito: ele
+mora no cofre `~/projetos/.env`, que o wrapper carrega na hora de subir o conector.
 
 ## Antes de criar arquivo, procure se ele já existe
 
@@ -90,22 +153,26 @@ público). Não copiar de lá para `src/` nem para `tests/` — fixture de teste
 ## O banco vivo vai à frente do repo
 
 Projeto `idswehsvvqczzkiatuzu`, em produção desde 30-jul com pacientes reais.
-**Antes de chamar qualquer coisa de defeito, consulte o banco.** Medido em 08-ago-2026:
+**Antes de chamar qualquer coisa de defeito, consulte o banco.** Medido em 09-ago-2026:
 
-|                             |                                                     |
-| --------------------------- | --------------------------------------------------- |
-| 13 tabelas · 8 views · 16   | policies de dono dormentes removidas na faxina      |
-| policies15 pacientes · 16   | de 08-ago                                           |
-| evoluções                   |                                                     |
-| `sofa_total`                | **0 de 16** — falta bilirrubina e PaO2/FiO2 a       |
-|                             | montante, não                                       |
-| preenchido                  | é falha de código                                   |
-| `alert_rules`               | 25 regras ativas (já foi reportada como "vazia", e  |
-|                             | não era)                                            |
+| Tabela             | Linhas |     | Tabela                                            | Linhas |
+| ------------------ | ------ | --- | ------------------------------------------------- | ------ |
+| `eventos_clinicos` | 335    |     | `ingest_audit_log`                                | 17     |
+| `evento_tipo_ref`  | 56     |     | `evolucoes`                                       | 16     |
+| `pendencias`       | 55     |     | `pacientes`                                       | 15     |
+| `alert_rules`      | 25     |     | `alerts_log`                                      | 14     |
+| `trend_rules`      | 3      |     | `atbs` · `culturas` · `antibiograma` · `memorias` | 0      |
 
-## Armadilhas de versão (medidas em 07-ago-2026 — não "atualizar" sem checar)
+13 tabelas, RLS ligada em todas. `alert_rules` tem 25 regras ativas — já foi reportada como
+"vazia", e não era. `sofa_total` não preenchido é falta de bilirrubina e PaO2/FiO2 a montante,
+não falha de código.
+
+## Armadilhas de versão (medidas — não "atualizar" sem checar)
 
 - **ESLint fica em 9.x** — `eslint-plugin-react` não roda no 10.
 - **TypeScript fica em 6.0.x** — `typescript-eslint` exige `<6.1`. `baseUrl` não existe mais.
 - **Tailwind 4 não tem arquivo de config** — árvore de pasta que pede um é de Tailwind 3.
-- **Next 16** — Turbopack é padrão, e a opção `eslint` saiu do `next.config.ts`.
+- **Next 16** — a opção `eslint` saiu do `next.config.ts`; o nome `middleware` foi aposentado
+  em favor de `proxy`.
+- Os templates de referência em `~/projetos/_templates/` estão **uma geração atrás** (Tailwind 3,
+  Next 15, React 18, TS 5). Deles vem a **forma**; as versões ficam nas que já sobem.
