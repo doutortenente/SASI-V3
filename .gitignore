@@ -40,6 +40,11 @@ supabase/.env
 # worktrees locais — nunca versionados
 .claude/worktrees/
 
+# ponte do agente — a ferramenta recria a pasta sozinha em toda sessão.
+# Entrou versionada por engano em 23bd741 e saiu do git em 11-ago-2026.
+# Segunda trava em eslint.config.mjs: os hooks .js dela quebravam o lint.
+.agentbridge/
+
 # ---- DADO REAL DE PACIENTE — nunca entra no git (repo é PÚBLICO) ----
 # `_material/` tem 327 arquivos do v1/v2; 3 deles (em **/amostras/) têm nome,
 # prontuário, leito e prescrição de paciente real.

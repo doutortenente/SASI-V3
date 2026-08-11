@@ -1,5 +1,11 @@
 # Auditoria técnica do material (`_material/`) e plano de organização no SASI v3
 
+> 🧊 **DOCUMENTO CONGELADO EM 07-ago-2026.** Vale como registro do que foi encontrado em `_material/`
+> naquele dia — a parte de inventário continua útil. **A parte de estado do repositório envelheceu:**
+> a árvore de pastas da seção 2, a contagem de testes e a numeração de fases da seção 3 não valem mais.
+> Fonte viva do estado é o `CLAUDE.md`; do banco, `.claude/rules/supabase.md`; de o que cada tela precisa
+> ler, `docs/MAPA-BANCO-TELAS.md`. Onde este documento discordar deles, ele está errado.
+
 Data: 07-ago-2026. Fonte: varredura completa por 3 agentes de reconhecimento + verificação direta.
 Números medidos, não estimados.
 
@@ -53,10 +59,13 @@ Números medidos, não estimados.
 
 **Contenção aplicada:** `_material/`, `**/amostras/` e `90-PHI-LOCAL/` estão no `.gitignore` — nada disso entra em commit. Regra no `AGENTS.md`: nunca copiar amostra pra `src/` ou `tests/`.
 
-## 2. Como o v3 está organizado (o que já é fato)
+## 2. Como o v3 estava organizado em 07-ago (superado — ver `CLAUDE.md`)
+
+O repositório se chamava `SASI-V3-SEM_MIGUE` e foi renomeado para **`SASI-V3`**. A árvore abaixo descreve
+`src/app/` com rotas que **não existem** (as pastas estão vazias) e conta 11 testes, hoje 126.
 
 ```
-SASI-V3-SEM_MIGUE/
+SASI-V3/
 ├── src/
 │   ├── app/            # rotas: / (war-room), beds/, patients/, rounds/, api/
 │   ├── features/       # 10 domínios: beds, patients, hemodynamics, sepsis,
