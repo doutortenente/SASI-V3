@@ -51,7 +51,7 @@ número.** Na dúvida, pergunte — não bloqueie.
 | `src/stores/` | estado de UI (Zustand). Estado vindo do banco NÃO mora aqui |
 | `src/types/` | `clinical.ts` (à mão, dono dos contratos JSONB) · `supabase.ts` (gerado) · `index.ts` (porta) |
 | `src/styles/globals.css` | o tema inteiro (Tailwind 4 é CSS-first, via `@theme`) |
-| `supabase/migrations/` | schema **do zero** (13 tabelas, 14 enums, 7 views, 41 policies). **Não** é retrato do banco vivo |
+| `supabase/migrations/` | só migration **realmente aplicada** no banco vivo, mesmo carimbo do banco (o schema do zero vive em `supabase/schema-referencia/`) |
 | `docs/` | `INVENTARIO-MATERIAL.md` (o que já existe) · `AUDITORIA-E-PLANO.md` (fases) |
 
 ## Regras técnicas
@@ -116,6 +116,33 @@ executada pelo `pnpm db:push`, e um script de volta atrás lá dentro recriaria 
 Os 22 avisos restantes são todos INFO e ficam de propósito: 20 são "índice nunca usado" (o app ainda não
 existe para usá-los — apagar seria remover a estrada porque não passou carro) e 2 são "FK sem índice" em
 tabelas de 25 e 3 linhas, onde o planejador varre tudo e ignora índice.
+
+### P0 do modelo de dados v3 (10-ago-2026) — aplicado no banco vivo, testado em réplica antes
+
+Sete migrations de schema (carimbos `20260810083301..084920`) mais o canal `avisos_agentes`
+(`20260810202518`). O SQL delas está em `supabase/migrations/`, recuperado do próprio banco com conferência
+de hash — **não editar** (migration aplicada não se edita).
+
+- **gravidade** virou `estavel | watcher | instavel | critico` (moderado passou a watcher, grave a instavel).
+  Óbito saiu do enum: desfecho vive em `status_leito` e `internacoes.desfecho`. `vw_dashboard_uti` recriada e
+  os 2 triggers de semáforo reescritos.
+- **`internacoes`**: episódio de internação com reinternação encadeada (`internacao_prev_id`) e destino de
+  alta. `internacao_id` é carimbado por trigger em `evolucoes`, `atbs`, `culturas`, `eventos_clinicos` e
+  `pendencias`; paciente e episódio sincronizam sozinhos. `pacientes.data_adm` virou legado.
+- **`dispositivo_episodios`**: janela de uso + `motivo_fim`. `pacientes.dispositivos` agora é **DERIVADO**
+  (`fn_refresh_dispositivos`) — **proibido escrever à mão**. Dias de uso saem de `vw_dispositivos_ativos`.
+- **`evolucoes` com dois relógios**: `tipo_nota`, `data_plantao`, `turno` (diurna|noturna; noturna iniciada
+  antes das 07h cai no dia anterior), `autor_crm`/`autor_nome`, `illness_severity` por nota, `finalizada_em`.
+  `fn_evolucao_relogios` deriva tudo no INSERT. `plantao` = legado.
+- **`janelas_24h`**: max/min + excursões, único por paciente+tipo+janela_fim. Render pronto em
+  `vw_janelas_24h_render` — "PAM 90-56 (4/12 <65)". Substitui os eventos `pam_min`/`pas_min`.
+- **`evento_tipo_ref`: 56 → 79 códigos** (18 labs, o órfão `pas_min` corrigido e 5 de folha: `pvc`,
+  `diurese_24h`, `diurese_parcial`, `uf_dialise`, `debito_dreno`). LOINC NULL nos novos (zero alucinação).
+  `custom` zerou: 14 reclassificados, 1 em `requires_review` (diurese 0 numa folha preenchida só das 23h às
+  05h não é anúria).
+- **Decisões de produto de 10-ago**: excursão só como agregado (não se ingere aferição bruta); chavinhas de
+  dispositivos sem UI de edição manual; seta de tendência banida também no schema (`problemas_ativos` não
+  ganha vetor); histórico de ATB — a evolução carrega o completo, a passagem de plantão só os ativos.
 
 ### Aberto
 
