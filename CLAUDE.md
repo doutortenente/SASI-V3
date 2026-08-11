@@ -77,7 +77,7 @@ fechar, `pnpm check` para aí. Não é regressão do que já estava no repo.
 | `src/stores/`                        | estado de UI (Zustand). Dado vindo do banco NÃO mora aqui               |
 | `src/types/`                         | `clinical.ts` (à mão) · `supabase.ts` (gerado — não editar)             |
 | `src/styles/globals.css`             | o tema inteiro — Tailwind 4 é CSS-first                                 |
-| `supabase/migrations/`               | migrations. **Não** é retrato do banco vivo                             |
+| `supabase/migrations/`               | migrations. Desde 11-ago-2026 **é** retrato fiel do banco vivo          |
 | `tests/`                             | `unit/` (Vitest) · `e2e/` (Playwright, pasta ainda vazia)               |
 
 Medido em 11-ago-2026: `src/app/` tem só `page.tsx`, `layout.tsx` e `error.tsx` na raiz —
@@ -88,10 +88,14 @@ Teste não mora todo em `tests/`: dos 6 arquivos, 5 ficam **ao lado do código**
 (`sofa.test.ts` junto de `sofa.ts`). O Vitest varre `tests/unit/**` e `src/**/*.test.ts(x)` — os
 dois valem, mas teste de cálculo clínico vai junto do cálculo.
 
-`supabase/migrations/` tem 14 arquivos: 6 de 08-ago-2026 com prefixo `f0_` (a fase que adotou
-enums, criou `save_ficha_producao` e tirou as extensões do schema `public`) e 8 de 10-ago-2026
-(o P0 do modelo de dados — seção "P0" abaixo). Nome no padrão
+`supabase/migrations/` tem **27 arquivos** — um por linha de `supabase_migrations.schema_migrations`,
+conferido em 11-ago-2026. São 12 de 26-jun a 30-jul (recuperadas do banco em 11-ago, com md5
+conferido uma a uma), 6 de 08-ago com prefixo `f0_` (a fase que adotou enums, criou
+`save_ficha_producao` e tirou as extensões do schema `public`), 8 de 10-ago (o P0 do modelo de
+dados — seção "P0" abaixo) e 1 de 11-ago (conserto do `security_invoker`). Nome no padrão
 `YYYYMMDDHHmmss_descricao.sql` — é o que `pnpm db:diff <nome>` gera.
+
+**Migration aplicada não se edita, e todas as 27 já foram aplicadas.** Mudança nova é arquivo novo.
 
 ## Regras que não se negociam
 
@@ -159,14 +163,19 @@ Projeto `idswehsvvqczzkiatuzu`, em produção desde 30-jul com pacientes reais.
 | Tabela             | Linhas |     | Tabela                                            | Linhas |
 | ------------------ | ------ | --- | ------------------------------------------------- | ------ |
 | `eventos_clinicos` | 335    |     | `ingest_audit_log`                                | 17     |
-| `evento_tipo_ref`  | 56     |     | `evolucoes`                                       | 16     |
-| `pendencias`       | 55     |     | `pacientes`                                       | 15     |
+| `evento_tipo_ref`  | 79     |     | `evolucoes`                                       | 16     |
+| `pendencias`       | 55     |     | `pacientes` · `internacoes`                       | 15     |
 | `alert_rules`      | 25     |     | `alerts_log`                                      | 14     |
 | `trend_rules`      | 3      |     | `atbs` · `culturas` · `antibiograma` · `memorias` | 0      |
 
-13 tabelas, RLS ligada em todas. `alert_rules` tem 25 regras ativas — já foi reportada como
+Recontado em 11-ago-2026: **17 tabelas e 10 views**, RLS ligada em todas as tabelas.
+`dispositivo_episodios` e `janelas_24h` também estão em **0** — nasceram no P0 de 10-ago e nada
+foi ingerido nelas desde então. `alert_rules` tem 25 regras ativas — já foi reportada como
 "vazia", e não era. `sofa_total` não preenchido é falta de bilirrubina e PaO2/FiO2 a montante,
 não falha de código.
+
+**O app lê 3 desses 27 objetos** (`vw_dashboard_uti`, `vw_alertas_abertos`, `alerts_log`). O que
+cada uma das 3 telas ainda precisa ligar está medido em `docs/MAPA-BANCO-TELAS.md`.
 
 ### P0 do modelo de dados v3 (10-ago-2026) — aplicado no banco vivo, testado em réplica antes
 
@@ -194,6 +203,12 @@ de hash — **não editar** (migration aplicada não se edita).
 - **Decisões de produto de 10-ago**: excursão só como agregado (não se ingere aferição bruta); chavinhas de
   dispositivos sem UI de edição manual; seta de tendência banida também no schema (`problemas_ativos` não
   ganha vetor); histórico de ATB — a evolução carrega o completo, a passagem de plantão só os ativos.
+
+**Sequela do P0, consertada em 11-ago** (`20260811074819`): ao derrubar e recriar `vw_dashboard_uti`, o P0
+perdeu o `security_invoker = true` que ela tinha desde 08-ago; as 2 views novas nasceram sem ele. Ficaram 3
+views respondendo com a permissão de quem as criou, e não de quem pergunta — ERROR no advisor do Supabase.
+Nada vazou (a `dev_bypass` já libera tudo), mas a trava voltou. `drop view` + `create view` **perde toda
+opção da view**: quem recria repete o `with (...)`, ou usa `create or replace view`.
 
 ## Armadilhas de versão (medidas — não "atualizar" sem checar)
 

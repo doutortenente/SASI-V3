@@ -103,7 +103,17 @@ O que existe agora e de onde ler:
 ## Ao escrever view
 
 `with (security_invoker = true)` **sempre**. Sem isso a view roda com a permissão de quem a criou e vaza dado
-de todos os pacientes para qualquer usuário logado. As 7 views do schema já têm.
+de todos os pacientes para qualquer usuário logado. **As 10 views do schema `public` têm** — medido em
+11-ago-2026 por `select relname, reloptions from pg_class where relkind='v'`.
+
+⚠️ **Como esta regra já foi quebrada uma vez, sem ninguém perceber.** O P0 de 10-ago derrubou e recriou
+`vw_dashboard_uti` (`20260810083301`, linhas 16 e 83) **sem** repetir a opção que ela tinha desde
+`20260808102501` (linha 87). As duas views novas do mesmo P0 nasceram sem ela. Ficaram 3 views furadas por
+um dia, com ERROR no advisor do Supabase e ninguém olhando. Consertado em `20260811074819`.
+
+A lição não é "prestar atenção": **`drop view` + `create view` perde toda opção da view**. Quem recria uma
+view repete o `with (security_invoker = true)`, ou usa `create or replace view`, que preserva. E depois de
+toda migration que mexe em view, rodar o advisor de segurança — foi ele que pegou, não a revisão humana.
 
 ## Migration
 
@@ -117,9 +127,13 @@ de todos os pacientes para qualquer usuário logado. As 7 views do schema já t�
 O schema do zero estava dentro de `migrations/` com o nome `20260807000000_...`. Ali, um `pnpm db:push`
 tentaria criar do zero tabelas que já existem, num banco com 15 pacientes reais.
 
-⚠️ **12 migrations antigas (26-jun a 30-jul) existem no banco e não no repositório.** O repositório
-reproduz o *schema* (pelo arquivo de referência), mas não replica o *histórico*. Recuperáveis de
-`supabase_migrations.schema_migrations`, que guarda o SQL de cada uma.
+✅ **O histórico fechou em 11-ago-2026.** As 12 migrations antigas (26-jun a 30-jul) que existiam só no
+banco foram recuperadas de `supabase_migrations.schema_migrations`, com md5 conferido uma a uma, e gravadas
+com o **mesmo carimbo** — por isso o `pnpm db:push` as pula. Agora `supabase/migrations/` tem **27
+arquivos**, um por linha do `schema_migrations`: repo e banco contam a mesma história, do 26-jun a hoje.
+
+Cada arquivo recuperado abre com `-- APLICADA no banco vivo ... NAO EDITAR`. Não padronizar caixa nem
+formatação: o arquivo é retrato do que rodou, não código de estilo.
 
 - Nome `YYYYMMDDHHmmss_descricao.sql`, SQL em minúsculas, idempotente (`if not exists`).
 - Comando destrutivo (`drop`, `delete`, `alter ... drop column`) vai **comentado**, com o motivo na linha de cima.
