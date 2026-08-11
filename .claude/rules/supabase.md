@@ -44,6 +44,26 @@ Duas armadilhas descobertas ao aplicar a Seção B, que o anexo não previa:
 - **`match_memorias` tinha `search_path` sem `extensions`.** Mover o tipo `vector` sem corrigir isso quebra o
   operador `<=>` dentro da função, em silêncio, só na hora da chamada.
 
+## P0 10-ago-2026 — modelo de dados v3 no banco vivo
+
+Aplicado direto no banco (testado em réplica antes), pela sessão Cowork de 10-ago. O repo foi sincronizado
+depois: as 8 migrations `20260810*` em `supabase/migrations/` foram recuperadas de
+`supabase_migrations.schema_migrations` com conferência de md5 — o arquivo é retrato fiel do que rodou,
+com um cabeçalho de aviso na primeira linha. O SQL delas está em maiúsculas (escritas fora do repo);
+**não padronizar, não editar**.
+
+O que existe agora e de onde ler:
+
+| Peça | Fonte da verdade |
+|---|---|
+| Episódio de internação | `internacoes` (desfecho NULL = em curso; `fn_internacao_atual()`); `internacao_id` carimbado por trigger nas 5 tabelas-filhas + `dispositivo_episodios` e `janelas_24h` |
+| Dispositivos | `dispositivo_episodios` + `vw_dispositivos_ativos` (dias de uso). `pacientes.dispositivos` é DERIVADO por `fn_refresh_dispositivos` — escrever à mão é proibido |
+| Nota (dois relógios) | `evolucoes.data_plantao` + `turno` (derivados por `fn_evolucao_relogios` no INSERT); `plantao` é legado |
+| Janela de vitais | `janelas_24h` + `vw_janelas_24h_render` (render "PAM 90-56 (4/12 <65)"); eventos `pam_min`/`pas_min` são legado |
+| Gravidade | enum `estavel|watcher|instavel|critico`; óbito não é gravidade, é desfecho |
+| Vocabulário de eventos | `evento_tipo_ref` com 79 códigos, custom zerado, LOINC NULL nos novos |
+| Handoff entre sessões | `avisos_agentes` — ler antes de qualquer tarefa neste repo, marcar `resolvido=true` ao cumprir |
+
 ### Os defeitos que continuam de pé
 
 | # | Defeito | Onde |
