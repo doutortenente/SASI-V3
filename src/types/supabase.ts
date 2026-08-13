@@ -578,6 +578,7 @@ export type Database = {
           illness_severity: Database["public"]["Enums"]["gravidade_enum"] | null
           impressao: string[]
           infecto: Json
+          intercorrencias: string[]
           internacao_id: string | null
           neuro: Json
           paciente_id: string
@@ -614,6 +615,7 @@ export type Database = {
             | null
           impressao?: string[]
           infecto?: Json
+          intercorrencias?: string[]
           internacao_id?: string | null
           neuro?: Json
           paciente_id: string
@@ -650,6 +652,7 @@ export type Database = {
             | null
           impressao?: string[]
           infecto?: Json
+          intercorrencias?: string[]
           internacao_id?: string | null
           neuro?: Json
           paciente_id?: string
