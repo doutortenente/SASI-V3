@@ -1,14 +1,15 @@
 # Mapa banco ↔ telas
 
 Medido em 11-ago-2026 no projeto `idswehsvvqczzkiatuzu` (lado do banco). Coluna "Estado" reconferida
-em 13-ago-2026, import por import, após a entrega do bloco 2 (a tela de Captura). Documento de leitura:
+em 13-ago-2026, import por import, após a entrega do bloco 3 (a tela de Fechamento). Documento de leitura:
 diz **o que o banco já entrega pronto** e **o que cada uma das 3 telas ainda não liga**. Não propõe
 código nem ordem de trabalho.
 
 ## O número que resume tudo
 
-O banco publica **27 objetos** no schema `public` — 17 tabelas e 10 views. O app fala com **9**
-(era 5 antes do bloco 2).
+O banco publica **27 objetos** no schema `public` — 17 tabelas e 10 views. O app fala com **15**
+(era 9 antes do bloco 3, e 5 antes do bloco 2), mais a função `save_ficha`, que não entra na conta
+dos 27 por ser rotina e não objeto de dado.
 
 | Objeto | Quem fala com ele hoje |
 | --- | --- |
@@ -21,10 +22,18 @@ O banco publica **27 objetos** no schema `public` — 17 tabelas e 10 views. O a
 | `eventos_clinicos` | `src/features/captura/services/eventos.ts` (só INSERT, `fonte='manual'` explícita) |
 | `janelas_24h` | `src/features/captura/services/janelas.ts` (upsert `paciente_id,tipo,janela_fim`) |
 | `vw_janelas_24h_render` | `src/features/captura/services/janelas.ts` (só leitura — `render` pronto do banco) |
+| `evolucoes` | **bloco 3** — `fechamento/services/insumos.ts` (`lerEvolucaoCorrente`), `fechamento/services/pacientes.ts` (`lerResumoDasNotas`) e `fechamento/services/ficha.ts` (`complementarEvolucao`, UPDATE parcial) |
+| `pacientes` | **bloco 3** — `fechamento/services/pacientes.ts` (`lerPacientesParaFicha`: `hd`, `alergias`, `idade`, `peso`, `altura`, `patient_summary`) |
+| `atbs` | **bloco 3** — `fechamento/services/insumos.ts` (`lerAtbsDoPaciente`, histórico completo da evolução). Tabela ainda em 0 linhas |
+| `vw_dias_atb_ativo` | **bloco 3** — `fechamento/services/insumos.ts` (`lerAtbsAtivosDoPaciente`, o D-X da passagem) |
+| `vw_bh_acumulado` | **bloco 3** — `fechamento/services/insumos.ts` (`lerBhAcumulado`) |
+| `vw_sofa_diario` | **bloco 3** — `fechamento/services/insumos.ts` (`lerSofaDiarioMaisRecente`, com `componentes_presentes`/`faltantes`) |
+| `save_ficha` (RPC) | **bloco 3** — `fechamento/services/ficha.ts` (`salvarFicha`, gravação em bloco) |
 
-Os outros 18 estão de pé, com RLS ligada, e ninguém pergunta nada a eles. Do P0 de 10-ago,
+Os outros 12 estão de pé, com RLS ligada, e ninguém pergunta nada a eles. Do P0 de 10-ago,
 `internacoes` e `dispositivo_episodios` seguem nesse grupo; `janelas_24h` e `vw_janelas_24h_render`
-saíram dele no bloco 2, como `vw_dispositivos_ativos` saiu no bloco 1.
+saíram dele no bloco 2, como `vw_dispositivos_ativos` saiu no bloco 1, e as 6 fontes do Fechamento
+saíram no bloco 3.
 
 ## Tela 1 — Meu plantão
 
@@ -66,13 +75,16 @@ ingerido até 13-ago).
 
 | Precisa de | Fonte no banco | Estado |
 | --- | --- | --- |
-| A nota, com os dois relógios | `evolucoes.data_plantao` + `turno` (derivados por `fn_evolucao_relogios` no INSERT) | ❌ nenhum código lê nem escreve |
-| Autor e assinatura | `evolucoes.autor_crm`, `autor_nome`, `finalizada_em` | ❌ |
-| Gravidade da nota (não a do paciente) | `evolucoes.illness_severity` | ❌ |
-| ATB: histórico completo na evolução, só ativos na passagem | `atbs` + `vw_dias_atb_ativo` | ❌ **`atbs` está vazia** |
-| Balanço hídrico acumulado | `vw_bh_acumulado` | ❌ nenhum código lê |
-| Episódio de internação, reinternação, destino de alta | `internacoes` (15 linhas, 9 em curso) + `fn_internacao_atual()` | ❌ nenhum código lê |
-| Geração do texto | `src/lib/ai/` | ❌ **a pasta não existe**; nenhuma biblioteca de IA no `package.json` |
+| A nota, com os dois relógios | `evolucoes.data_plantao` + `turno` (derivados por `fn_evolucao_relogios` no INSERT) | ✅ **ligado no bloco 3** — lê em `lerEvolucaoCorrente`/`lerResumoDasNotas`, escreve em `complementarEvolucao`; os relógios saem de `derivarRelogiosDaNota` (noturna antes das 07h cai no dia anterior) |
+| Autor e assinatura | `evolucoes.autor_crm`, `autor_nome`, `finalizada_em` | ⚠️ **meio ligado** — `finalizada_em` é carimbado ao finalizar a nota e a tela não reoferece "Finalizar" para nota já fechada. `autor_crm`/`autor_nome` são **lidos e nunca escritos**: o app não tem autenticação, e sem `autor_nome` a linha "Assinatura:" é omitida do texto em vez de inventada |
+| Gravidade da nota (não a do paciente) | `evolucoes.illness_severity` | ✅ **ligado no bloco 3** — 4 valores, desmarcável, enviado no complemento; fica `null` enquanto o médico não classificar (classificar por omissão seria inventar julgamento) |
+| ATB: histórico completo na evolução, só ativos na passagem | `atbs` + `vw_dias_atb_ativo` | ✅ **ligado no bloco 3** (`lerAtbsDoPaciente` e `lerAtbsAtivosDoPaciente`) — mas **`atbs` segue em 0 linhas**: a seção nasce vazia até a ingestão. `vw_dias_atb_ativo` não expõe `dose`, então a passagem mostra droga/via/frequência/dias |
+| Balanço hídrico acumulado | `vw_bh_acumulado` | ✅ **ligado no bloco 3** (`lerBhAcumulado`) |
+| SOFA com transparência (X/6 componentes) | `vw_sofa_diario` (`componentes_presentes`/`faltantes`) | ✅ **ligado no bloco 3** (`lerSofaDiarioMaisRecente`) — total `null` quando incompleto, e a frase "componentes capturados: X/6 · faltando: [...]" sai igual na tela e no texto |
+| Ficha inteira gravada numa transação | RPC `save_ficha` | ✅ **ligado no bloco 3** (`salvarFicha`) — `hd`, `alergias`, `idade`, `peso` e `altura` são SEMPRE reenviados (gravam sem coalesce: payload sem a chave APAGA o valor). `internacao_id` nunca é enviado; `p_pendencias` vai sempre vazio, porque pendência tem casa única nos hooks |
+| Máx–Mín de 24h no texto da nota | `vw_janelas_24h_render.render` | ✅ **ligado desde o bloco 2**, agora consumido também pelo motor de texto — a linha vem PRONTA do banco e remontá-la é proibido. Com `janelas_24h` em 0 linhas, essas linhas saem omitidas |
+| Episódio de internação, reinternação, destino de alta | `internacoes` (15 linhas, 9 em curso) + `fn_internacao_atual()` | ❌ nenhum código lê — o trigger carimba `internacao_id` sozinho, e o app depende disso |
+| Geração do texto | montagem determinística em `src/lib/formatters/fechamento.ts` | ✅ **entregue no bloco 3** — `montarEvolucao` (TEMPLATE-BASE v2) e `montarPassagem` (Formato A). `src/lib/ai/` **continua não existindo** e nenhuma biblioteca de IA entrou no `package.json`: aritmética e contagem não são de LLM |
 
 ## Tabelas vazias — e o que isso significa
 
@@ -89,16 +101,24 @@ delas devolve tela em branco até a ingestão começar.
 
 Vale a pena saber que existem, antes de alguém reescrever:
 
-- `vw_janelas_24h_render.render` — a linha de texto da nota, montada **no banco**.
-- `vw_dispositivos_ativos.dias_em_uso` — contado a partir de `data_inicio`, nunca digitado.
 - `fn_internacao_atual(paciente_id)` — o episódio em curso, sem repetir o filtro `desfecho is null`.
-- `save_ficha` — gravação de ficha inteira numa transação só.
-- `vw_sofa_diario` (6.660 caracteres, os 6 sistemas) e `vw_sofa_trend_72h`.
+- `vw_sofa_trend_72h` e `vw_eventos_tendencia` — o "o que mudou" que nenhuma tela lê ainda.
 - O motor de alertas: 25 regras ativas, 2 gatilhos `after insert on eventos_clinicos`. O app **lê e
   reconhece**; nunca escreve em `alerts_log` — segundo produtor duplicaria alerta.
+
+Saíram desta lista no bloco 3, porque agora têm consumidor: `save_ficha`, `vw_sofa_diario`,
+`vw_bh_acumulado` e `vw_dias_atb_ativo`. `vw_janelas_24h_render.render` (a linha de vitais montada
+**no banco**) e `vw_dispositivos_ativos.dias_em_uso` (contado a partir de `data_inicio`, nunca
+digitado) já haviam saído nos blocos 2 e 1 — e o motor de texto do Fechamento consome os dois
+prontos, sem recalcular.
 
 ## Regra que atravessa as 3 telas
 
 Falha de leitura **lança exceção**, nunca vira lista vazia — `exigirDado` em `src/lib/data/erros.ts`,
-usado nos 6 serviços que leem (`leitos`, `alertas`, `pendencias`, `dispositivos`, `vocabulario`,
-`janelas`). "Nenhuma pendência" e "não consegui perguntar ao banco" são clinicamente opostos.
+usado nos 8 serviços que leem (`leitos`, `alertas`, `pendencias`, `dispositivos`, `vocabulario`,
+`janelas` e, desde o bloco 3, `fechamento/insumos` e `fechamento/pacientes`). "Nenhuma pendência" e
+"não consegui perguntar ao banco" são clinicamente opostos.
+
+No Fechamento isso vale em bloco: as 8 fontes da rota do paciente sobem em `Promise.all` e falha em
+UMA derruba o conjunto, de propósito. Meia ficha carregada é pior que ficha nenhuma — parece
+completa.

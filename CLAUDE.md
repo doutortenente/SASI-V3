@@ -53,19 +53,26 @@ pnpm build      # monta o app como vai para produção — antes de considerar e
 pnpm gen:types  # regenera src/types/supabase.ts (só depois de aplicar migration)
 pnpm db:diff <nome>  # escreve nova migration a partir do que mudou no banco local
 pnpm db:push         # aplica as migrations pendentes no banco
+pnpm test:e2e   # fumaça em navegador de verdade (Playwright): sobe o app e abre as 4 rotas
 ```
 
 Node 24 (`.nvmrc`). Gerenciador **pnpm** — o v2 usa npm, não confundir os dois repos.
 
-Medido em 13-ago-2026, após o bloco 2 das telas (Captura): `pnpm test` = **210 testes em 13
-arquivos**, todos passando. `pnpm typecheck` e `pnpm build` fecham **sem erro** — o `SystemPanel.tsx`
-que quebrava o typecheck era trabalho local não commitado e não existe neste repositório.
+Medido em 13-ago-2026, após o bloco 3 das telas (Fechamento): `pnpm test` = **303 testes em 18
+arquivos**, todos passando. `pnpm typecheck`, `pnpm lint` e `pnpm build` fecham **sem erro**.
+
+**Fumaça de ponta a ponta**, no mesmo dia: `pnpm test:e2e` = **7 testes, todos passando** — as 4
+rotas de servidor (`/`, `/captura`, `/fechamento`, `/fechamento/passagem`) respondem 200 contra o
+banco vivo, com título e navegação renderizados. O e2e **não clica em Salvar**: o app aponta para
+produção com paciente real, e gravar por robô sujaria prontuário. Config em `playwright.config.ts`,
+teste em `tests/e2e/fumaca.spec.ts`. O Chromium já está na máquina (`/opt/pw-browsers`) e o config o
+acha por prefixo de pasta — **não rodar `playwright install`**, não há rede para baixar navegador.
 
 ## Onde mora o quê
 
 | Pasta                                | Papel                                                                   |
 | ------------------------------------ | ----------------------------------------------------------------------- |
-| `src/app/`                           | rotas (App Router). Só a raiz existe — ver nota abaixo                  |
+| `src/app/`                           | rotas (App Router). As 3 telas têm rota desde 13-ago — ver nota abaixo  |
 | `src/features/<dominio>/`            | um domínio por pasta: `components/`, `hooks/`, `services/`, `types.ts`  |
 | `src/components/clinical/` · `core/` | peças de UI portadas do design system do v2                             |
 | `src/components/ui/`                 | gerado pelo shadcn (`pnpm dlx shadcn@latest add <comp>`) — fora do lint |
@@ -77,24 +84,30 @@ que quebrava o typecheck era trabalho local não commitado e não existe neste r
 | `src/types/`                         | `clinical.ts` (à mão) · `supabase.ts` (gerado — não editar)             |
 | `src/styles/globals.css`             | o tema inteiro — Tailwind 4 é CSS-first                                 |
 | `supabase/migrations/`               | migrations. Desde 11-ago-2026 **é** retrato fiel do banco vivo          |
-| `tests/`                             | `unit/` (Vitest) · `e2e/` (Playwright, pasta ainda vazia)               |
+| `tests/`                             | `unit/` (Vitest) · `e2e/` (Playwright — `fumaca.spec.ts` desde 13-ago)  |
 
-Medido em 11-ago-2026: `src/app/` tem só `page.tsx`, `layout.tsx` e `error.tsx` na raiz —
-nenhuma das 3 telas tem rota ainda. As pastas `beds/`, `patients/`, `rounds/`, `war-room/` e
-`api/` estão **vazias**: são nomes herdados do V3, não trabalho começado.
+Recontado em 13-ago-2026, ao fim do bloco 3: `src/app/` tem **6 rotas** (6 `page.tsx`, mais
+`layout.tsx` e `error.tsx` na raiz) — `/`, `/captura`, `/captura/[pacienteId]`, `/fechamento`,
+`/fechamento/[pacienteId]` e `/fechamento/passagem`. As 3 telas do produto estão de pé, e o
+`pnpm build` lista as 6 como dinâmicas (renderizadas a cada pedido, porque leem o banco). As pastas
+`beds/`, `patients/`, `rounds/`, `war-room/` e `api/` continuam **vazias**: são nomes herdados do
+V3, não trabalho começado — a Tela 1 mora na raiz, não em `beds/`.
 
-Teste não mora todo em `tests/`: dos 6 arquivos, 5 ficam **ao lado do código** em `src/`
-(`sofa.test.ts` junto de `sofa.ts`). O Vitest varre `tests/unit/**` e `src/**/*.test.ts(x)` — os
-dois valem, mas teste de cálculo clínico vai junto do cálculo.
+Teste não mora todo em `tests/`: dos 18 arquivos de unidade, a maioria fica **ao lado do código** em
+`src/` (`sofa.test.ts` junto de `sofa.ts`). O Vitest varre `tests/unit/**` e `src/**/*.test.ts(x)` e
+**ignora `tests/e2e/**`** — os dois primeiros valem, mas teste de cálculo clínico vai junto do
+cálculo, e a fumaça de navegador é do Playwright, não do Vitest.
 
-`supabase/migrations/` tem **27 arquivos** — um por linha de `supabase_migrations.schema_migrations`,
-conferido em 11-ago-2026. São 12 de 26-jun a 30-jul (recuperadas do banco em 11-ago, com md5
-conferido uma a uma), 6 de 08-ago com prefixo `f0_` (a fase que adotou enums, criou
-`save_ficha_producao` e tirou as extensões do schema `public`), 8 de 10-ago (o P0 do modelo de
-dados — seção "P0" abaixo) e 1 de 11-ago (conserto do `security_invoker`). Nome no padrão
-`YYYYMMDDHHmmss_descricao.sql` — é o que `pnpm db:diff <nome>` gera.
+`supabase/migrations/` tem **28 arquivos** — 27 conferidos em 11-ago-2026 contra
+`supabase_migrations.schema_migrations`, mais `20260813014857_evolucoes_intercorrencias.sql` do
+bloco 3 (a coluna `evolucoes.intercorrencias text[] NOT NULL default '{}'`, que a seção
+"Intercorrências 24h" do template exigia e não tinha casa no banco). São 12 de 26-jun a 30-jul
+(recuperadas do banco em 11-ago, com md5 conferido uma a uma), 6 de 08-ago com prefixo `f0_` (a fase
+que adotou enums, criou `save_ficha_producao` e tirou as extensões do schema `public`), 8 de 10-ago
+(o P0 do modelo de dados — seção "P0" abaixo), 1 de 11-ago (conserto do `security_invoker`) e 1 de
+13-ago. Nome no padrão `YYYYMMDDHHmmss_descricao.sql` — é o que `pnpm db:diff <nome>` gera.
 
-**Migration aplicada não se edita, e todas as 27 já foram aplicadas.** Mudança nova é arquivo novo.
+**Migration aplicada não se edita, e todas as 28 já foram aplicadas.** Mudança nova é arquivo novo.
 
 ## Regras que não se negociam
 
@@ -173,8 +186,9 @@ foi ingerido nelas desde então. `alert_rules` tem 25 regras ativas — já foi 
 "vazia", e não era. `sofa_total` não preenchido é falta de bilirrubina e PaO2/FiO2 a montante,
 não falha de código.
 
-**O app fala com 9 desses 27 objetos** desde o bloco 2 (13-ago-2026). O que cada uma das 3 telas
-ainda precisa ligar está medido, objeto por objeto, em `docs/MAPA-BANCO-TELAS.md`.
+**O app fala com 15 desses 27 objetos** desde o bloco 3 (13-ago-2026) — eram 9 após o bloco 2 —,
+mais a rotina `save_ficha`, que não entra na conta dos 27. O que cada uma das 3 telas ainda precisa
+ligar está medido, objeto por objeto, em `docs/MAPA-BANCO-TELAS.md`.
 
 ### P0 do modelo de dados v3 (10-ago-2026) — aplicado no banco vivo, testado em réplica antes
 
