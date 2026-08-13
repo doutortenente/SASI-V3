@@ -1,13 +1,14 @@
 # Mapa banco ↔ telas
 
 Medido em 11-ago-2026 no projeto `idswehsvvqczzkiatuzu` (lado do banco). Coluna "Estado" reconferida
-em 12-ago-2026, import por import, após a entrega do bloco 1. Documento de leitura: diz **o que o banco
-já entrega pronto** e **o que cada uma das 3 telas ainda não liga**. Não propõe código nem ordem de trabalho.
+em 13-ago-2026, import por import, após a entrega do bloco 2 (a tela de Captura). Documento de leitura:
+diz **o que o banco já entrega pronto** e **o que cada uma das 3 telas ainda não liga**. Não propõe
+código nem ordem de trabalho.
 
 ## O número que resume tudo
 
-O banco publica **27 objetos** no schema `public` — 17 tabelas e 10 views. O app fala com **5**
-(era 3 antes do bloco 1).
+O banco publica **27 objetos** no schema `public` — 17 tabelas e 10 views. O app fala com **9**
+(era 5 antes do bloco 2).
 
 | Objeto | Quem fala com ele hoje |
 | --- | --- |
@@ -16,10 +17,14 @@ O banco publica **27 objetos** no schema `public` — 17 tabelas e 10 views. O a
 | `alerts_log` | `src/features/alerts/services/alertas.ts` (reconhecer alerta — só UPDATE) |
 | `pendencias` | `src/features/pendencias/services/pendencias.ts` (ler, criar, concluir, reabrir) |
 | `vw_dispositivos_ativos` | `src/features/devices/services/dispositivos.ts` (só leitura) |
+| `evento_tipo_ref` | `src/features/captura/services/vocabulario.ts` (só leitura, sem `loinc_code`) |
+| `eventos_clinicos` | `src/features/captura/services/eventos.ts` (só INSERT, `fonte='manual'` explícita) |
+| `janelas_24h` | `src/features/captura/services/janelas.ts` (upsert `paciente_id,tipo,janela_fim`) |
+| `vw_janelas_24h_render` | `src/features/captura/services/janelas.ts` (só leitura — `render` pronto do banco) |
 
-Os outros 22 estão de pé, com RLS ligada, e ninguém pergunta nada a eles. Do P0 de 10-ago,
-`internacoes`, `janelas_24h` e `vw_janelas_24h_render` seguem nesse grupo; `vw_dispositivos_ativos`
-saiu dele no bloco 1.
+Os outros 18 estão de pé, com RLS ligada, e ninguém pergunta nada a eles. Do P0 de 10-ago,
+`internacoes` e `dispositivo_episodios` seguem nesse grupo; `janelas_24h` e `vw_janelas_24h_render`
+saíram dele no bloco 2, como `vw_dispositivos_ativos` saiu no bloco 1.
 
 ## Tela 1 — Meu plantão
 
@@ -42,18 +47,20 @@ Dias de uso só saem de `vw_dispositivos_ativos`; nunca digitados.
 
 | Precisa de | Fonte no banco | Estado |
 | --- | --- | --- |
-| Gravar vital, evento, conduta | `eventos_clinicos` — 335 linhas | ❌ nenhuma escrita pelo app |
-| Vocabulário de tipos de evento (o que pode ser gravado) | `evento_tipo_ref` — 79 códigos, leitura liberada para `anon` | ❌ nenhum código lê |
-| Gravar pendência | `pendencias` | ⚠️ o serviço `criarPendencia` nasceu no bloco 1; a tela de Captura (bloco 2) ainda não o chama |
-| Máx–Mín de 24h com excursões | `janelas_24h` → render pronto em `vw_janelas_24h_render.render` ("PAM 90-56 (4/12 <65)") | ❌ **tabela vazia** |
-| Abrir/fechar dispositivo | `dispositivo_episodios` (janela + `motivo_fim`) | ❌ **tabela vazia** |
+| Gravar vital, evento, conduta | `eventos_clinicos` — 335 linhas | ✅ **ligado no bloco 2** — `registrarEvento` (`useRegistrarEvento` no `FormEvento`), `ts` da coleta vindo do formulário e `fonte='manual'` explícita |
+| Vocabulário de tipos de evento (o que pode ser gravado) | `evento_tipo_ref` — 79 códigos, leitura liberada para `anon` | ✅ **ligado no bloco 2** — `lerTiposDeEvento` carregado no servidor da rota `/captura/[pacienteId]` |
+| Gravar pendência | `pendencias` | ✅ **ligado no bloco 2** — `FormPendencia` chama `criarPendencia` via `useCriarPendencia` (o serviço já existia desde o bloco 1) |
+| Máx–Mín de 24h com excursões | `janelas_24h` → render pronto em `vw_janelas_24h_render.render` ("PAM 90-56 (4/12 <65)") | ✅ **ligado no bloco 2** — `registrarJanela` (upsert `paciente_id,tipo,janela_fim`) e leitura da view no `FormVital`; a tabela nasceu vazia e enche conforme o uso |
+| Abrir/fechar dispositivo | `dispositivo_episodios` (janela + `motivo_fim`) | ❌ **tabela vazia** — nenhum código escreve |
 | Gravação em bloco de uma ficha | RPC `save_ficha` | ❌ nunca chamada pelo app |
 
 **Decisão de 10-ago que restringe esta tela:** excursão de vital só se ingere como **agregado**
 (`janelas_24h`), nunca aferição bruta. E os dispositivos não ganham tela de edição manual — a chavinha
 foi vetada; o que existe é abrir e fechar episódio.
 
-Quem escreve nessas tabelas hoje é a skill `sasi-ingest-export`, fora do app.
+Desde o bloco 2 o app escreve em `eventos_clinicos`, `janelas_24h` e `pendencias`; em
+`dispositivo_episodios` só a skill `sasi-ingest-export` escreveria, fora do app (e nada foi
+ingerido até 13-ago).
 
 ## Tela 3 — Fechamento
 
@@ -93,5 +100,5 @@ Vale a pena saber que existem, antes de alguém reescrever:
 ## Regra que atravessa as 3 telas
 
 Falha de leitura **lança exceção**, nunca vira lista vazia — `exigirDado` em `src/lib/data/erros.ts`,
-usado nos 4 serviços (`leitos`, `alertas`, `pendencias`, `dispositivos`). "Nenhuma pendência" e "não
-consegui perguntar ao banco" são clinicamente opostos.
+usado nos 6 serviços que leem (`leitos`, `alertas`, `pendencias`, `dispositivos`, `vocabulario`,
+`janelas`). "Nenhuma pendência" e "não consegui perguntar ao banco" são clinicamente opostos.

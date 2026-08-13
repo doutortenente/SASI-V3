@@ -57,9 +57,9 @@ pnpm db:push         # aplica as migrations pendentes no banco
 
 Node 24 (`.nvmrc`). Gerenciador **pnpm** — o v2 usa npm, não confundir os dois repos.
 
-Medido em 12-ago-2026, após o bloco 1 das telas: `pnpm test` = **163 testes em 9 arquivos**, todos
-passando. `pnpm typecheck` e `pnpm build` fecham **sem erro** — o `SystemPanel.tsx` que quebrava o
-typecheck era trabalho local não commitado e não existe neste repositório.
+Medido em 13-ago-2026, após o bloco 2 das telas (Captura): `pnpm test` = **210 testes em 13
+arquivos**, todos passando. `pnpm typecheck` e `pnpm build` fecham **sem erro** — o `SystemPanel.tsx`
+que quebrava o typecheck era trabalho local não commitado e não existe neste repositório.
 
 ## Onde mora o quê
 
@@ -173,8 +173,8 @@ foi ingerido nelas desde então. `alert_rules` tem 25 regras ativas — já foi 
 "vazia", e não era. `sofa_total` não preenchido é falta de bilirrubina e PaO2/FiO2 a montante,
 não falha de código.
 
-**O app lê 3 desses 27 objetos** (`vw_dashboard_uti`, `vw_alertas_abertos`, `alerts_log`). O que
-cada uma das 3 telas ainda precisa ligar está medido em `docs/MAPA-BANCO-TELAS.md`.
+**O app fala com 9 desses 27 objetos** desde o bloco 2 (13-ago-2026). O que cada uma das 3 telas
+ainda precisa ligar está medido, objeto por objeto, em `docs/MAPA-BANCO-TELAS.md`.
 
 ### P0 do modelo de dados v3 (10-ago-2026) — aplicado no banco vivo, testado em réplica antes
 
