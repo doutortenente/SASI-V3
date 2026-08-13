@@ -19,7 +19,15 @@ export type Json =
 // 1. ENUMS (vocabulários fechados — espelham os enums nativos do Postgres)
 // ---------------------------------------------------------------------------
 export type Uti = 'UTI2' | 'UTI3' | 'UTI4';
-export type Gravidade = 'estavel' | 'moderado' | 'grave' | 'critico' | 'obito';
+/**
+ * Espelha `gravidade_enum` do banco pós-P0 (src/types/supabase.ts):
+ * `estavel | watcher | instavel | critico`. Os valores velhos (`moderado`,
+ * `grave`, `obito`) NÃO existem mais no banco — mantê-los aqui fazia paciente
+ * `watcher`/`instavel` cair no default do semáforo e ser pintado de VERDE.
+ * Óbito saiu da gravidade: desfecho vive em `status_leito` e
+ * `internacoes.desfecho`.
+ */
+export type Gravidade = 'estavel' | 'watcher' | 'instavel' | 'critico';
 export type StatusLeito = 'ativo' | 'alta' | 'obito' | 'transferencia';
 export type Isolamento = 'none' | 'contact' | 'droplet' | 'aerosol';
 export type SeveridadeVisual = 'red' | 'yellow' | 'green';

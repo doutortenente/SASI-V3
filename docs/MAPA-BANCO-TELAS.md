@@ -1,20 +1,25 @@
 # Mapa banco ↔ telas
 
-Medido em 11-ago-2026 no projeto `idswehsvvqczzkiatuzu`. Documento de leitura: diz **o que o banco já
-entrega pronto** e **o que cada uma das 3 telas ainda não liga**. Não propõe código nem ordem de trabalho.
+Medido em 11-ago-2026 no projeto `idswehsvvqczzkiatuzu` (lado do banco). Coluna "Estado" reconferida
+em 12-ago-2026, import por import, após a entrega do bloco 1. Documento de leitura: diz **o que o banco
+já entrega pronto** e **o que cada uma das 3 telas ainda não liga**. Não propõe código nem ordem de trabalho.
 
 ## O número que resume tudo
 
-O banco publica **27 objetos** no schema `public` — 17 tabelas e 10 views. O app lê **3**.
+O banco publica **27 objetos** no schema `public` — 17 tabelas e 10 views. O app fala com **5**
+(era 3 antes do bloco 1).
 
-| Objeto | Quem lê hoje |
+| Objeto | Quem fala com ele hoje |
 | --- | --- |
 | `vw_dashboard_uti` | `src/features/beds/services/leitos.ts` |
 | `vw_alertas_abertos` | `src/features/alerts/services/alertas.ts` |
-| `alerts_log` | `src/features/alerts/services/alertas.ts` (reconhecer alerta) |
+| `alerts_log` | `src/features/alerts/services/alertas.ts` (reconhecer alerta — só UPDATE) |
+| `pendencias` | `src/features/pendencias/services/pendencias.ts` (ler, criar, concluir, reabrir) |
+| `vw_dispositivos_ativos` | `src/features/devices/services/dispositivos.ts` (só leitura) |
 
-Os outros 24 estão de pé, com RLS ligada, e ninguém pergunta nada a eles. Todo o P0 de 10-ago
-(`internacoes`, `dispositivo_episodios`, `janelas_24h` e as 2 views novas) está nesse grupo.
+Os outros 22 estão de pé, com RLS ligada, e ninguém pergunta nada a eles. Do P0 de 10-ago,
+`internacoes`, `janelas_24h` e `vw_janelas_24h_render` seguem nesse grupo; `vw_dispositivos_ativos`
+saiu dele no bloco 1.
 
 ## Tela 1 — Meu plantão
 
@@ -23,10 +28,10 @@ Os outros 24 estão de pé, com RLS ligada, e ninguém pergunta nada a eles. Tod
 | Leito, nome, idade, HD, gravidade, dias de internação | `vw_dashboard_uti` | ✅ **ligado** — 9 linhas hoje |
 | SOFA e variação de 24h | `vw_dashboard_uti.sofa_total`, `delta_sofa_24h` | ✅ ligado |
 | Pendências abertas (contagem) | `vw_dashboard_uti.pendencias_abertas` | ✅ ligado |
-| Pendências (a lista, não a contagem) | `pendencias` — 55 linhas | ❌ nenhum código lê |
-| Alertas abertos por leito | `vw_alertas_abertos` — 5 abertos | ⚠️ serviço existe, nenhuma tela o chama |
-| Dispositivos com dias de uso | `vw_dispositivos_ativos` (`dias_em_uso` calculado) | ❌ view pronta, **tabela vazia** |
-| "O que mudou" desde a última nota | `vw_eventos_tendencia`, `vw_sofa_trend_72h` | ❌ nenhum código lê |
+| Pendências (a lista, não a contagem) | `pendencias` — 55 linhas | ✅ **ligado no bloco 1** — `usePendencias` no painel, concluir a um toque no card (`useConcluirPendencia`) |
+| Alertas abertos por leito | `vw_alertas_abertos` — 5 abertos | ✅ **ligado no bloco 1** — badge de contagem no card (`useAlertas`) e lista + reconhecer no card expandido (`useAlertasDoPaciente`) |
+| Dispositivos com dias de uso | `vw_dispositivos_ativos` (`dias_em_uso` calculado) | ✅ **ligado no bloco 1** (`useDispositivos`) — mas a tabela-fonte `dispositivo_episodios` segue **vazia**: a tela mostra estado vazio honesto até a ingestão alimentar |
+| "O que mudou" desde a última nota | `vw_eventos_tendencia`, `vw_sofa_trend_72h` | ❌ nenhum código lê — o card mostra só `delta_sofa_24h` (que vem de `vw_dashboard_uti`) |
 
 **A armadilha aqui:** `vw_dashboard_uti.dispositivos` continua existindo e o card já o mostra, mas desde
 10-ago esse campo é **derivado** por `fn_refresh_dispositivos` a partir de `dispositivo_episodios` — que
@@ -39,7 +44,7 @@ Dias de uso só saem de `vw_dispositivos_ativos`; nunca digitados.
 | --- | --- | --- |
 | Gravar vital, evento, conduta | `eventos_clinicos` — 335 linhas | ❌ nenhuma escrita pelo app |
 | Vocabulário de tipos de evento (o que pode ser gravado) | `evento_tipo_ref` — 79 códigos, leitura liberada para `anon` | ❌ nenhum código lê |
-| Gravar pendência | `pendencias` | ❌ |
+| Gravar pendência | `pendencias` | ⚠️ o serviço `criarPendencia` nasceu no bloco 1; a tela de Captura (bloco 2) ainda não o chama |
 | Máx–Mín de 24h com excursões | `janelas_24h` → render pronto em `vw_janelas_24h_render.render` ("PAM 90-56 (4/12 <65)") | ❌ **tabela vazia** |
 | Abrir/fechar dispositivo | `dispositivo_episodios` (janela + `motivo_fim`) | ❌ **tabela vazia** |
 | Gravação em bloco de uma ficha | RPC `save_ficha` | ❌ nunca chamada pelo app |
@@ -88,4 +93,5 @@ Vale a pena saber que existem, antes de alguém reescrever:
 ## Regra que atravessa as 3 telas
 
 Falha de leitura **lança exceção**, nunca vira lista vazia — `exigirDado` em `src/lib/data/erros.ts`,
-usado em `leitos.ts`. "Nenhuma pendência" e "não consegui perguntar ao banco" são clinicamente opostos.
+usado nos 4 serviços (`leitos`, `alertas`, `pendencias`, `dispositivos`). "Nenhuma pendência" e "não
+consegui perguntar ao banco" são clinicamente opostos.

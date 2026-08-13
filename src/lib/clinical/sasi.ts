@@ -3,7 +3,7 @@
 // Tipada contra database.types.ts (Anexo C). Testável isoladamente.
 // Espelha o intel()/triagem do CLAUDE.md: acuidade derivada de fisiologia, não de rótulo.
 // ============================================================================
-import type {EventoTipoRef, Gravidade, SeveridadeVisual, VwDashboardUti,} from '@/types/clinical';
+import type {EventoTipoRef, Gravidade, SeveridadeVisual, StatusLeito, VwDashboardUti,} from '@/types/clinical';
 
 /** IMC (mesma conta da coluna gerada no banco). altura em cm. */
 export function imc(peso: number | null, alturaCm: number | null): number | null {
@@ -12,17 +12,24 @@ export function imc(peso: number | null, alturaCm: number | null): number | null
     return Math.round((peso / (m * m)) * 10) / 10;
 }
 
+/**
+ * Semáforo por gravidade (enum pós-P0: estavel|watcher|instavel|critico).
+ *
+ * Record EXAUSTIVO de propósito, sem `default`: a versão anterior chaveava os
+ * valores VELHOS do enum (`grave`/`moderado`) e todo valor novo caía no ramo
+ * padrão — paciente `watcher`/`instavel` pintado de VERDE na tela de comando.
+ * Com o Record, valor novo no enum vira erro de compilação, não verde calado.
+ */
+const SEMAFORO_POR_GRAVIDADE: Record<Gravidade, SeveridadeVisual> = {
+    estavel: 'green',
+    watcher: 'yellow',
+    instavel: 'red',
+    critico: 'red',
+};
+
 /** Semáforo a partir da gravidade (mesma regra do gatilho sync_severidade_visual). */
 export function severidadeVisualDe(g: Gravidade): SeveridadeVisual {
-    switch (g) {
-        case 'critico':
-        case 'grave':
-            return 'red';
-        case 'moderado':
-            return 'yellow';
-        default:
-            return 'green';
-    }
+    return SEMAFORO_POR_GRAVIDADE[g];
 }
 
 /** true se o valor está fora da faixa fisiológica "impossível" (flag duro). */
@@ -62,11 +69,12 @@ export function semaforoDivergente(row: LinhaSemaforo): boolean {
 /**
  * OBITO é um tier próprio, não um grau de gravidade.
  *
- * Antes caía no ramo padrão de `severidadeVisualDe` e virava semáforo verde +
- * acuidade ESTAVEL — a tela dizia "estável" sobre um paciente morto. Não é
- * gravidade baixa: é ausência de paciente a tratar. Fica fora da fila de
- * atendimento (último no ranque) mas com rótulo próprio, nunca disfarçado de
- * estável.
+ * Desde o P0 de 10-ago óbito NÃO é valor de `gravidade` — o desfecho vive em
+ * `status_leito` (e `internacoes.desfecho`). A `vw_dashboard_uti` só devolve
+ * leito ATIVO, então em condições normais o tier nunca aparece; ele existe
+ * para a linha que traga `status_leito='obito'` (consulta direta, dado em
+ * trânsito) nunca ser rotulada de ESTAVEL — a tela dizendo "estável" sobre um
+ * paciente morto é o defeito que este tier impede.
  */
 export type Acuidade = 'CRITICO' | 'INSTAVEL' | 'VIGILANCIA' | 'ESTAVEL' | 'OBITO';
 
@@ -76,10 +84,10 @@ type LinhaTriagem = Pick<
 >;
 
 /** Deriva tier de acuidade de limiares fisiológicos (não do status declarado). */
-export function acuidadeDe(row: LinhaTriagem & { gravidade?: Gravidade }): Acuidade {
-    // Óbito antes de tudo: nenhum limiar fisiológico se aplica, e cair no ramo
-    // padrão faria a tela rotular um paciente morto como ESTAVEL.
-    if (row.gravidade === 'obito') return 'OBITO';
+export function acuidadeDe(row: LinhaTriagem & { status_leito?: StatusLeito }): Acuidade {
+    // Óbito antes de tudo: nenhum limiar fisiológico se aplica. Derivado de
+    // `status_leito` (onde o desfecho mora desde o P0), não de gravidade.
+    if (row.status_leito === 'obito') return 'OBITO';
     if (row.severidade_visual === 'red') return 'CRITICO';
     if ((row.delta_sofa_24h ?? 0) >= 2 || (row.out_of_range_count ?? 0) >= 3) return 'INSTAVEL';
     if (row.severidade_visual === 'yellow' || (row.out_of_range_count ?? 0) > 0) return 'VIGILANCIA';

@@ -1,22 +1,31 @@
 /**
- * Rota raiz — War Room.
+ * Rota raiz — Meu plantão.
  *
- * Server Component: a consulta roda no servidor e o navegador recebe HTML pronto.
- * Nenhum cálculo clínico aqui — a triagem vem de `lib/clinical/sasi.ts`.
+ * Server Component: a consulta dos leitos roda no servidor e o navegador
+ * recebe HTML pronto. Nenhum cálculo clínico aqui — a triagem vem de
+ * `lib/clinical/sasi.ts`. O que muda AO VIVO durante o plantão (alertas,
+ * pendências, dispositivos, filtros) mora na ilha client `PainelMeuPlantao`,
+ * que recebe esta carga por prop e não a refaz.
  *
- * `dynamic = 'force-dynamic'`: tela de comando não pode servir página guardada em
- * cache. Um leito que mudou de gravidade há 30 segundos tem que aparecer mudado.
+ * `dynamic = 'force-dynamic'`: tela de comando não pode servir página guardada
+ * em cache. Um leito que mudou de gravidade há 30 segundos tem que aparecer
+ * mudado.
  */
+import type { Metadata } from 'next';
+
 import { StatPill } from '@/components/core/StatPill';
-import { GradeDeLeitos } from '@/features/beds/components/GradeDeLeitos';
+import { PainelMeuPlantao } from '@/features/beds/components/PainelMeuPlantao';
 import { lerLeitosOcupados } from '@/features/beds/services/leitos';
 
 export const dynamic = 'force-dynamic';
 
-export default async function WarRoomPage() {
+export const metadata: Metadata = { title: 'Meu plantão' };
+
+export default async function MeuPlantaoPage() {
   const leitos = await lerLeitosOcupados();
   // Um relógio só para toda a grade, passado para baixo: os componentes ficam
   // puros e testáveis, e a idade das infusões é medida contra o mesmo instante.
+  // Conta de data NÃO se faz no navegador — o relógio é este, do servidor.
   const agoraISO = new Date().toISOString();
 
   const criticos = leitos.filter((l) => l.acuidade === 'CRITICO').length;
@@ -35,15 +44,17 @@ export default async function WarRoomPage() {
     <>
       {/*
         Barra de comando — navy nos dois temas, porque é a marca e não o tema.
-        Fica grudada no topo: rolando 33 leitos, a contagem de críticos não
-        pode sair da tela.
+        Fica grudada no topo: rolando a grade, a contagem de críticos não pode
+        sair da tela. `pr-14` reserva o canto direito para o BotaoTema fixo do
+        layout (z-20, por cima deste header z-10) — sem a folga, o carimbo de
+        hora ficaria embaixo do botão em tela estreita.
       */}
       <header className="sasi-chrome sticky top-0 z-10">
-        <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-4 py-3 sm:px-6">
+        <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-4 py-3 pr-14 sm:px-6 sm:pr-14">
           <div className="flex items-baseline gap-3">
             <span className="text-chrome-texto text-md font-bold tracking-tight">SASI</span>
             <span className="text-chrome-suave text-xs font-medium tracking-wide uppercase">
-              War Room · UTI
+              Meu plantão
             </span>
           </div>
           <p data-clinical-number className="text-chrome-suave text-xs">
@@ -56,10 +67,13 @@ export default async function WarRoomPage() {
         <section aria-label="Resumo do plantão" className="mb-6">
           {/*
             A contagem é do PLANTÃO, não da unidade: o operador assume 6 a 12
-            pacientes, não os 33 leitos do serviço. Uma tentativa de desenhar a
+            pacientes, não os 34 leitos do serviço. Uma tentativa de desenhar a
             planta inteira foi descartada por isso — leito que ele não assumiu
             não está "vago", está fora do sistema, e pintar de vago seria
             afirmar uma coisa que a tela não sabe.
+
+            Os números são do plantão INTEIRO, de propósito fora do filtro da
+            ilha client: filtrar a grade não muda quantos críticos existem.
           */}
           <dl className="flex flex-wrap gap-2">
             <StatPill rotulo="Pacientes" valor={leitos.length} />
@@ -81,7 +95,7 @@ export default async function WarRoomPage() {
           )}
         </section>
 
-        <GradeDeLeitos leitos={leitos} agoraISO={agoraISO} />
+        <PainelMeuPlantao leitos={leitos} agoraISO={agoraISO} />
       </main>
     </>
   );

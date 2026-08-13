@@ -1,5 +1,6 @@
+'use client';
 /**
- * Card de um leito no War Room.
+ * Card de um leito no Meu plantão.
  *
  * Componente EXIBE, não calcula: acuidade, semáforo e divergência chegam
  * prontos de `triagemDeLeitos`. Nenhum cálculo clínico mora aqui.
@@ -9,7 +10,15 @@
  * herói, e os selos de terapia numa fileira só. A versão anterior deste
  * arquivo tinha tudo no mesmo peso de texto — em 33 leitos, isso obriga a ler
  * card por card para achar o grave.
+ *
+ * ILHA CLIENT POR CARD: a única interatividade que mora AQUI é a expansão
+ * (`useState`). O detalhe expandido (`DetalheDoLeito`) é montado só quando
+ * aberto — é lá que vivem o ack de alerta e a conclusão de pendência; assim um
+ * card fechado não dispara consulta nenhuma.
  */
+import { ChevronDown, ChevronUp } from 'lucide-react';
+import { useState } from 'react';
+
 import { GravityBadge } from '@/components/clinical/GravityBadge';
 import { SofaBadge } from '@/components/clinical/SofaBadge';
 import { TherapyBadge } from '@/components/clinical/TherapyBadge';
@@ -23,7 +32,8 @@ import {
   txt,
 } from '@/lib/formatters/clinico';
 import type { Dispositivos, InfusaoOuTexto, Isolamento } from '@/types';
-import type { LeitoNaGrade } from '@/features/beds/types';
+import { DetalheDoLeito } from '@/features/beds/components/DetalheDoLeito';
+import type { PropsBedCard } from '@/features/beds/types';
 
 /** Barra esquerda por acuidade — o olho acha o grave antes de ler. */
 const BARRA_ACUIDADE: Record<Acuidade, string> = {
@@ -66,7 +76,17 @@ function infusoesReais(lista: InfusaoOuTexto[] | null | undefined): InfusaoOuTex
   return (lista ?? []).filter((d) => (typeof d === 'string' ? d.trim() !== '' : Boolean(d?.droga)));
 }
 
-export function BedCard({ leito, agoraISO }: { leito: LeitoNaGrade; agoraISO: string }) {
+export function BedCard({
+  leito,
+  agoraISO,
+  alertasAbertos,
+  pendencias: pendenciasVivas,
+  erroPendencias = null,
+  dispositivos: dispositivosVivos,
+  erroDispositivos = null,
+}: PropsBedCard) {
+  const [expandido, setExpandido] = useState(false);
+
   const dispositivos = dispositivosAtivos(leito.dispositivos);
   const isolamento = leito.isolation ? ROTULO_ISOLAMENTO[leito.isolation] : null;
   const dvas = infusoesReais(leito.dvas);
@@ -75,8 +95,14 @@ export function BedCard({ leito, agoraISO }: { leito: LeitoNaGrade; agoraISO: st
   // Via aérea artificial: o selo VM sai de dispositivo, não de campo próprio —
   // a view não tem coluna de ventilação.
   const emVM = Boolean(leito.dispositivos?.iot || leito.dispositivos?.tqt);
-  const pendencias = leito.pendencias_abertas ?? 0;
+  // Contagem AO VIVO quando a consulta já respondeu (a lista só tem abertas);
+  // até lá, o retrato do servidor (`vw_dashboard_uti.pendencias_abertas`).
+  // Duas fontes, uma de cada vez — nunca somadas.
+  const pendencias = pendenciasVivas ? pendenciasVivas.length : (leito.pendencias_abertas ?? 0);
   const critico = leito.acuidade === 'CRITICO';
+  const alertas = alertasAbertos ?? null;
+  const temAlerta = alertas !== null && alertas.criticos + alertas.warnings + alertas.infos > 0;
+  const idDetalhe = `detalhe-${leito.paciente_id}`;
 
   return (
     <article
@@ -106,6 +132,40 @@ export function BedCard({ leito, agoraISO }: { leito: LeitoNaGrade; agoraISO: st
             />
           </div>
         </header>
+
+        {/*
+          Alertas abertos — badge de contagem, visível sem expandir o card.
+          Só aparece quando a consulta respondeu E há alerta: ausência de badge
+          com dado carregado = zero alertas (fato); sem dado, nada se afirma.
+        */}
+        {temAlerta && (
+          <ul className="flex flex-wrap gap-1" aria-label="Alertas abertos deste leito">
+            {alertas.criticos > 0 && (
+              <li className="bg-gravidade-critico-bg text-gravidade-critico-text text-2xs inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 font-semibold tracking-wide">
+                ALERTA CRÍTICO
+                <span data-clinical-number className="font-bold">
+                  {alertas.criticos}
+                </span>
+              </li>
+            )}
+            {alertas.warnings > 0 && (
+              <li className="bg-gravidade-watcher-bg text-gravidade-watcher-text text-2xs inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 font-semibold tracking-wide">
+                ALERTA
+                <span data-clinical-number className="font-bold">
+                  {alertas.warnings}
+                </span>
+              </li>
+            )}
+            {alertas.infos > 0 && (
+              <li className="bg-superficie-afundada text-texto-suave text-2xs inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 font-semibold tracking-wide">
+                INFO
+                <span data-clinical-number className="font-bold">
+                  {alertas.infos}
+                </span>
+              </li>
+            )}
+          </ul>
+        )}
 
         {/*
           Divergência de dado: o semáforo guardado no banco discorda da
@@ -150,7 +210,7 @@ export function BedCard({ leito, agoraISO }: { leito: LeitoNaGrade; agoraISO: st
               data-clinical-number
               className={`text-xl leading-none font-semibold ${pendencias > 0 ? 'text-gravidade-watcher' : 'text-texto-tenue'}`}
             >
-              {txt(leito.pendencias_abertas)}
+              {txt(pendencias)}
             </dd>
           </div>
         </dl>
@@ -212,7 +272,11 @@ export function BedCard({ leito, agoraISO }: { leito: LeitoNaGrade; agoraISO: st
           </div>
         )}
 
-        {/* Dispositivos: informação de fundo, peso visual mínimo. */}
+        {/*
+          Dispositivos (chip HERDADO de `vw_dashboard_uti.dispositivos`):
+          informação de fundo, peso visual mínimo. Os dias de uso da tabela
+          nova aparecem no detalhe expandido — fontes distintas, não misturar.
+        */}
         {dispositivos.length > 0 && (
           <ul className="flex flex-wrap gap-1">
             {dispositivos.map((d) => (
@@ -226,6 +290,36 @@ export function BedCard({ leito, agoraISO }: { leito: LeitoNaGrade; agoraISO: st
           </ul>
         )}
       </div>
+
+      {/*
+        Expansão — a ilha interativa do card. Alvo de toque ≥ 44px (min-h-11):
+        uma mão, andando pelo corredor. O detalhe só monta quando aberto, então
+        card fechado não consulta o banco.
+      */}
+      <button
+        type="button"
+        onClick={() => setExpandido((e) => !e)}
+        aria-expanded={expandido}
+        aria-controls={idDetalhe}
+        className="border-borda-sutil text-texto-suave hover:text-texto-titulo hover:bg-superficie-elevada flex min-h-11 w-full items-center justify-center gap-1 border-t text-xs font-medium transition-colors duration-(--dur-fast)"
+      >
+        {expandido ? 'Fechar detalhes' : 'Alertas, pendências e dispositivos'}
+        {expandido ? <ChevronUp aria-hidden size={14} /> : <ChevronDown aria-hidden size={14} />}
+      </button>
+      {expandido && (
+        <div id={idDetalhe}>
+          <DetalheDoLeito
+            pacienteId={leito.paciente_id}
+            deltaSofa24h={leito.delta_sofa_24h}
+            outOfRangeCount={leito.out_of_range_count}
+            agoraISO={agoraISO}
+            pendencias={pendenciasVivas}
+            erroPendencias={erroPendencias}
+            dispositivos={dispositivosVivos}
+            erroDispositivos={erroDispositivos}
+          />
+        </div>
+      )}
     </article>
   );
 }

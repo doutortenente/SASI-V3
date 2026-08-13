@@ -57,10 +57,9 @@ pnpm db:push         # aplica as migrations pendentes no banco
 
 Node 24 (`.nvmrc`). Gerenciador **pnpm** — o v2 usa npm, não confundir os dois repos.
 
-Medido em 11-ago-2026: `pnpm test` = **126 testes em 6 arquivos**, todos passando (número de
-09-ago confirmado). `pnpm typecheck` **falha**: 5 erros, todos em
-`src/components/clinical/SystemPanel.tsx` — arquivo novo, ainda não commitado. Enquanto ele não
-fechar, `pnpm check` para aí. Não é regressão do que já estava no repo.
+Medido em 12-ago-2026, após o bloco 1 das telas: `pnpm test` = **163 testes em 9 arquivos**, todos
+passando. `pnpm typecheck` e `pnpm build` fecham **sem erro** — o `SystemPanel.tsx` que quebrava o
+typecheck era trabalho local não commitado e não existe neste repositório.
 
 ## Onde mora o quê
 

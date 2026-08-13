@@ -6,6 +6,7 @@
  * dose que sumia da passagem, "µg" cru na tela e alergia sem destaque no índice.
  * Por isso aqui é o único lugar.
  */
+import {UTIS} from '@/lib/constants/leitos';
 import type {InfusaoOuTexto, SeveridadeVisual, Uti} from '@/types';
 
 /**
@@ -67,8 +68,30 @@ export function numeroDoLeito(leito: string): string {
     return /-(L\d{2})$/.exec(leito)?.[1] ?? leito;
 }
 
-/** Rótulo curto da UTI com a contagem de leitos que ela tem de verdade. */
-export const LEITOS_POR_UTI: Record<Uti, number> = {UTI2: 12, UTI3: 13, UTI4: 8};
+/**
+ * Quantos leitos cada UTI tem — DERIVADO de `constants/leitos.ts`, a casa única.
+ *
+ * Este objeto já foi uma cópia à mão (`UTI2: 12`) e a cópia apodreceu: o
+ * operador mediu 13 leitos na UTI 2 em 08-ago-2026, a fonte única foi
+ * atualizada e esta ficou para trás — paciente REAL em UTI2-L13 marcado como
+ * "fora da numeração" no painel. Derivar em vez de copiar torna essa deriva
+ * impossível.
+ */
+export const LEITOS_POR_UTI: Record<Uti, number> = {
+    UTI2: UTIS.UTI2.length,
+    UTI3: UTIS.UTI3.length,
+    UTI4: UTIS.UTI4.length,
+};
+
+/**
+ * true quando o NÚMERO do leito não existe na unidade (ex.: UTI3-L14 numa UTI
+ * de 13 leitos) — erro de cadastro, não superlotação. Formato ilegível também
+ * é "fora": leito que não dá para conferir não pode passar calado.
+ */
+export function foraDaNumeracao(leito: string, uti: Uti): boolean {
+    const n = Number(/-L(\d{2})$/.exec(leito)?.[1]);
+    return !Number.isFinite(n) || n < 1 || n > LEITOS_POR_UTI[uti];
+}
 
 /**
  * Descrição de uma infusão contínua para a tela.
@@ -131,8 +154,10 @@ export const CLASSE_SEMAFORO: Record<SeveridadeVisual, string> = {
 /**
  * Direção de tendência em PALAVRA, nunca em seta.
  *
- * Seta ↑ ↓ é proibida em texto clínico (doutrina do repo): em folha impressa,
- * fotocópia e leitor de tela a seta se perde ou se inverte. A palavra não.
+ * Seta de subida/descida é proibida em texto clínico (doutrina do repo): em
+ * folha impressa, fotocópia e leitor de tela a seta se perde ou se inverte.
+ * A palavra não. A proibição vale até aqui no comentário — o glifo só pode
+ * existir na regex do teste que prova a ausência dele.
  */
 export function direcao(delta: number | null | undefined, sobe = 'subindo', desce = 'em queda'): string {
     if (delta === null || delta === undefined || !Number.isFinite(delta)) return SEM_DADO;
