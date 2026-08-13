@@ -1,6 +1,19 @@
 import {describe, expect, it} from 'vitest';
 
-import {direcao, maxMin, num, numeroDoLeito, rotuloInfusao, SEM_DADO, txt, unidadeSegura,} from './clinico';
+import {UTIS} from '@/lib/constants/leitos';
+
+import {
+    direcao,
+    foraDaNumeracao,
+    LEITOS_POR_UTI,
+    maxMin,
+    num,
+    numeroDoLeito,
+    rotuloInfusao,
+    SEM_DADO,
+    txt,
+    unidadeSegura,
+} from './clinico';
 
 describe('txt — dado ausente é ausente', () => {
     it('null e undefined viram travessão, nunca 0 nem vazio', () => {
@@ -84,7 +97,9 @@ describe('rotuloInfusao — forma TEXTO, que é o que o banco vivo tem', () => {
 });
 
 describe('direcao — palavra, nunca seta', () => {
-    it('nunca devolve ↑ nem ↓', () => {
+    // A regex abaixo é o ÚNICO lugar do src/ onde os glifos de seta podem
+    // existir: é a guarda que prova que a saída nunca os contém.
+    it('nunca devolve seta de subida nem de descida', () => {
         for (const d of [3, -3, 0, null]) {
             expect(direcao(d)).not.toMatch(/[↑↓]/);
         }
@@ -96,6 +111,30 @@ describe('direcao — palavra, nunca seta', () => {
     });
     it('sem medida não inventa direção', () => {
         expect(direcao(null)).toBe(SEM_DADO);
+    });
+});
+
+describe('LEITOS_POR_UTI e foraDaNumeracao — capacidade vem da casa única', () => {
+    it('UTI2 tem 13 leitos (palavra do operador, 08-ago-2026), UTI3 13, UTI4 8', () => {
+        expect(LEITOS_POR_UTI.UTI2).toBe(13);
+        expect(LEITOS_POR_UTI.UTI3).toBe(13);
+        expect(LEITOS_POR_UTI.UTI4).toBe(8);
+    });
+    it('é DERIVADO de UTIS, não uma segunda cópia que pode apodrecer', () => {
+        expect(LEITOS_POR_UTI.UTI2).toBe(UTIS.UTI2.length);
+        expect(LEITOS_POR_UTI.UTI3).toBe(UTIS.UTI3.length);
+        expect(LEITOS_POR_UTI.UTI4).toBe(UTIS.UTI4.length);
+    });
+    it('DEFEITO REAL guardado: UTI2-L13 tem paciente e NÃO é "fora da numeração"', () => {
+        // A cópia à mão dizia UTI2=12 e o painel marcava esse leito como erro
+        // de cadastro — o paciente era real, o número errado era o do código.
+        expect(foraDaNumeracao('UTI2-L13', 'UTI2')).toBe(false);
+    });
+    it('leito além da capacidade ou ilegível continua sendo pego', () => {
+        expect(foraDaNumeracao('UTI2-L14', 'UTI2')).toBe(true);
+        expect(foraDaNumeracao('UTI4-L09', 'UTI4')).toBe(true);
+        expect(foraDaNumeracao('UTI2-L00', 'UTI2')).toBe(true);
+        expect(foraDaNumeracao('estranho', 'UTI2')).toBe(true);
     });
 });
 

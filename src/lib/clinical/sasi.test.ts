@@ -21,14 +21,20 @@ describe('imc', () => {
     });
 });
 
-describe('severidadeVisualDe', () => {
-    it('critico e grave → red', () => {
+describe('severidadeVisualDe (enum pós-P0: estavel|watcher|instavel|critico)', () => {
+    it('critico e instavel → red', () => {
         expect(severidadeVisualDe('critico')).toBe('red');
-        expect(severidadeVisualDe('grave')).toBe('red');
+        expect(severidadeVisualDe('instavel')).toBe('red');
     });
-    it('moderado → yellow, estavel → green', () => {
-        expect(severidadeVisualDe('moderado')).toBe('yellow');
+    it('watcher → yellow, estavel → green', () => {
+        expect(severidadeVisualDe('watcher')).toBe('yellow');
         expect(severidadeVisualDe('estavel')).toBe('green');
+    });
+    it('BUG CLÍNICO guardado: watcher e instavel NUNCA caem em verde', () => {
+        // A versão anterior chaveava o enum velho (grave/moderado) e os valores
+        // novos caíam no default — paciente instável pintado de verde no painel.
+        expect(severidadeVisualDe('watcher')).not.toBe('green');
+        expect(severidadeVisualDe('instavel')).not.toBe('green');
     });
 });
 
@@ -50,6 +56,9 @@ describe('acuidadeDe', () => {
     });
     it('tudo normal → ESTAVEL', () => {
         expect(acuidadeDe(base)).toBe('ESTAVEL');
+    });
+    it('status_leito=obito → OBITO, nunca ESTAVEL (óbito saiu do enum de gravidade)', () => {
+        expect(acuidadeDe({...base, status_leito: 'obito'})).toBe('OBITO');
     });
 });
 
@@ -79,13 +88,13 @@ describe('semáforo exibido (a tela não confia na coluna severidade_visual)', (
     });
 
     it('coluna de acordo com a gravidade não é sinalizada', () => {
-        expect(semaforoDivergente({gravidade: 'grave', severidade_visual: 'red'})).toBe(false);
+        expect(semaforoDivergente({gravidade: 'instavel', severidade_visual: 'red'})).toBe(false);
         expect(semaforoDivergente({gravidade: 'estavel', severidade_visual: 'green'})).toBe(false);
     });
 });
 
 describe('triagemDeLeitos', () => {
-    const linha = (leito: string, gravidade: 'critico' | 'grave' | 'moderado' | 'estavel',
+    const linha = (leito: string, gravidade: 'critico' | 'instavel' | 'watcher' | 'estavel',
                    severidade_visual: 'red' | 'yellow' | 'green') => ({
         leito, gravidade, severidade_visual,
         delta_sofa_24h: 0, out_of_range_count: 0, pendencias_abertas: 0,
@@ -99,20 +108,34 @@ describe('triagemDeLeitos', () => {
         expect(triados[0]?.divergenciaDeSemaforo).toBe(true);
     });
 
+    it('watcher e instavel do banco pós-P0 não viram verde nem ESTAVEL', () => {
+        // O defeito real: o enum velho no código fazia esses dois caírem no
+        // default e o paciente instável aparecia verde na tela de comando.
+        const triados = triagemDeLeitos([
+            linha('UTI3-L01', 'watcher', 'green'),   // coluna mente; gravidade manda
+            linha('UTI3-L02', 'instavel', 'green'),
+        ]);
+        const porLeito = Object.fromEntries(triados.map((t) => [t.leito, t]));
+        expect(porLeito['UTI3-L01']?.semaforo).toBe('yellow');
+        expect(porLeito['UTI3-L01']?.acuidade).toBe('VIGILANCIA');
+        expect(porLeito['UTI3-L02']?.semaforo).toBe('red');
+        expect(porLeito['UTI3-L02']?.acuidade).toBe('CRITICO');
+    });
+
     it('ordena mais grave primeiro mesmo quando a coluna do banco mente', () => {
         const ordenado = triagemDeLeitos([
             linha('UTI2-L05', 'estavel', 'green'),
             linha('UTI2-L13', 'critico', 'green'), // coluna diz verde; gravidade diz crítico
-            linha('UTI2-L01', 'moderado', 'yellow'),
+            linha('UTI2-L01', 'watcher', 'yellow'),
         ]);
         expect(ordenado.map((r) => r.leito)).toEqual(['UTI2-L13', 'UTI2-L01', 'UTI2-L05']);
     });
 
     it('empate de acuidade desempata por leito, para a grade não dançar entre carregamentos', () => {
         const ordenado = triagemDeLeitos([
-            linha('UTI2-L12', 'grave', 'red'),
-            linha('UTI2-L02', 'grave', 'red'),
-            linha('UTI2-L06', 'grave', 'red'),
+            linha('UTI2-L12', 'instavel', 'red'),
+            linha('UTI2-L02', 'instavel', 'red'),
+            linha('UTI2-L06', 'instavel', 'red'),
         ]);
         expect(ordenado.map((r) => r.leito)).toEqual(['UTI2-L02', 'UTI2-L06', 'UTI2-L12']);
     });
