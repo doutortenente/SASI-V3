@@ -110,16 +110,40 @@ no dia anterior — regra de `fn_evolucao_relogios`, que só roda no INSERT).
 
 ## Blocos de entrega
 
-| Bloco | Conteúdo | Portão |
-| --- | --- | --- |
-| 1 | fundação (provider, nav, tema) + consertos acima + Meu plantão enriquecido | `pnpm check` + `build` + preview Vercel |
-| 2 | Captura completa | idem + teste das validações puras |
-| 3 | migration `intercorrencias` + Fechamento (ficha, template, passagem) + fumaça e2e das 3 rotas | idem + e2e |
+| Bloco | Conteúdo | Portão | Estado |
+| --- | --- | --- | --- |
+| 1 | fundação (provider, nav, tema) + consertos acima + Meu plantão enriquecido | `pnpm check` + `build` + preview Vercel | ✅ **entregue** 12-ago-2026 (PR #9) |
+| 2 | Captura completa | idem + teste das validações puras | ✅ **entregue** 12-ago-2026 (PR #12) |
+| 3 | migration `intercorrencias` + Fechamento (ficha, template, passagem) + fumaça e2e das 3 rotas | idem + e2e | ✅ **entregue** 13-ago-2026 (migration commitada; o código do Fechamento aguarda PR) |
+
+### O que foi medido no fechamento do bloco 3 (13-ago-2026)
+
+| Portão | Resultado |
+| --- | --- |
+| `pnpm typecheck` | sem erro |
+| `pnpm lint` | sem erro |
+| `pnpm test` | 303 testes em 18 arquivos, todos passando |
+| `pnpm build` | fecha; as 6 rotas listadas como dinâmicas |
+| `pnpm test:e2e` | 7 testes, todos passando — as 4 rotas de servidor respondem **200 contra o banco vivo** |
+
+A fumaça (`tests/e2e/fumaca.spec.ts`) prova que a rota responde, o título chega e a navegação das 3
+telas está desenhada. Ela **não clica em Salvar**, de propósito: o app aponta para produção com
+paciente real, e escrita por robô sujaria prontuário.
+
+Preview da Vercel: **não conferido nesta sessão** — o portão cumprido aqui é local (`check` +
+`build` + `e2e`).
+
+O que o bloco 3 deixou de fora, e é dívida declarada e não defeito: `internacoes`/
+`fn_internacao_atual` seguem sem leitor (o trigger carimba `internacao_id` sozinho); `autor_crm`/
+`autor_nome` não são editáveis porque não há autenticação, e sem `autor_nome` a linha "Assinatura:"
+é **omitida** em vez de inventada; `src/lib/ai/` continua não existindo, conforme a decisão 4.
 
 ## Débitos conhecidos (registrados, não desta entrega)
 
 - `br.ts` duplica `num`/`unidadeSegura` de `clinico.ts` com comportamento diferente — consolidar.
 - `realtime.ts` tem `@ts-expect-error` com comentário morto.
-- `middleware.ts` usa o nome aposentado pelo Next 16 (`proxy`).
+- ~~`middleware.ts` usa o nome aposentado pelo Next 16 (`proxy`)~~ — resolvido em 12-ago-2026: o
+  arquivo foi **removido** (derrubava o site com 500). Conferido em 13-ago: não existe
+  `middleware.ts` nem `proxy.ts` no repo.
 - Tabelas em 0 linhas (`dispositivo_episodios`, `janelas_24h`, `atbs`, `culturas`, `antibiograma`):
   tela ligada nelas nasce em branco até a ingestão alimentar — não é defeito de código.

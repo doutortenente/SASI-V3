@@ -1,50 +1,144 @@
 /**
- * Rota /fechamento — EVOLUÇÃO E PASSAGEM DE PLANTÃO. Ainda em construção.
+ * Rota /fechamento — ESCOLHER DE QUEM FECHAR A NOTA, e o atalho da passagem.
  *
- * Esta página existe para a navegação não apontar para um 404: o `NavPrincipal`
- * já lista os 3 destinos e link quebrado numa barra de plantão é pior do que
- * uma página que diz a verdade.
+ * Server Component: a mesma consulta triada do Meu plantão (`lerLeitosOcupados`,
+ * mais grave primeiro) mais UMA consulta de resumo das notas
+ * (`lerResumoDasNotas`) — os 7 sistemas de cada paciente não são carregados
+ * aqui, porque esta lista não os mostra.
  *
- * O que ela VAI fazer (bloco 3 desta entrega, contrato em
- * `docs/ARQUITETURA.md` § Tela 3): ficha por sistemas, montagem determinística
- * da evolução no TEMPLATE-BASE v2 e passagem só dos pacientes do plantão, tudo
- * para revisar e copiar. Nada disso está implementado aqui; não fingir
- * funcionalidade.
+ * O QUE A LISTA RESPONDE, paciente a paciente:
+ *  - há nota DESTE plantão? (compara os dois relógios: `data_plantao` +
+ *    `turno`, a mesma chave que `fn_evolucao_relogios` deriva no banco);
+ *  - ela está finalizada? (`evolucoes.finalizada_em`);
+ *  - sem nota nenhuma, a coluna mostra TRAVESSÃO — nunca "0 notas" nem
+ *    "pendente": paciente recém-admitido sem nota é um fato, não um atraso.
+ *
+ * `force-dynamic`: lista de paciente guardada em cache pode oferecer leito que
+ * já teve alta, e abrir a ficha do paciente errado é o pior erro desta tela.
  */
-import type { Metadata } from 'next';
+import {ChevronRight, FileText} from 'lucide-react';
+import Link from 'next/link';
+import type {Metadata} from 'next';
 
-export const metadata: Metadata = { title: 'Fechamento' };
+import {GravityBadge} from '@/components/clinical/GravityBadge';
+import {lerLeitosOcupados} from '@/features/beds/services/leitos';
+import {derivarRelogiosDaNota} from '@/features/fechamento/services/ficha';
+import {lerResumoDasNotas, type ResumoDeNota} from '@/features/fechamento/services/pacientes';
+import {getSupabaseServer} from '@/lib/supabase/server';
+import {numeroDoLeito, SEM_DADO, txt} from '@/lib/formatters/clinico';
 
-export default function FechamentoPage() {
-  return (
-    <>
-      {/* Mesma barra de comando das outras telas: navy nos dois temas, grudada
-          no topo. `pr-14` reserva o canto direito para o BotaoTema fixo do layout. */}
-      <header className="sasi-chrome sticky top-0 z-10">
-        <div className="mx-auto flex max-w-[1600px] items-baseline gap-3 px-4 py-3 pr-14 sm:px-6 sm:pr-14">
-          <span className="text-md font-bold tracking-tight text-chrome-texto">SASI</span>
-          <span className="text-xs font-medium tracking-wide text-chrome-suave uppercase">
-            Fechamento · fim do turno
-          </span>
-        </div>
-      </header>
+export const dynamic = 'force-dynamic';
 
-      <main className="mx-auto max-w-[1600px] p-4 sm:p-6">
-        <section
-          aria-label="Tela em construção"
-          className="rounded-lg border border-borda-padrao bg-superficie-card p-6 shadow-card"
-        >
-          <p className="sasi-eyebrow">Em construção</p>
-          <h1 className="text-lg font-semibold text-texto-titulo">
-            Fechamento chega no bloco 3 desta entrega
-          </h1>
-          <p className="mt-2 max-w-prose text-sm text-texto-suave">
-            Aqui será o fim do turno: a ficha por sistemas, a evolução montada no template e a
-            passagem de plantão dos seus pacientes, prontas para revisar e copiar. Por enquanto esta
-            página não monta nada — a evolução continua pelo fluxo atual.
-          </p>
-        </section>
-      </main>
-    </>
-  );
+export const metadata: Metadata = {title: 'Fechamento'};
+
+/** O que a linha da lista diz sobre a nota — texto e cor, sem sigla crua. */
+function estadoDaNota(
+    resumo: ResumoDeNota | undefined,
+    dataPlantaoISO: string,
+    turno: string,
+): {rotulo: string; classe: string} {
+    // Sem nota NENHUMA: travessão. É ausência de registro, não atraso julgado.
+    if (!resumo) return {rotulo: SEM_DADO, classe: 'text-texto-tenue'};
+
+    const desteplantao = resumo.data_plantao === dataPlantaoISO && resumo.turno === turno;
+    if (!desteplantao) {
+        const dia = resumo.data_plantao.split('-').reverse().join('/');
+        return {
+            rotulo: `última nota ${dia} (${resumo.turno})`,
+            classe: 'text-texto-suave',
+        };
+    }
+    if (resumo.finalizada_em !== null) {
+        return {rotulo: 'nota finalizada', classe: 'text-gravidade-estavel'};
+    }
+    return {rotulo: 'rascunho aberto', classe: 'text-gravidade-watcher'};
+}
+
+export default async function FechamentoPage() {
+    const leitos = await lerLeitosOcupados();
+    const supabase = await getSupabaseServer();
+    // Uma consulta só para a lista inteira (6–12 pacientes) — ver o cabeçalho
+    // de `lerResumoDasNotas`. Falha de leitura LANÇA e cai no error.tsx.
+    const resumos = await lerResumoDasNotas(
+        supabase,
+        leitos.map((l) => l.paciente_id),
+    );
+
+    // Os dois relógios do plantão CORRENTE, derivados no servidor: o relógio do
+    // navegador não decide fuso nem virada de turno.
+    const {dataPlantao, turno} = derivarRelogiosDaNota(new Date());
+    const rotuloDoPlantao = `${dataPlantao.split('-').reverse().join('/')} · ${turno}`;
+
+    return (
+        <>
+            <header className="sasi-chrome sticky top-0 z-10">
+                <div className="mx-auto flex max-w-[1600px] items-baseline gap-3 px-4 py-3 pr-14 sm:px-6 sm:pr-14">
+                    <span className="text-chrome-texto text-md font-bold tracking-tight">SASI</span>
+                    <span className="text-chrome-suave text-xs font-medium tracking-wide uppercase">
+                        Fechamento · fim do turno
+                    </span>
+                </div>
+            </header>
+
+            <main className="mx-auto max-w-2xl p-4 sm:p-6">
+                <p className="sasi-eyebrow">Plantão {rotuloDoPlantao}</p>
+
+                {/* A passagem é o produto final do turno — botão destacado, antes
+                    da lista, porque é o que se abre com a mão na maçaneta. */}
+                <Link
+                    href="/fechamento/passagem"
+                    className="bg-acento shadow-card hover:bg-(--acento-hover) mt-2 flex min-h-14 items-center justify-center gap-2 rounded-xl text-base font-semibold text-(--texto-sobre-acento)"
+                >
+                    <FileText aria-hidden size={18} />
+                    Passagem do plantão
+                </Link>
+
+                {leitos.length === 0 && (
+                    <p className="border-borda-padrao bg-superficie-card text-texto-suave mt-4 rounded-lg border p-4 text-sm">
+                        Nenhum leito ocupado no painel — não há nota a fechar. Se isso não bate com
+                        o plantão real, o problema é de ingestão, não desta tela.
+                    </p>
+                )}
+
+                {/* Ordem da triagem (mais grave primeiro), a mesma do Meu plantão. */}
+                <ul className="mt-4 space-y-2">
+                    {leitos.map((l) => {
+                        const estado = estadoDaNota(resumos[l.paciente_id], dataPlantao, turno);
+                        return (
+                            <li key={l.paciente_id}>
+                                <Link
+                                    href={`/fechamento/${l.paciente_id}`}
+                                    className="bg-superficie-card border-borda-padrao shadow-card hover:shadow-elevada flex min-h-16 items-center gap-3 rounded-xl border p-3 transition-shadow duration-(--dur-fast)"
+                                >
+                                    <div className="w-14 shrink-0">
+                                        <p className="sasi-eyebrow">{l.uti}</p>
+                                        <p
+                                            data-clinical-number
+                                            className="text-texto-titulo text-2xl leading-none font-bold"
+                                        >
+                                            {numeroDoLeito(l.leito)}
+                                        </p>
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-texto-titulo truncate text-sm font-semibold">
+                                            {txt(l.nome)}
+                                        </p>
+                                        <p className={`truncate text-xs font-medium ${estado.classe}`}>
+                                            {estado.rotulo}
+                                        </p>
+                                    </div>
+                                    <GravityBadge nivel={l.acuidade} tamanho="sm" />
+                                    <ChevronRight
+                                        aria-hidden
+                                        size={18}
+                                        className="text-texto-tenue shrink-0"
+                                    />
+                                </Link>
+                            </li>
+                        );
+                    })}
+                </ul>
+            </main>
+        </>
+    );
 }
