@@ -22,7 +22,8 @@ export async function getSupabaseServer() {
                     try {
                         list.forEach(({name, value, options}) => cookieStore.set(name, value, options));
                     } catch {
-                        // Server Component não pode escrever cookie — o middleware cuida disso.
+                        // Server Component não pode escrever cookie — e sem login (vetado,
+                        // uso solo) não há sessão a renovar; ignorar é o comportamento certo.
                     }
                 },
             },
