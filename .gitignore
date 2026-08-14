@@ -26,8 +26,29 @@ blob-report/
 # ---- ferramenta e SO ----
 .vercel
 .turbo
-.idea/
 .DS_Store
+
+# ---- WebStorm ----
+# A pasta é quase toda estado de sessão (workspace.xml muda a cada clique) e fica
+# de fora. Escapam só os arquivos que configuram a FERRAMENTA para ESTE projeto e
+# que valem para qualquer máquina — todos usam $PROJECT_DIR$/$MODULE_DIR$, nunca
+# caminho absoluto. `.idea/*` com asterisco, e não `.idea/`, porque o git não
+# entra numa pasta ignorada: sem o asterisco as exceções abaixo não valeriam.
+#
+# `misc.xml` fica FORA de propósito: aponta o interpretador Node por caminho
+# absoluto da máquina (`/home/dr/.nvm/...`), que não existe em outro computador.
+# A versão exigida já está no `.nvmrc`, e o WebStorm a detecta a partir dele.
+#
+# `!.idea/` na primeira linha é obrigatório: existe um `~/.gitignore_global` que
+# ignora `.idea/` em TODOS os repositórios da máquina. Sem desfazer a regra aqui,
+# o git nunca entra na pasta e as exceções abaixo não têm efeito nenhum.
+!.idea/
+.idea/*
+!.idea/compiler.xml
+!.idea/prettier.xml
+!.idea/SASI-V3-SEM_MIGUE.iml
+!.idea/runConfigurations/
+!.idea/runConfigurations/**
 *.log
 npm-debug.log*
 pnpm-debug.log*
