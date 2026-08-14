@@ -72,3 +72,11 @@ supabase/.env
 _material/
 **/amostras/
 90-PHI-LOCAL/
+
+# `memory/` é gerado por ~/projetos/scripts/indices/build_sasi_index.py e NÃO é
+# código: são 31 MB de índice de busca (`sasi_index.db`) mais o `MAPA-SASI.md`.
+# Ignorar aqui não é arrumação, é contenção — medido em 14-ago-2026, o índice
+# guarda o CONTEÚDO INTEIRO de 298 arquivos de `_material/`, das 3 amostras com
+# dado de paciente real e do `.env.local`. Proteger só o arquivo original e
+# deixar a CÓPIA passar anula a trava acima.
+memory/
