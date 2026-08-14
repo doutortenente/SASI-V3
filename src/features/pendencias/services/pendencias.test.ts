@@ -40,7 +40,7 @@ const COLUNAS_ESPERADAS =
  * próprio; o dublê copia isso e anota cada elo da corrente, para o teste
  * conferir a consulta MONTADA — que é o contrato que interessa aqui.
  */
-function clienteFalso(resposta: { data: unknown; error: { message: string } | null }) {
+function clienteFalso(resposta: {data: unknown; error: {message: string} | null}) {
     const registro = {
         from: [] as string[],
         select: [] as string[],
@@ -188,9 +188,7 @@ describe('criarPendencia', () => {
             error: null,
         });
         await criarPendencia(supabase, {paciente_id: PAC_A, tarefa: 'revisar dieta'});
-        expect(registro.insert).toEqual([
-            {paciente_id: PAC_A, tarefa: 'revisar dieta', prioridade: 2},
-        ]);
+        expect(registro.insert).toEqual([{paciente_id: PAC_A, tarefa: 'revisar dieta', prioridade: 2}]);
     });
 
     it('falha de escrita lança erro que diz que NÃO foi salva', async () => {
@@ -227,9 +225,9 @@ describe('concluirPendencia', () => {
 
     it('falha de escrita lança — a pendência CONTINUA aberta', async () => {
         const {supabase} = clienteFalso({data: null, error: {message: 'timeout'}});
-        await expect(
-            concluirPendencia(supabase, PEND_1, {agoraISO: AGORA}),
-        ).rejects.toBeInstanceOf(FalhaAoGravarPendencia);
+        await expect(concluirPendencia(supabase, PEND_1, {agoraISO: AGORA})).rejects.toBeInstanceOf(
+            FalhaAoGravarPendencia,
+        );
     });
 });
 
@@ -245,8 +243,6 @@ describe('reabrirPendencia', () => {
 
     it('falha de escrita lança FalhaAoGravarPendencia', async () => {
         const {supabase} = clienteFalso({data: null, error: {message: 'timeout'}});
-        await expect(reabrirPendencia(supabase, PEND_1)).rejects.toBeInstanceOf(
-            FalhaAoGravarPendencia,
-        );
+        await expect(reabrirPendencia(supabase, PEND_1)).rejects.toBeInstanceOf(FalhaAoGravarPendencia);
     });
 });

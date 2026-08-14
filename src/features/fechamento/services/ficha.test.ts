@@ -41,7 +41,7 @@ const AGORA = '2026-08-13T21:00:00.000Z';
  * Dublê thenable — mesmo padrão de `pendencias.test.ts`, acrescido de `rpc`
  * (que no supabase-js também devolve um construtor com `then` próprio).
  */
-function clienteFalso(resposta: { data: unknown; error: { message: string } | null }) {
+function clienteFalso(resposta: {data: unknown; error: {message: string} | null}) {
     const registro = {
         rpc: [] as Array<[string, Record<string, unknown>]>,
         from: [] as string[],
@@ -92,9 +92,7 @@ function primeiraChamadaRpc(registro: {
 }
 
 /** O 1º patch de UPDATE anotado — mesma doutrina. */
-function primeiroPatch(registro: {
-    update: Array<Record<string, unknown>>;
-}): Record<string, unknown> {
+function primeiroPatch(registro: {update: Array<Record<string, unknown>>}): Record<string, unknown> {
     const patch = registro.update[0];
     if (!patch) throw new Error('o UPDATE nunca foi chamado');
     return patch;
@@ -263,17 +261,13 @@ describe('salvarFicha', () => {
 
     it('falha da RPC lança erro que diz que a ficha NÃO foi salva', async () => {
         const {supabase} = clienteFalso({data: null, error: {message: 'conexão perdida'}});
-        await expect(salvarFicha(supabase, entradaSintetica())).rejects.toBeInstanceOf(
-            FalhaAoGravarFicha,
-        );
+        await expect(salvarFicha(supabase, entradaSintetica())).rejects.toBeInstanceOf(FalhaAoGravarFicha);
         await expect(salvarFicha(supabase, entradaSintetica())).rejects.toThrow(/NÃO registrou/);
     });
 
     it('resposta sem id também é falha — sucesso sem alvo não é sucesso', async () => {
         const {supabase} = clienteFalso({data: null, error: null});
-        await expect(salvarFicha(supabase, entradaSintetica())).rejects.toBeInstanceOf(
-            FalhaAoGravarFicha,
-        );
+        await expect(salvarFicha(supabase, entradaSintetica())).rejects.toBeInstanceOf(FalhaAoGravarFicha);
     });
 });
 
@@ -352,17 +346,12 @@ describe('complementarEvolucao', () => {
         const patch = primeiroPatch(registro);
         expect(patch.sofa_total).toBeNull();
         expect(patch.sofa_snapshot).toEqual(sofa);
-        expect((patch.sofa_snapshot as ResultadoSofa).faltando).toEqual([
-            'bilirrubina',
-            'Glasgow',
-        ]);
+        expect((patch.sofa_snapshot as ResultadoSofa).faltando).toEqual(['bilirrubina', 'Glasgow']);
     });
 
     it('sem campo nenhum é recusado ANTES de tocar o banco', async () => {
         const {supabase, registro} = clienteFalso({data: [], error: null});
-        await expect(complementarEvolucao(supabase, EVOL, {})).rejects.toBeInstanceOf(
-            EntradaDeFichaRecusada,
-        );
+        await expect(complementarEvolucao(supabase, EVOL, {})).rejects.toBeInstanceOf(EntradaDeFichaRecusada);
         expect(registro.from).toEqual([]);
     });
 
@@ -373,8 +362,8 @@ describe('complementarEvolucao', () => {
 
     it('falha de escrita lança — a nota NÃO está complementada', async () => {
         const {supabase} = clienteFalso({data: null, error: {message: 'timeout'}});
-        await expect(
-            complementarEvolucao(supabase, EVOL, {finalizadaEm: AGORA}),
-        ).rejects.toBeInstanceOf(FalhaAoGravarFicha);
+        await expect(complementarEvolucao(supabase, EVOL, {finalizadaEm: AGORA})).rejects.toBeInstanceOf(
+            FalhaAoGravarFicha,
+        );
     });
 });

@@ -28,12 +28,7 @@
  */
 import {parseNumeroBR} from '@/lib/clinical/unidades';
 
-import type {
-    ClienteSasi,
-    EntradaDeEvento,
-    PosicaoNaFaixa,
-    TipoDeEvento,
-} from '@/features/captura/types';
+import type {ClienteSasi, EntradaDeEvento, PosicaoNaFaixa, TipoDeEvento} from '@/features/captura/types';
 import type {EventoClinico} from '@/types';
 
 /** Falha ao gravar o evento — o banco NÃO registrou, não tratar como salvo. */
@@ -43,8 +38,8 @@ export class FalhaAoGravarEvento extends Error {
     constructor(alvo: string, causaOriginal?: string) {
         super(
             `Falha ao gravar ${alvo}. O banco NÃO registrou o evento — ` +
-            `não tratar como salvo.` +
-            (causaOriginal ? ` Causa: ${causaOriginal}` : ''),
+                `não tratar como salvo.` +
+                (causaOriginal ? ` Causa: ${causaOriginal}` : ''),
         );
         this.name = 'FalhaAoGravarEvento';
         this.causaOriginal = causaOriginal;
@@ -94,10 +89,9 @@ const COLUNAS_EVENTO =
 export async function registrarEvento(
     supabase: ClienteSasi,
     entrada: EntradaDeEvento,
-): Promise<{ evento: EventoClinico; posicao: PosicaoNaFaixa | null }> {
-    const valorNum = entrada.valor === undefined || entrada.valor === null
-        ? null
-        : parseNumeroBR(entrada.valor);
+): Promise<{evento: EventoClinico; posicao: PosicaoNaFaixa | null}> {
+    const valorNum =
+        entrada.valor === undefined || entrada.valor === null ? null : parseNumeroBR(entrada.valor);
 
     // fonte SEM default no banco: 'manual' explícito, sempre.
     const payload: {
@@ -123,10 +117,7 @@ export async function registrarEvento(
         payload.source_text = entrada.source_text;
     }
 
-    const resposta = await supabase
-        .from('eventos_clinicos')
-        .insert(payload)
-        .select(COLUNAS_EVENTO);
+    const resposta = await supabase.from('eventos_clinicos').insert(payload).select(COLUNAS_EVENTO);
 
     const alvo = `o evento "${entrada.ref.codigo}" do paciente ${entrada.paciente_id}`;
     if (resposta.error) throw new FalhaAoGravarEvento(alvo, resposta.error.message);

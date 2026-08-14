@@ -46,12 +46,11 @@ export function ListaEditavel({
     return (
         <section aria-label={rotulo}>
             <h4 className="sasi-eyebrow">{rotulo}</h4>
-            {ajuda && <p className="text-texto-tenue mt-0.5 text-2xs">{ajuda}</p>}
+            {ajuda && <p className="mt-0.5 text-2xs text-texto-tenue">{ajuda}</p>}
 
             {itens.length === 0 && (
-                <p className="text-texto-tenue mt-1 text-xs">
-                    Nenhuma linha. Sem linha, a seção NÃO sai no texto — nada é preenchido por
-                    conta própria.
+                <p className="mt-1 text-xs text-texto-tenue">
+                    Nenhuma linha. Sem linha, a seção NÃO sai no texto — nada é preenchido por conta própria.
                 </p>
             )}
 
@@ -63,7 +62,7 @@ export function ListaEditavel({
                         {numerada && (
                             <span
                                 data-clinical-number
-                                className="text-texto-suave mt-2.5 w-5 shrink-0 text-right text-xs font-semibold"
+                                className="mt-2.5 w-5 shrink-0 text-right text-xs font-semibold text-texto-suave"
                             >
                                 {indice + 1}.
                             </span>
@@ -74,13 +73,13 @@ export function ListaEditavel({
                             onChange={(e) => mudarLinha(indice, e.target.value)}
                             placeholder={exemplo}
                             aria-label={`${rotulo}, linha ${indice + 1}`}
-                            className="border-borda-padrao bg-superficie-card text-texto-titulo min-h-11 w-full rounded-md border px-3 py-2 text-sm"
+                            className="min-h-11 w-full rounded-md border border-borda-padrao bg-superficie-card px-3 py-2 text-sm text-texto-titulo"
                         />
                         <button
                             type="button"
                             onClick={() => removerLinha(indice)}
                             aria-label={`Remover a linha ${indice + 1} de ${rotulo}`}
-                            className="border-borda-padrao text-texto-suave hover:bg-superficie-elevada flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-md border"
+                            className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-md border border-borda-padrao text-texto-suave hover:bg-superficie-elevada"
                         >
                             <X aria-hidden size={16} />
                         </button>
@@ -91,7 +90,7 @@ export function ListaEditavel({
             <button
                 type="button"
                 onClick={() => aoMudar([...itens, ''])}
-                className="border-borda-padrao text-texto-corpo hover:bg-superficie-elevada mt-1.5 inline-flex min-h-11 items-center gap-1.5 rounded-md border px-3 text-xs font-medium"
+                className="mt-1.5 inline-flex min-h-11 items-center gap-1.5 rounded-md border border-borda-padrao px-3 text-xs font-medium text-texto-corpo hover:bg-superficie-elevada"
             >
                 <Plus aria-hidden size={14} />
                 {rotuloDeAdicionar}

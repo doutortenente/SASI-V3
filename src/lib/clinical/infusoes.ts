@@ -120,22 +120,12 @@ export interface DoseCalculada {
 
 /** Por que a dose não pôde ser calculada. A tela mostra o motivo, não um número. */
 export type MotivoSemDose =
-    | 'farmaco-desconhecido'
-    | 'diluicao-desconhecida'
-    | 'vazao-ausente'
-    | 'vazao-invalida'
-    | 'peso-necessario';
+    'farmaco-desconhecido' | 'diluicao-desconhecida' | 'vazao-ausente' | 'vazao-invalida' | 'peso-necessario';
 
-export type ResultadoDose =
-    | { ok: true; dose: DoseCalculada }
-    | { ok: false; motivo: MotivoSemDose };
+export type ResultadoDose = {ok: true; dose: DoseCalculada} | {ok: false; motivo: MotivoSemDose};
 
 /** Doses por quilo: sem peso a conta não existe. Nunca chutar peso de paciente. */
-const EXIGE_PESO: ReadonlySet<UnidadeDose> = new Set<UnidadeDose>([
-    'mcg/kg/min',
-    'mcg/kg/h',
-    'mg/kg/h',
-]);
+const EXIGE_PESO: ReadonlySet<UnidadeDose> = new Set<UnidadeDose>(['mcg/kg/min', 'mcg/kg/h', 'mg/kg/h']);
 
 /**
  * Converte vazão da bomba (mL/h) na dose clínica.

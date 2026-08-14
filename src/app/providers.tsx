@@ -19,15 +19,15 @@
  * Estado de servidor = TanStack Query · estado de UI = Zustand (os stores de
  * `src/stores/` não precisam de provider — são importados direto).
  */
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useState } from 'react';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import {useState} from 'react';
 
-export function Providers({ children }: { children: React.ReactNode }) {
-  // Sem defaultOptions globais de propósito: cada query define o próprio
-  // staleTime junto de si (ex.: `useAlertas` usa 30s porque o canal ao vivo é
-  // quem manda revalidar). Um padrão global aqui viraria configuração fantasma
-  // que ninguém lembra de onde veio.
-  const [queryClient] = useState(() => new QueryClient());
+export function Providers({children}: {children: React.ReactNode}) {
+    // Sem defaultOptions globais de propósito: cada query define o próprio
+    // staleTime junto de si (ex.: `useAlertas` usa 30s porque o canal ao vivo é
+    // quem manda revalidar). Um padrão global aqui viraria configuração fantasma
+    // que ninguém lembra de onde veio.
+    const [queryClient] = useState(() => new QueryClient());
 
-  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 }

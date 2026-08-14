@@ -19,7 +19,7 @@
 // Vale a regra, não o arquivo — recriado módulo a módulo, com teste.
 // ============================================================================
 import {calcularDose, DVA} from '@/lib/clinical/infusoes';
-import {calcularDebitoUrinario, coerceFiO2, coercePlaquetas, parseNumeroBR,} from '@/lib/clinical/unidades';
+import {calcularDebitoUrinario, coerceFiO2, coercePlaquetas, parseNumeroBR} from '@/lib/clinical/unidades';
 
 export type PontoSofa = 0 | 1 | 2 | 3 | 4;
 export type SistemaSofa = 'resp' | 'coag' | 'hepatico' | 'cardio' | 'neuro' | 'renal';

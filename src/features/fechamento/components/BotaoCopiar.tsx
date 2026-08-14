@@ -71,24 +71,20 @@ export function BotaoCopiar({
                 onClick={() => void copiar()}
                 className={`inline-flex min-h-11 items-center justify-center gap-1.5 rounded-md px-4 text-sm font-semibold ${classeBase}`}
             >
-                {estado === 'copiado' ? (
-                    <Check aria-hidden size={16} />
-                ) : (
-                    <Copy aria-hidden size={16} />
-                )}
+                {estado === 'copiado' ? <Check aria-hidden size={16} /> : <Copy aria-hidden size={16} />}
                 {estado === 'copiado' ? 'Copiado' : rotulo}
             </button>
 
             {/* `role="status"` avisa leitor de tela sem roubar o foco. */}
             {estado === 'copiado' && (
-                <span role="status" className="text-gravidade-estavel text-2xs font-medium">
+                <span role="status" className="text-2xs font-medium text-gravidade-estavel">
                     Copiado — cole no prontuário e revise antes de assinar.
                 </span>
             )}
             {estado === 'falhou' && (
-                <span role="alert" className="text-gravidade-critico text-2xs font-medium">
-                    O navegador NÃO deixou copiar. Nada foi para a área de transferência —
-                    selecione o texto e copie à mão.
+                <span role="alert" className="text-2xs font-medium text-gravidade-critico">
+                    O navegador NÃO deixou copiar. Nada foi para a área de transferência — selecione o texto e
+                    copie à mão.
                 </span>
             )}
         </span>

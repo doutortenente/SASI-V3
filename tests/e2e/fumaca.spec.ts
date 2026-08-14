@@ -16,7 +16,7 @@
  * 500. Ou seja, um vermelho neste arquivo tem duas causas possíveis e o próprio
  * teste as separa: rota quebrada, ou banco inalcançável a partir da máquina.
  */
-import { expect, test } from '@playwright/test';
+import {expect, test} from '@playwright/test';
 
 /**
  * As 3 telas + a passagem, com o título que o `metadata` de cada rota promete.
@@ -27,56 +27,56 @@ import { expect, test } from '@playwright/test';
  * sem o sufixo. Comportamento do Next, medido em 13-ago-2026.
  */
 const ROTAS = [
-  { caminho: '/', titulo: 'Meu plantão', tela: 'Meu plantão' },
-  { caminho: '/captura', titulo: 'Captura · SASI', tela: 'Captura' },
-  { caminho: '/fechamento', titulo: 'Fechamento · SASI', tela: 'Fechamento' },
-  { caminho: '/fechamento/passagem', titulo: 'Passagem do plantão · SASI', tela: 'Passagem' },
+    {caminho: '/', titulo: 'Meu plantão', tela: 'Meu plantão'},
+    {caminho: '/captura', titulo: 'Captura · SASI', tela: 'Captura'},
+    {caminho: '/fechamento', titulo: 'Fechamento · SASI', tela: 'Fechamento'},
+    {caminho: '/fechamento/passagem', titulo: 'Passagem do plantão · SASI', tela: 'Passagem'},
 ] as const;
 
 for (const rota of ROTAS) {
-  test(`${rota.tela} (${rota.caminho}) responde 200 e renderiza`, async ({ page }) => {
-    const resposta = await page.goto(rota.caminho, { waitUntil: 'domcontentloaded' });
+    test(`${rota.tela} (${rota.caminho}) responde 200 e renderiza`, async ({page}) => {
+        const resposta = await page.goto(rota.caminho, {waitUntil: 'domcontentloaded'});
 
-    // `page.goto` devolve null só quando não houve navegação de rede.
-    expect(resposta, `sem resposta HTTP para ${rota.caminho}`).not.toBeNull();
-    expect(resposta!.status(), `status de ${rota.caminho}`).toBe(200);
+        // `page.goto` devolve null só quando não houve navegação de rede.
+        expect(resposta, `sem resposta HTTP para ${rota.caminho}`).not.toBeNull();
+        expect(resposta!.status(), `status de ${rota.caminho}`).toBe(200);
 
-    // Título vem do `metadata` do arquivo de rota, montado no servidor: se ele
-    // chegou, o Server Component terminou de renderizar sem estourar.
-    await expect(page).toHaveTitle(rota.titulo);
+        // Título vem do `metadata` do arquivo de rota, montado no servidor: se ele
+        // chegou, o Server Component terminou de renderizar sem estourar.
+        await expect(page).toHaveTitle(rota.titulo);
 
-    // A marca da barra de comando aparece em toda tela.
-    await expect(page.getByText('SASI').first()).toBeVisible();
-  });
+        // A marca da barra de comando aparece em toda tela.
+        await expect(page.getByText('SASI').first()).toBeVisible();
+    });
 }
 
-test('a navegação das 3 telas está em todas as rotas', async ({ page }) => {
-  for (const rota of ROTAS) {
-    await page.goto(rota.caminho, { waitUntil: 'domcontentloaded' });
+test('a navegação das 3 telas está em todas as rotas', async ({page}) => {
+    for (const rota of ROTAS) {
+        await page.goto(rota.caminho, {waitUntil: 'domcontentloaded'});
 
-    const nav = page.getByRole('navigation', { name: 'Navegação principal' });
-    await expect(nav, `nav ausente em ${rota.caminho}`).toBeVisible();
+        const nav = page.getByRole('navigation', {name: 'Navegação principal'});
+        await expect(nav, `nav ausente em ${rota.caminho}`).toBeVisible();
 
-    for (const destino of ['Meu plantão', 'Captura', 'Fechamento']) {
-      await expect(nav.getByRole('link', { name: destino })).toBeVisible();
+        for (const destino of ['Meu plantão', 'Captura', 'Fechamento']) {
+            await expect(nav.getByRole('link', {name: destino})).toBeVisible();
+        }
     }
-  }
 });
 
-test('/fechamento oferece o atalho da passagem do plantão', async ({ page }) => {
-  await page.goto('/fechamento', { waitUntil: 'domcontentloaded' });
+test('/fechamento oferece o atalho da passagem do plantão', async ({page}) => {
+    await page.goto('/fechamento', {waitUntil: 'domcontentloaded'});
 
-  const atalho = page.getByRole('link', { name: 'Passagem do plantão' });
-  await expect(atalho).toBeVisible();
-  await expect(atalho).toHaveAttribute('href', '/fechamento/passagem');
+    const atalho = page.getByRole('link', {name: 'Passagem do plantão'});
+    await expect(atalho).toBeVisible();
+    await expect(atalho).toHaveAttribute('href', '/fechamento/passagem');
 });
 
-test('nenhuma tela mostra zero no lugar de dado ausente', async ({ page }) => {
-  // Regra inegociável: ausente é travessão na TELA, nunca zero. Este teste
-  // pega a regressão mais provável — o rótulo de estado da nota virar "0
-  // notas" — sem depender de qual paciente está no banco hoje.
-  await page.goto('/fechamento', { waitUntil: 'domcontentloaded' });
-  const corpo = (await page.locator('body').innerText()).toLowerCase();
-  expect(corpo).not.toContain('0 notas');
-  expect(corpo).not.toContain('0 pendências');
+test('nenhuma tela mostra zero no lugar de dado ausente', async ({page}) => {
+    // Regra inegociável: ausente é travessão na TELA, nunca zero. Este teste
+    // pega a regressão mais provável — o rótulo de estado da nota virar "0
+    // notas" — sem depender de qual paciente está no banco hoje.
+    await page.goto('/fechamento', {waitUntil: 'domcontentloaded'});
+    const corpo = (await page.locator('body').innerText()).toLowerCase();
+    expect(corpo).not.toContain('0 notas');
+    expect(corpo).not.toContain('0 pendências');
 });

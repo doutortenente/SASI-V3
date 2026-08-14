@@ -41,7 +41,7 @@ const AGORA = '2026-08-08T22:00:00.000Z';
  * anotando cada elo da corrente, para o teste conferir a consulta MONTADA —
  * que é o contrato que interessa aqui.
  */
-function clienteFalso(resposta: { data: unknown; error: { message: string } | null }) {
+function clienteFalso(resposta: {data: unknown; error: {message: string} | null}) {
     const registro = {
         from: [] as string[],
         select: [] as string[],
@@ -275,11 +275,11 @@ describe('reconhecerAlertasDoPaciente', () => {
 
     it('falha de escrita lança erro que diz que o alerta CONTINUA ABERTO', async () => {
         const {supabase} = clienteFalso({data: null, error: {message: 'conexão perdida'}});
-        await expect(
-            reconhecerAlertasDoPaciente(supabase, PAC_A, {agoraISO: AGORA}),
-        ).rejects.toBeInstanceOf(FalhaAoReconhecerAlerta);
-        await expect(
-            reconhecerAlertasDoPaciente(supabase, PAC_A, {agoraISO: AGORA}),
-        ).rejects.toThrow(/CONTINUA ABERTO/);
+        await expect(reconhecerAlertasDoPaciente(supabase, PAC_A, {agoraISO: AGORA})).rejects.toBeInstanceOf(
+            FalhaAoReconhecerAlerta,
+        );
+        await expect(reconhecerAlertasDoPaciente(supabase, PAC_A, {agoraISO: AGORA})).rejects.toThrow(
+            /CONTINUA ABERTO/,
+        );
     });
 });

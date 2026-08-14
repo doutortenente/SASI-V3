@@ -10,7 +10,7 @@
  * 2. A variação vai em PALAVRA, não em seta. Seta se perde em fotocópia e se
  *    inverte em leitor de tela; "subindo" não.
  */
-import { SEM_DADO } from '@/lib/formatters/clinico';
+import {SEM_DADO} from '@/lib/formatters/clinico';
 
 /**
  * Faixa de cor do escore.
@@ -21,47 +21,49 @@ import { SEM_DADO } from '@/lib/formatters/clinico';
  * Fonte do escore: Vincent JL et al., Intensive Care Med 1996;22:707-10 (PMID 8844239).
  */
 export function corDoSofa(escore: number | null | undefined): string {
-  if (escore === null || escore === undefined || !Number.isFinite(escore)) return 'text-texto-tenue';
-  if (escore <= 6) return 'text-sofa-baixo';
-  if (escore <= 9) return 'text-sofa-medio';
-  if (escore <= 12) return 'text-sofa-alto';
-  return 'text-sofa-critico';
+    if (escore === null || escore === undefined || !Number.isFinite(escore)) return 'text-texto-tenue';
+    if (escore <= 6) return 'text-sofa-baixo';
+    if (escore <= 9) return 'text-sofa-medio';
+    if (escore <= 12) return 'text-sofa-alto';
+    return 'text-sofa-critico';
 }
 
 export function SofaBadge({
-  escore,
-  delta,
-  tamanho = 'md',
+    escore,
+    delta,
+    tamanho = 'md',
 }: {
-  escore: number | null | undefined;
-  /** Δ 24 h. Positivo = piorando (vermelho); negativo = melhorando (verde). */
-  delta?: number | null;
-  tamanho?: 'md' | 'lg';
+    escore: number | null | undefined;
+    /** Δ 24 h. Positivo = piorando (vermelho); negativo = melhorando (verde). */
+    delta?: number | null;
+    tamanho?: 'md' | 'lg';
 }) {
-  const temEscore = escore !== null && escore !== undefined && Number.isFinite(escore);
-  const temDelta = delta !== null && delta !== undefined && Number.isFinite(delta);
+    const temEscore = escore !== null && escore !== undefined && Number.isFinite(escore);
+    const temDelta = delta !== null && delta !== undefined && Number.isFinite(delta);
 
-  const classeNumero = tamanho === 'lg' ? 'text-2xl' : 'text-xl';
+    const classeNumero = tamanho === 'lg' ? 'text-2xl' : 'text-xl';
 
-  return (
-    <div className="flex items-baseline gap-1.5">
-      <span
-        data-clinical-number
-        className={`${classeNumero} font-semibold ${corDoSofa(escore)}`}
-        aria-label={temEscore ? `SOFA ${escore}` : 'SOFA não calculado'}
-      >
-        {temEscore ? escore : SEM_DADO}
-      </span>
+    return (
+        <div className="flex items-baseline gap-1.5">
+            <span
+                data-clinical-number
+                className={`${classeNumero} font-semibold ${corDoSofa(escore)}`}
+                aria-label={temEscore ? `SOFA ${escore}` : 'SOFA não calculado'}
+            >
+                {temEscore ? escore : SEM_DADO}
+            </span>
 
-      {temDelta && delta !== 0 && (
-        <span
-          className={`text-2xs font-semibold ${delta > 0 ? 'text-sofa-critico' : 'text-sofa-baixo'}`}
-          title="Variação do SOFA nas últimas 24 horas"
-        >
-          {delta > 0 ? 'subindo' : 'em queda'} {Math.abs(delta)}
-        </span>
-      )}
-      {temDelta && delta === 0 && <span className="text-2xs text-texto-tenue font-medium">estável</span>}
-    </div>
-  );
+            {temDelta && delta !== 0 && (
+                <span
+                    className={`text-2xs font-semibold ${delta > 0 ? 'text-sofa-critico' : 'text-sofa-baixo'}`}
+                    title="Variação do SOFA nas últimas 24 horas"
+                >
+                    {delta > 0 ? 'subindo' : 'em queda'} {Math.abs(delta)}
+                </span>
+            )}
+            {temDelta && delta === 0 && (
+                <span className="text-2xs font-medium text-texto-tenue">estável</span>
+            )}
+        </div>
+    );
 }

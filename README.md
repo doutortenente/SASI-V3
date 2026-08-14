@@ -11,15 +11,15 @@ sistema nunca estima lab, sinal vital, dose ou identificador.
 
 ## Stack
 
-| Camada | Ferramenta | Versão |
-|---|---|---|
-| Framework | Next.js (App Router, Turbopack) | 16.3 |
-| UI | React + Tailwind CSS 4 + shadcn/ui | 19.2 / 4.3 |
-| Linguagem | TypeScript (strict) | 6.0 |
-| Banco | Supabase (Postgres + RLS + Realtime) | — |
-| Estado servidor | TanStack Query | 5 |
-| Estado UI | Zustand | 5 |
-| Testes | Vitest (unit) + Playwright (e2e) | 4 / 1.62 |
+| Camada          | Ferramenta                           | Versão     |
+| --------------- | ------------------------------------ | ---------- |
+| Framework       | Next.js (App Router, Turbopack)      | 16.3       |
+| UI              | React + Tailwind CSS 4 + shadcn/ui   | 19.2 / 4.3 |
+| Linguagem       | TypeScript (strict)                  | 6.0        |
+| Banco           | Supabase (Postgres + RLS + Realtime) | —          |
+| Estado servidor | TanStack Query                       | 5          |
+| Estado UI       | Zustand                              | 5          |
+| Testes          | Vitest (unit) + Playwright (e2e)     | 4 / 1.62   |
 
 ## Rodar
 

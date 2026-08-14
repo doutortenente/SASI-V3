@@ -65,8 +65,7 @@ export interface DispositivoAtivo {
  * para o cliente tipado inferir a linha de volta: errar nome de coluna vira
  * erro de compilação, não erro em produção com o paciente na tela.
  */
-const COLUNAS =
-    'paciente_id, internacao_id, episodio_id, tipo, sitio, data_inicio, dias_em_uso';
+const COLUNAS = 'paciente_id, internacao_id, episodio_id, tipo, sitio, data_inicio, dias_em_uso';
 
 /**
  * Descarta a linha que não dá para atribuir: sem `paciente_id` não se sabe

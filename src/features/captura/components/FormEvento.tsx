@@ -146,8 +146,8 @@ export function FormEvento({
                                 }}
                                 className={`min-h-11 rounded-full border px-3 text-xs transition-colors duration-(--dur-fast) ${
                                     ativa
-                                        ? 'border-acento bg-superficie-elevada text-texto-titulo font-semibold'
-                                        : 'border-borda-padrao bg-superficie-card text-texto-corpo hover:bg-superficie-elevada font-medium'
+                                        ? 'border-acento bg-superficie-elevada font-semibold text-texto-titulo'
+                                        : 'border-borda-padrao bg-superficie-card font-medium text-texto-corpo hover:bg-superficie-elevada'
                                 }`}
                             >
                                 {ROTULO_CATEGORIA[c] ?? c}
@@ -174,13 +174,13 @@ export function FormEvento({
                                 }}
                                 className={`min-h-12 rounded-lg border px-2 py-1.5 text-sm transition-colors duration-(--dur-fast) ${
                                     ativo
-                                        ? 'border-acento bg-superficie-elevada text-texto-titulo font-semibold'
-                                        : 'border-borda-padrao bg-superficie-card text-texto-corpo hover:bg-superficie-elevada font-medium'
+                                        ? 'border-acento bg-superficie-elevada font-semibold text-texto-titulo'
+                                        : 'border-borda-padrao bg-superficie-card font-medium text-texto-corpo hover:bg-superficie-elevada'
                                 }`}
                             >
                                 {t.rotulo}
                                 {t.unidade_padrao ? (
-                                    <span className="text-texto-tenue block text-2xs font-normal">
+                                    <span className="block text-2xs font-normal text-texto-tenue">
                                         {unidadeSegura(t.unidade_padrao)}
                                     </span>
                                 ) : null}
@@ -207,14 +207,14 @@ export function FormEvento({
                         </label>
                         {/* Unidade da ref — exibida, NUNCA editável. */}
                         {ref.unidade_padrao && (
-                            <span className="text-texto-suave pb-3 text-sm font-medium">
+                            <span className="pb-3 text-sm font-medium text-texto-suave">
                                 {unidadeSegura(ref.unidade_padrao)}
                             </span>
                         )}
                     </div>
 
                     {(posicaoAoVivo === 'fora_alto' || posicaoAoVivo === 'fora_baixo') && (
-                        <p className="bg-gravidade-watcher-bg text-gravidade-watcher-text rounded-md px-3 py-2 text-xs font-medium">
+                        <p className="rounded-md bg-gravidade-watcher-bg px-3 py-2 text-xs font-medium text-gravidade-watcher-text">
                             Valor fora da faixa esperada de {ref.rotulo}
                             {ref.faixa_min != null || ref.faixa_max != null ? (
                                 <span data-clinical-number>
@@ -242,7 +242,7 @@ export function FormEvento({
                         type="button"
                         onClick={aoGravar}
                         disabled={gravar.isPending}
-                        className="bg-acento min-h-12 w-full rounded-lg text-base font-semibold text-(--texto-sobre-acento) hover:bg-(--acento-hover) disabled:opacity-50"
+                        className="min-h-12 w-full rounded-lg bg-acento text-base font-semibold text-(--texto-sobre-acento) hover:bg-(--acento-hover) disabled:opacity-50"
                     >
                         {gravar.isPending ? 'Gravando…' : `Gravar ${ref.rotulo}`}
                     </button>

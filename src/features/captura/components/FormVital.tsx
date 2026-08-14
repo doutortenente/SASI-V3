@@ -17,7 +17,12 @@
  */
 import {useState} from 'react';
 
-import {AvisoAmarelo, AvisoDeFalhaDeLeitura, ConfirmacaoDeGravacao, ErroDeGravacao} from '@/features/captura/components/Mensagens';
+import {
+    AvisoAmarelo,
+    AvisoDeFalhaDeLeitura,
+    ConfirmacaoDeGravacao,
+    ErroDeGravacao,
+} from '@/features/captura/components/Mensagens';
 import {useJanelasDoPaciente, useRegistrarJanela} from '@/features/captura/hooks/useJanelas';
 import {dataHoraCurtaEmSaoPaulo} from '@/features/captura/lib/plantao';
 import {LIMIARES_PADRAO} from '@/features/captura/services/janelas';
@@ -33,17 +38,7 @@ import type {TipoDeEvento} from '@/features/captura/types';
  * propósito: gravar uma janela do tipo "PA média (mínima)" duplicaria o
  * legado que a tabela nova veio matar. Desativá-los é decisão de banco.
  */
-const VITAIS_DE_JANELA = new Set([
-    'pa_sys',
-    'pa_dia',
-    'pam',
-    'fc',
-    'fr',
-    'spo2',
-    'temp',
-    'glicemia',
-    'pvc',
-]);
+const VITAIS_DE_JANELA = new Set(['pa_sys', 'pa_dia', 'pam', 'fc', 'fr', 'spo2', 'temp', 'glicemia', 'pvc']);
 
 /** Número em pt-BR com as casas que o valor pede (37,8 · 90). Ausente = travessão. */
 function fmt(valor: number | null | undefined): string {
@@ -137,7 +132,7 @@ export function FormVital({
     return (
         <div className="space-y-4">
             {/* A janela em que TUDO abaixo será gravado — sempre à vista. */}
-            <p className="text-texto-suave text-xs font-medium">{janela.rotulo}</p>
+            <p className="text-xs font-medium text-texto-suave">{janela.rotulo}</p>
 
             {/* Escolha do vital — chips grandes (alvo ≥48px), rótulo do banco. */}
             <div role="group" aria-label="Tipo de sinal vital">
@@ -156,8 +151,8 @@ export function FormVital({
                                 }}
                                 className={`min-h-12 rounded-lg border px-2 py-1.5 text-sm transition-colors duration-(--dur-fast) ${
                                     ativo
-                                        ? 'border-acento bg-superficie-elevada text-texto-titulo font-semibold'
-                                        : 'border-borda-padrao bg-superficie-card text-texto-corpo hover:bg-superficie-elevada font-medium'
+                                        ? 'border-acento bg-superficie-elevada font-semibold text-texto-titulo'
+                                        : 'border-borda-padrao bg-superficie-card font-medium text-texto-corpo hover:bg-superficie-elevada'
                                 }`}
                             >
                                 {t.rotulo}
@@ -212,8 +207,8 @@ export function FormVital({
                       informado usa o limiar padrão do tipo — e tipo sem padrão
                       é recusado pelo serviço, nunca inventado.
                     */}
-                    <details className="border-borda-sutil rounded-md border">
-                        <summary className="text-texto-suave hover:text-texto-titulo flex min-h-11 cursor-pointer items-center px-3 text-xs font-medium">
+                    <details className="rounded-md border border-borda-sutil">
+                        <summary className="flex min-h-11 cursor-pointer items-center px-3 text-xs font-medium text-texto-suave hover:text-texto-titulo">
                             Aferições e excursões (opcional)
                         </summary>
                         <div className="grid grid-cols-3 gap-2 px-3 pb-3">
@@ -252,7 +247,7 @@ export function FormVital({
                                 />
                             </label>
                             {textoDoLimiarPadrao(ref.codigo) && (
-                                <p className="text-texto-tenue col-span-3 text-2xs" data-clinical-number>
+                                <p className="col-span-3 text-2xs text-texto-tenue" data-clinical-number>
                                     Limiar padrão de {ref.rotulo}: {textoDoLimiarPadrao(ref.codigo)}
                                 </p>
                             )}
@@ -263,12 +258,12 @@ export function FormVital({
                         type="button"
                         onClick={aoGravar}
                         disabled={semValor || gravar.isPending}
-                        className="bg-acento min-h-12 w-full rounded-lg text-base font-semibold text-(--texto-sobre-acento) hover:bg-(--acento-hover) disabled:opacity-50"
+                        className="min-h-12 w-full rounded-lg bg-acento text-base font-semibold text-(--texto-sobre-acento) hover:bg-(--acento-hover) disabled:opacity-50"
                     >
                         {gravar.isPending ? 'Gravando…' : `Gravar ${ref.rotulo} do plantão`}
                     </button>
                     {semValor && (
-                        <p className="text-texto-tenue text-2xs">
+                        <p className="text-2xs text-texto-tenue">
                             Preencha ao menos um dos dois valores — janela sem valor não registra nada.
                         </p>
                     )}
@@ -282,17 +277,20 @@ export function FormVital({
             {/* Janelas já registradas — o campo `render` vem PRONTO do banco. */}
             <section aria-label="Janelas já registradas">
                 <h3 className="sasi-eyebrow">Já registradas deste paciente</h3>
-                {janelas.isPending && <p className="text-texto-tenue mt-1 text-xs">Consultando o banco…</p>}
+                {janelas.isPending && <p className="mt-1 text-xs text-texto-tenue">Consultando o banco…</p>}
                 {janelas.error && <AvisoDeFalhaDeLeitura mensagem={janelas.error.message} />}
                 {janelas.data && janelas.data.length === 0 && (
-                    <p className="text-texto-tenue mt-1 text-xs">
+                    <p className="mt-1 text-xs text-texto-tenue">
                         Nenhuma janela registrada — a tabela enche conforme a captura e a ingestão.
                     </p>
                 )}
                 {janelas.data && janelas.data.length > 0 && (
                     <ul className="mt-1 space-y-1">
                         {janelas.data.map((j) => (
-                            <li key={j.id ?? `${j.tipo}-${j.janela_fim}`} className="text-texto-corpo text-xs">
+                            <li
+                                key={j.id ?? `${j.tipo}-${j.janela_fim}`}
+                                className="text-xs text-texto-corpo"
+                            >
                                 <span data-clinical-number className="font-medium">
                                     {txt(j.render)}
                                 </span>{' '}
@@ -300,7 +298,7 @@ export function FormVital({
                                     · até {txt(dataHoraCurtaEmSaoPaulo(j.janela_fim))}
                                 </span>
                                 {j.requires_review === true && (
-                                    <span className="bg-gravidade-watcher-bg text-gravidade-watcher-text ml-1.5 rounded-sm px-1.5 py-0.5 text-2xs font-semibold">
+                                    <span className="ml-1.5 rounded-sm bg-gravidade-watcher-bg px-1.5 py-0.5 text-2xs font-semibold text-gravidade-watcher-text">
                                         revisar
                                     </span>
                                 )}

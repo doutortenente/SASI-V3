@@ -64,7 +64,9 @@ export function CapturaDoPaciente({
                                     : 'border-borda-padrao bg-superficie-elevada text-texto-suave hover:text-texto-titulo'
                             }`}
                         >
-                            <span className={`text-sm ${ativa ? 'font-bold' : 'font-semibold'}`}>{a.rotulo}</span>
+                            <span className={`text-sm ${ativa ? 'font-bold' : 'font-semibold'}`}>
+                                {a.rotulo}
+                            </span>
                             <span className="text-2xs">{a.descricao}</span>
                         </button>
                     );
@@ -76,7 +78,7 @@ export function CapturaDoPaciente({
                 role="tabpanel"
                 aria-label="Registrar sinal vital"
                 hidden={aba !== 'vital'}
-                className="bg-superficie-card border-borda-padrao shadow-card rounded-xl border p-4"
+                className="rounded-xl border border-borda-padrao bg-superficie-card p-4 shadow-card"
             >
                 <FormVital pacienteId={pacienteId} vocabulario={vocabulario} janela={janela} />
             </div>
@@ -85,7 +87,7 @@ export function CapturaDoPaciente({
                 role="tabpanel"
                 aria-label="Registrar evento clínico"
                 hidden={aba !== 'evento'}
-                className="bg-superficie-card border-borda-padrao shadow-card rounded-xl border p-4"
+                className="rounded-xl border border-borda-padrao bg-superficie-card p-4 shadow-card"
             >
                 <FormEvento pacienteId={pacienteId} vocabulario={vocabulario} agoraISO={agoraISO} />
             </div>
@@ -94,7 +96,7 @@ export function CapturaDoPaciente({
                 role="tabpanel"
                 aria-label="Registrar pendência"
                 hidden={aba !== 'pendencia'}
-                className="bg-superficie-card border-borda-padrao shadow-card rounded-xl border p-4"
+                className="rounded-xl border border-borda-padrao bg-superficie-card p-4 shadow-card"
             >
                 <FormPendencia pacienteId={pacienteId} />
             </div>

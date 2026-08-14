@@ -70,17 +70,10 @@ export async function lerPacientesParaFicha(
     ids: string[],
 ): Promise<PacienteParaFicha[]> {
     if (ids.length === 0) return [];
-    const resposta = await supabase
-        .from('pacientes')
-        .select(COLUNAS_PACIENTE)
-        .in('id', ids);
+    const resposta = await supabase.from('pacientes').select(COLUNAS_PACIENTE).in('id', ids);
     const linhas = exigirDado(resposta, 'pacientes (dados da ficha do fechamento)');
-    const porId = new Map(
-        (linhas as unknown as PacienteParaFicha[]).map((p) => [p.id, p]),
-    );
-    return ids
-        .map((id) => porId.get(id))
-        .filter((p): p is PacienteParaFicha => p !== undefined);
+    const porId = new Map((linhas as unknown as PacienteParaFicha[]).map((p) => [p.id, p]));
+    return ids.map((id) => porId.get(id)).filter((p): p is PacienteParaFicha => p !== undefined);
 }
 
 /**
@@ -97,8 +90,7 @@ export interface ResumoDeNota {
 }
 
 /** Colunas do resumo — só os relógios e o estado, nunca o corpo da nota. */
-const COLUNAS_RESUMO_NOTA =
-    'paciente_id, data_plantao, turno, finalizada_em, data_evolucao';
+const COLUNAS_RESUMO_NOTA = 'paciente_id, data_plantao, turno, finalizada_em, data_evolucao';
 
 /**
  * A nota MAIS RECENTE de cada paciente pedido, indexada por paciente.

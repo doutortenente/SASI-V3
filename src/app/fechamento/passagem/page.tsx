@@ -22,10 +22,7 @@ import Link from 'next/link';
 import type {Metadata} from 'next';
 
 import {lerLeitosOcupados} from '@/features/beds/services/leitos';
-import {
-    PassagemCopiavel,
-    type BlocoDaPassagem,
-} from '@/features/fechamento/components/PassagemCopiavel';
+import {PassagemCopiavel, type BlocoDaPassagem} from '@/features/fechamento/components/PassagemCopiavel';
 import {insumosDaPassagem} from '@/features/fechamento/lib/paraTexto';
 import {derivarRelogiosDaNota} from '@/features/fechamento/services/ficha';
 import {lerEvolucaoCorrente, lerInsumosDoFechamento} from '@/features/fechamento/services/insumos';
@@ -92,8 +89,8 @@ export default async function PassagemPage() {
             <div className="sticky top-0 z-10">
                 <header className="sasi-chrome">
                     <div className="mx-auto flex max-w-[1600px] items-baseline gap-3 px-4 py-3 pr-14 sm:px-6 sm:pr-14">
-                        <span className="text-chrome-texto text-md font-bold tracking-tight">SASI</span>
-                        <span className="text-chrome-suave text-xs font-medium tracking-wide uppercase">
+                        <span className="text-md font-bold tracking-tight text-chrome-texto">SASI</span>
+                        <span className="text-xs font-medium tracking-wide text-chrome-suave uppercase">
                             Passagem · {dataPlantao.split('-').reverse().join('/')} {turno}
                         </span>
                     </div>
@@ -103,16 +100,16 @@ export default async function PassagemPage() {
             <main className="mx-auto max-w-4xl p-4 sm:p-6">
                 <Link
                     href="/fechamento"
-                    className="text-texto-suave hover:text-texto-titulo mb-3 inline-flex min-h-11 items-center gap-1.5 text-sm"
+                    className="mb-3 inline-flex min-h-11 items-center gap-1.5 text-sm text-texto-suave hover:text-texto-titulo"
                 >
                     <ArrowLeft aria-hidden size={16} />
                     Voltar ao fechamento
                 </Link>
 
                 {blocos.length === 0 ? (
-                    <p className="border-borda-padrao bg-superficie-card text-texto-suave rounded-lg border p-4 text-sm">
-                        Nenhum leito ocupado no painel — não há plantão a passar. Se isso não bate
-                        com o plantão real, o problema é de ingestão, não desta tela.
+                    <p className="rounded-lg border border-borda-padrao bg-superficie-card p-4 text-sm text-texto-suave">
+                        Nenhum leito ocupado no painel — não há plantão a passar. Se isso não bate com o
+                        plantão real, o problema é de ingestão, não desta tela.
                     </p>
                 ) : (
                     <PassagemCopiavel blocos={blocos} textoCompleto={textoCompleto} />

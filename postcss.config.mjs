@@ -4,9 +4,9 @@
  * dentro do bloco `@theme` em src/styles/globals.css.
  */
 const config = {
-  plugins: {
-    '@tailwindcss/postcss': {},
-  },
+    plugins: {
+        '@tailwindcss/postcss': {},
+    },
 };
 
 export default config;

@@ -29,9 +29,21 @@ const PRIORIDADES: Array<{
     rotulo: string;
     classeAtiva: string;
 }> = [
-    {valor: 1, rotulo: 'Agora', classeAtiva: 'bg-gravidade-critico-bg text-gravidade-critico-text border-gravidade-critico'},
-    {valor: 2, rotulo: 'Rotina', classeAtiva: 'bg-gravidade-watcher-bg text-gravidade-watcher-text border-gravidade-watcher'},
-    {valor: 3, rotulo: 'Pode esperar', classeAtiva: 'bg-superficie-afundada text-texto-titulo border-borda-padrao'},
+    {
+        valor: 1,
+        rotulo: 'Agora',
+        classeAtiva: 'bg-gravidade-critico-bg text-gravidade-critico-text border-gravidade-critico',
+    },
+    {
+        valor: 2,
+        rotulo: 'Rotina',
+        classeAtiva: 'bg-gravidade-watcher-bg text-gravidade-watcher-text border-gravidade-watcher',
+    },
+    {
+        valor: 3,
+        rotulo: 'Pode esperar',
+        classeAtiva: 'bg-superficie-afundada text-texto-titulo border-borda-padrao',
+    },
 ];
 
 const ROTULO_PRIORIDADE: Record<PrioridadeDePendencia, string> = {
@@ -83,7 +95,7 @@ export function FormPendencia({pacienteId}: {pacienteId: string}) {
                     value={tarefa}
                     onChange={(e) => setTarefa(e.target.value)}
                     placeholder="ex.: colher gasometria de controle"
-                    className="border-borda-padrao bg-superficie-card text-texto-titulo mt-1 w-full rounded-md border px-3 py-2.5 text-base"
+                    className="mt-1 w-full rounded-md border border-borda-padrao bg-superficie-card px-3 py-2.5 text-base text-texto-titulo"
                 />
             </label>
 
@@ -100,7 +112,7 @@ export function FormPendencia({pacienteId}: {pacienteId: string}) {
                                 className={`min-h-12 rounded-lg border px-2 text-sm transition-colors duration-(--dur-fast) ${
                                     ativa
                                         ? `font-semibold ${p.classeAtiva}`
-                                        : 'border-borda-padrao bg-superficie-card text-texto-corpo hover:bg-superficie-elevada font-medium'
+                                        : 'border-borda-padrao bg-superficie-card font-medium text-texto-corpo hover:bg-superficie-elevada'
                                 }`}
                             >
                                 {p.rotulo}
@@ -114,7 +126,7 @@ export function FormPendencia({pacienteId}: {pacienteId: string}) {
                 type="button"
                 onClick={aoCriar}
                 disabled={tarefa.trim() === '' || criar.isPending}
-                className="bg-acento min-h-12 w-full rounded-lg text-base font-semibold text-(--texto-sobre-acento) hover:bg-(--acento-hover) disabled:opacity-50"
+                className="min-h-12 w-full rounded-lg bg-acento text-base font-semibold text-(--texto-sobre-acento) hover:bg-(--acento-hover) disabled:opacity-50"
             >
                 {criar.isPending ? 'Gravando…' : 'Criar pendência'}
             </button>
@@ -127,22 +139,22 @@ export function FormPendencia({pacienteId}: {pacienteId: string}) {
             <section aria-label="Pendências abertas deste paciente">
                 <h3 className="sasi-eyebrow">Abertas deste paciente</h3>
                 {desatualizado && (
-                    <p className="bg-gravidade-watcher-bg text-gravidade-watcher-text mt-1 rounded-md px-3 py-2 text-xs font-medium">
+                    <p className="mt-1 rounded-md bg-gravidade-watcher-bg px-3 py-2 text-xs font-medium text-gravidade-watcher-text">
                         O canal ao vivo caiu — a lista pode estar desatualizada até a conexão voltar.
                     </p>
                 )}
                 {erro && <AvisoDeFalhaDeLeitura mensagem={erro.message} />}
                 {concluir.error && <ErroDeGravacao mensagem={concluir.error.message} />}
-                {!erro && carregando && <p className="text-texto-tenue mt-1 text-xs">Consultando o banco…</p>}
+                {!erro && carregando && <p className="mt-1 text-xs text-texto-tenue">Consultando o banco…</p>}
                 {abertas && abertas.length === 0 && (
-                    <p className="text-texto-tenue mt-1 text-xs">Nenhuma pendência aberta.</p>
+                    <p className="mt-1 text-xs text-texto-tenue">Nenhuma pendência aberta.</p>
                 )}
                 {abertas && abertas.length > 0 && (
                     <ul className="mt-1 space-y-1.5">
                         {abertas.map((p) => (
                             <li key={p.id} className="flex items-center gap-2">
                                 <div className="min-w-0 flex-1">
-                                    <p className="text-texto-corpo text-sm">
+                                    <p className="text-sm text-texto-corpo">
                                         <span
                                             className={`mr-1.5 rounded-sm px-1.5 py-0.5 text-2xs font-semibold tracking-wide uppercase ${CLASSE_SELO[p.prioridade]}`}
                                         >
@@ -155,7 +167,7 @@ export function FormPendencia({pacienteId}: {pacienteId: string}) {
                                     type="button"
                                     onClick={() => concluir.mutate(p.id)}
                                     disabled={concluir.isPending}
-                                    className="border-borda-padrao text-texto-corpo hover:bg-superficie-elevada min-h-11 shrink-0 rounded-md border px-3 text-xs font-medium disabled:opacity-50"
+                                    className="min-h-11 shrink-0 rounded-md border border-borda-padrao px-3 text-xs font-medium text-texto-corpo hover:bg-superficie-elevada disabled:opacity-50"
                                 >
                                     Concluir
                                 </button>

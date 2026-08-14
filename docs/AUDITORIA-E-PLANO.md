@@ -11,47 +11,47 @@ Números medidos, não estimados.
 
 ## 1. O que existe em `_material/` (1,9 GB, 4 pastas)
 
-| Pasta | Tamanho | Veredito |
-|---|---|---|
-| `dados-sasi-para-analise/` | 1,1 GB | mistura: 85% peso morto + o ouro do projeto |
-| `typescript-sdk/` | 789 MB | clone do SDK oficial de MCP — referência, não é nosso código |
-| `04-pacote-skills-supabase-e-vercel/` | 376 KB | 4 skills (supabase, postgres-best-practices, automation, vercel-cli) |
-| `context7-cli-docs-mcp/` | 4 KB | resíduo vazio |
+| Pasta                                 | Tamanho | Veredito                                                             |
+| ------------------------------------- | ------- | -------------------------------------------------------------------- |
+| `dados-sasi-para-analise/`            | 1,1 GB  | mistura: 85% peso morto + o ouro do projeto                          |
+| `typescript-sdk/`                     | 789 MB  | clone do SDK oficial de MCP — referência, não é nosso código         |
+| `04-pacote-skills-supabase-e-vercel/` | 376 KB  | 4 skills (supabase, postgres-best-practices, automation, vercel-cli) |
+| `context7-cli-docs-mcp/`              | 4 KB    | resíduo vazio                                                        |
 
 ### 1.1 O peso morto (descartável sem perda)
 
-| Item | Tamanho | Por quê |
-|---|---|---|
-| `node_modules/` (3×, dentro do clone `sasi (cópia)/`) | 936 MB | dependência reinstalável |
-| `.next/` (cache de build) | 88 MB | regenerável |
-| `frontend/` (app Vite aposentado 31-jul) | 291 MB | sem `package.json`, sem `src/` — só sobra |
-| `.git/` do clone | 22 MB | histórico já vive no GitHub `doutortenente/SASI` |
-| 7 symlinks quebrados na raiz de `EXTRACAO-CLINICA-SASI/` | — | apontam pra caminho inexistente |
-| `typescript-sdk/` | 789 MB | clonável de novo quando precisar |
+| Item                                                     | Tamanho | Por quê                                          |
+| -------------------------------------------------------- | ------- | ------------------------------------------------ |
+| `node_modules/` (3×, dentro do clone `sasi (cópia)/`)    | 936 MB  | dependência reinstalável                         |
+| `.next/` (cache de build)                                | 88 MB   | regenerável                                      |
+| `frontend/` (app Vite aposentado 31-jul)                 | 291 MB  | sem `package.json`, sem `src/` — só sobra        |
+| `.git/` do clone                                         | 22 MB   | histórico já vive no GitHub `doutortenente/SASI` |
+| 7 symlinks quebrados na raiz de `EXTRACAO-CLINICA-SASI/` | —       | apontam pra caminho inexistente                  |
+| `typescript-sdk/`                                        | 789 MB  | clonável de novo quando precisar                 |
 
 **Total recuperável: ~2,1 GB dos 1,9 GB visíveis** (o clone tem repetição interna).
 
 ### 1.2 O ouro (já resgatado para o repo novo ✅)
 
-| Origem em `_material/` | Destino no v3 | Estado |
-|---|---|---|
-| `SASI-V2v3/SASIv3planoeanexos/10_schema_producao_v3.sql` (757 linhas: 13 tabelas, 14 enums, 7 views, 41 policies RLS, 9 triggers) | `supabase/migrations/20260807000000_schema_inicial_v3.sql` | ✅ copiado |
-| `starter-next/lib/database.types.ts` (311 linhas, tipos de domínio) | `src/types/clinical.ts` | ✅ copiado |
-| `starter-next/lib/sasi.ts` (69 linhas: imc, triagem, acuidade, stewardship) | `src/lib/clinical/sasi.ts` | ✅ copiado + 11 testes |
-| Design system `sasi-design-system/tokens/*.css` (2 temas, escala de gravidade, 7 cores de sistema) | `src/styles/globals.css` (bloco `@theme`) | ✅ portado pra Tailwind 4 |
+| Origem em `_material/`                                                                                                            | Destino no v3                                              | Estado                    |
+| --------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- | ------------------------- |
+| `SASI-V2v3/SASIv3planoeanexos/10_schema_producao_v3.sql` (757 linhas: 13 tabelas, 14 enums, 7 views, 41 policies RLS, 9 triggers) | `supabase/migrations/20260807000000_schema_inicial_v3.sql` | ✅ copiado                |
+| `starter-next/lib/database.types.ts` (311 linhas, tipos de domínio)                                                               | `src/types/clinical.ts`                                    | ✅ copiado                |
+| `starter-next/lib/sasi.ts` (69 linhas: imc, triagem, acuidade, stewardship)                                                       | `src/lib/clinical/sasi.ts`                                 | ✅ copiado + 11 testes    |
+| Design system `sasi-design-system/tokens/*.css` (2 temas, escala de gravidade, 7 cores de sistema)                                | `src/styles/globals.css` (bloco `@theme`)                  | ✅ portado pra Tailwind 4 |
 
 ### 1.3 O ouro pendente (migrar nas próximas fases)
 
-| Item | Onde está | Destino | Condição |
-|---|---|---|---|
-| Motor clínico v2: `getSOFA()` (`sofa.ts:35`), `assessSepsis()` (`sepsis.ts:27`), `runAllAlerts()` (`engine.ts:60`) | `SASI-DESING-E_MOTOR-CLINICO-v2 (cópia)/sasi-motor-clinico-v2/` | `src/lib/clinical/{sofa,sepsis}.ts` + `src/features/alerts/` | ⚠️ **NÃO COMPILA** — extraído de PDF, faltam 9 módulos de dependência. Recriar módulo a módulo COM teste, nunca colar às cegas |
-| 11 componentes do design system (LeitoCard, SofaBadge, GravityBadge, VitalStat, SystemPanel…) | `sasi-design-system/components/{core,clinical}/` | `src/components/shared/` | usar como spec visual; reescrever sobre shadcn/ui, não copiar `.jsx` |
-| 3 templates de tela (dashboard, ficha, passagem) + UI-kit interativo | `sasi-design-system/templates/`, `ui_kits/comando-uti/` | referência de layout das rotas `/`, `/patients/[id]`, `/rounds` | só leitura |
-| Views/queries do app v2 real (`sasi-v2/src/lib/data/`, 8 arquivos) | clone em `EXTRACAO-CLINICA-SASI/sasi (cópia)/sasi-v2/` | `src/features/*/services/` | portar query a query conforme cada tela nascer |
-| `CalcPanel.tsx` (398 linhas: dose de DVA mcg/kg/min, PAM, P/F, diurese ml/kg/h) | `sasi (cópia)/sasi-v2/src/features/war-room/` | extrair cálculo pra `src/lib/clinical/hemodinamica.ts` + teste; UI refeita | fase War Room |
-| `calc_hemo.py` (588 linhas, motor hemodinâmico) e `build_passagem.py` (439 linhas, passagem determinística) | `01-pacote-skills-medicas/` | continuam como skills Python (pipeline de ingestão) — **não** viram código do app | sem ação |
-| `sasi-sofa-ruleset.md` (spec congelada SOFA1_v1.0, cutoffs Sepsis-3) | `arquivos-sasi/` | `docs/` quando o SOFA for implementado — é o contrato de aceite dos testes | fase SOFA |
-| `11_migracao_do_vivo.sql` (218 linhas, delta pro banco v2 vivo) | `SASIv3planoeanexos/` | só relevante se formos importar os pacientes do banco velho | decisão futura |
+| Item                                                                                                               | Onde está                                                       | Destino                                                                           | Condição                                                                                                                       |
+| ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Motor clínico v2: `getSOFA()` (`sofa.ts:35`), `assessSepsis()` (`sepsis.ts:27`), `runAllAlerts()` (`engine.ts:60`) | `SASI-DESING-E_MOTOR-CLINICO-v2 (cópia)/sasi-motor-clinico-v2/` | `src/lib/clinical/{sofa,sepsis}.ts` + `src/features/alerts/`                      | ⚠️ **NÃO COMPILA** — extraído de PDF, faltam 9 módulos de dependência. Recriar módulo a módulo COM teste, nunca colar às cegas |
+| 11 componentes do design system (LeitoCard, SofaBadge, GravityBadge, VitalStat, SystemPanel…)                      | `sasi-design-system/components/{core,clinical}/`                | `src/components/shared/`                                                          | usar como spec visual; reescrever sobre shadcn/ui, não copiar `.jsx`                                                           |
+| 3 templates de tela (dashboard, ficha, passagem) + UI-kit interativo                                               | `sasi-design-system/templates/`, `ui_kits/comando-uti/`         | referência de layout das rotas `/`, `/patients/[id]`, `/rounds`                   | só leitura                                                                                                                     |
+| Views/queries do app v2 real (`sasi-v2/src/lib/data/`, 8 arquivos)                                                 | clone em `EXTRACAO-CLINICA-SASI/sasi (cópia)/sasi-v2/`          | `src/features/*/services/`                                                        | portar query a query conforme cada tela nascer                                                                                 |
+| `CalcPanel.tsx` (398 linhas: dose de DVA mcg/kg/min, PAM, P/F, diurese ml/kg/h)                                    | `sasi (cópia)/sasi-v2/src/features/war-room/`                   | extrair cálculo pra `src/lib/clinical/hemodinamica.ts` + teste; UI refeita        | fase War Room                                                                                                                  |
+| `calc_hemo.py` (588 linhas, motor hemodinâmico) e `build_passagem.py` (439 linhas, passagem determinística)        | `01-pacote-skills-medicas/`                                     | continuam como skills Python (pipeline de ingestão) — **não** viram código do app | sem ação                                                                                                                       |
+| `sasi-sofa-ruleset.md` (spec congelada SOFA1_v1.0, cutoffs Sepsis-3)                                               | `arquivos-sasi/`                                                | `docs/` quando o SOFA for implementado — é o contrato de aceite dos testes        | fase SOFA                                                                                                                      |
+| `11_migracao_do_vivo.sql` (218 linhas, delta pro banco v2 vivo)                                                    | `SASIv3planoeanexos/`                                           | só relevante se formos importar os pacientes do banco velho                       | decisão futura                                                                                                                 |
 
 ### 1.4 PHI — dado real de paciente ⚠️
 
@@ -89,15 +89,15 @@ Verificado nesta data: `pnpm typecheck` ✅ · `pnpm lint` ✅ · `pnpm test` 11
 > citava nunca existiu. **E o login foi riscado pelo operador** — a numeração de fases abaixo diverge da do
 > `CLAUDE.md`; onde as duas se contradisserem, vale a decisão registrada no `CLAUDE.md`, não o número da fase.
 
-| Fase | Entrega | Insumo de `_material/` |
-|---|---|---|
-| F0 ✅ | esqueleto + schema como migration + lógica base testada | feito hoje |
-| F1 | ~~aplicar migration no projeto Supabase novo~~ + `pnpm gen:types` ✅ | `RUNBOOK-migracao-v3.md` |
-| F2 | War Room: grid de leitos sobre `vw_dashboard_uti` + realtime | design system (LeitoCard) + `triagem()` já portada |
-| F3 | Ficha do paciente (evolução por sistemas) + pendências | templates ficha + queries do v2 |
-| F4 | SOFA/Sepsis-3: recriar motor v2 módulo a módulo com Vitest | `sofa.ts`/`sepsis.ts` do motor + `sasi-sofa-ruleset.md` como contrato |
-| F5 | Alertas (`alert_rules`/`trend_rules` já existem no schema) + stewardship | `engine.ts` do motor como referência |
-| F6 | Passagem de plantão + exports | `build_passagem.py` como spec do formato |
+| Fase  | Entrega                                                                  | Insumo de `_material/`                                                |
+| ----- | ------------------------------------------------------------------------ | --------------------------------------------------------------------- |
+| F0 ✅ | esqueleto + schema como migration + lógica base testada                  | feito hoje                                                            |
+| F1    | ~~aplicar migration no projeto Supabase novo~~ + `pnpm gen:types` ✅     | `RUNBOOK-migracao-v3.md`                                              |
+| F2    | War Room: grid de leitos sobre `vw_dashboard_uti` + realtime             | design system (LeitoCard) + `triagem()` já portada                    |
+| F3    | Ficha do paciente (evolução por sistemas) + pendências                   | templates ficha + queries do v2                                       |
+| F4    | SOFA/Sepsis-3: recriar motor v2 módulo a módulo com Vitest               | `sofa.ts`/`sepsis.ts` do motor + `sasi-sofa-ruleset.md` como contrato |
+| F5    | Alertas (`alert_rules`/`trend_rules` já existem no schema) + stewardship | `engine.ts` do motor como referência                                  |
+| F6    | Passagem de plantão + exports                                            | `build_passagem.py` como spec do formato                              |
 
 ## 4. Recomendação de faxina (aguarda ordem — deleção é decisão do operador)
 

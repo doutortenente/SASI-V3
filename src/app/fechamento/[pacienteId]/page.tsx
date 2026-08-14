@@ -32,11 +32,7 @@ export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {title: 'Fechamento'};
 
-export default async function FechamentoDoPacientePage({
-    params,
-}: {
-    params: Promise<{pacienteId: string}>;
-}) {
+export default async function FechamentoDoPacientePage({params}: {params: Promise<{pacienteId: string}>}) {
     const {pacienteId} = await params;
 
     const leitos = await lerLeitosOcupados();
@@ -47,18 +43,18 @@ export default async function FechamentoDoPacientePage({
     if (!leito) {
         return (
             <main className="mx-auto max-w-xl p-4 sm:p-6">
-                <section className="border-borda-padrao bg-superficie-card shadow-card rounded-lg border p-6">
+                <section className="rounded-lg border border-borda-padrao bg-superficie-card p-6 shadow-card">
                     <p className="sasi-eyebrow">Paciente não encontrado</p>
-                    <h1 className="text-texto-titulo text-lg font-semibold">
+                    <h1 className="text-lg font-semibold text-texto-titulo">
                         Este paciente não está no painel de leitos ativos
                     </h1>
-                    <p className="text-texto-suave mt-2 text-sm">
-                        Ou o leito já foi desocupado (alta, óbito, transferência), ou o endereço
-                        veio errado. Nada foi gravado.
+                    <p className="mt-2 text-sm text-texto-suave">
+                        Ou o leito já foi desocupado (alta, óbito, transferência), ou o endereço veio errado.
+                        Nada foi gravado.
                     </p>
                     <Link
                         href="/fechamento"
-                        className="border-borda-padrao text-texto-corpo hover:bg-superficie-elevada mt-4 inline-flex min-h-11 items-center gap-1.5 rounded-md border px-4 text-sm font-medium"
+                        className="mt-4 inline-flex min-h-11 items-center gap-1.5 rounded-md border border-borda-padrao px-4 text-sm font-medium text-texto-corpo hover:bg-superficie-elevada"
                     >
                         <ArrowLeft aria-hidden size={16} />
                         Escolher outro paciente
@@ -83,18 +79,18 @@ export default async function FechamentoDoPacientePage({
     if (!paciente) {
         return (
             <main className="mx-auto max-w-xl p-4 sm:p-6">
-                <section className="border-gravidade-critico bg-superficie-card rounded-lg border-2 p-6">
+                <section className="rounded-lg border-2 border-gravidade-critico bg-superficie-card p-6">
                     <p className="sasi-eyebrow">Ficha indisponível</p>
-                    <h1 className="text-gravidade-critico text-lg font-semibold">
+                    <h1 className="text-lg font-semibold text-gravidade-critico">
                         O paciente aparece no painel, mas o cadastro não voltou
                     </h1>
-                    <p className="text-texto-suave mt-2 text-sm">
-                        Sem o cadastro carregado (hipótese diagnóstica, alergias, peso), salvar a
-                        ficha APAGARIA esses campos no banco. Nada foi gravado e a ficha não abre.
+                    <p className="mt-2 text-sm text-texto-suave">
+                        Sem o cadastro carregado (hipótese diagnóstica, alergias, peso), salvar a ficha
+                        APAGARIA esses campos no banco. Nada foi gravado e a ficha não abre.
                     </p>
                     <Link
                         href="/fechamento"
-                        className="border-borda-padrao text-texto-corpo hover:bg-superficie-elevada mt-4 inline-flex min-h-11 items-center gap-1.5 rounded-md border px-4 text-sm font-medium"
+                        className="mt-4 inline-flex min-h-11 items-center gap-1.5 rounded-md border border-borda-padrao px-4 text-sm font-medium text-texto-corpo hover:bg-superficie-elevada"
                     >
                         <ArrowLeft aria-hidden size={16} />
                         Voltar
@@ -117,18 +113,18 @@ export default async function FechamentoDoPacientePage({
             <div className="sticky top-0 z-10">
                 <header className="sasi-chrome">
                     <div className="mx-auto flex max-w-[1600px] items-baseline gap-3 px-4 py-3 pr-14 sm:px-6 sm:pr-14">
-                        <span className="text-chrome-texto text-md font-bold tracking-tight">SASI</span>
-                        <span className="text-chrome-suave text-xs font-medium tracking-wide uppercase">
+                        <span className="text-md font-bold tracking-tight text-chrome-texto">SASI</span>
+                        <span className="text-xs font-medium tracking-wide text-chrome-suave uppercase">
                             Fechamento · {dataPlantao.split('-').reverse().join('/')} {turno}
                         </span>
                     </div>
                 </header>
-                <div className="bg-superficie-card border-borda-padrao border-b shadow-card">
+                <div className="border-b border-borda-padrao bg-superficie-card shadow-card">
                     <div className="mx-auto flex max-w-[1600px] items-center gap-3 px-4 py-2 sm:px-6">
                         <Link
                             href="/fechamento"
                             aria-label="Trocar de paciente"
-                            className="text-texto-suave hover:text-texto-titulo -ml-2 flex min-h-11 min-w-11 items-center justify-center"
+                            className="-ml-2 flex min-h-11 min-w-11 items-center justify-center text-texto-suave hover:text-texto-titulo"
                         >
                             <ArrowLeft aria-hidden size={20} />
                         </Link>
@@ -136,16 +132,16 @@ export default async function FechamentoDoPacientePage({
                             <p className="sasi-eyebrow">{paciente.uti}</p>
                             <p
                                 data-clinical-number
-                                className="text-texto-titulo text-2xl leading-none font-bold"
+                                className="text-2xl leading-none font-bold text-texto-titulo"
                             >
                                 {numeroDoLeito(paciente.leito)}
                             </p>
                         </div>
                         <div className="min-w-0 flex-1">
-                            <p className="text-texto-titulo truncate text-sm font-semibold">
+                            <p className="truncate text-sm font-semibold text-texto-titulo">
                                 {txt(paciente.nome)}
                             </p>
-                            <p className="text-texto-suave truncate text-xs">{txt(paciente.hd)}</p>
+                            <p className="truncate text-xs text-texto-suave">{txt(paciente.hd)}</p>
                         </div>
                         <GravityBadge nivel={leito.acuidade} tamanho="sm" />
                     </div>

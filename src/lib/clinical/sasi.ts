@@ -3,7 +3,7 @@
 // Tipada contra database.types.ts (Anexo C). Testável isoladamente.
 // Espelha o intel()/triagem do CLAUDE.md: acuidade derivada de fisiologia, não de rótulo.
 // ============================================================================
-import type {EventoTipoRef, Gravidade, SeveridadeVisual, StatusLeito, VwDashboardUti,} from '@/types/clinical';
+import type {EventoTipoRef, Gravidade, SeveridadeVisual, StatusLeito, VwDashboardUti} from '@/types/clinical';
 
 /** IMC (mesma conta da coluna gerada no banco). altura em cm. */
 export function imc(peso: number | null, alturaCm: number | null): number | null {
@@ -84,7 +84,7 @@ type LinhaTriagem = Pick<
 >;
 
 /** Deriva tier de acuidade de limiares fisiológicos (não do status declarado). */
-export function acuidadeDe(row: LinhaTriagem & { status_leito?: StatusLeito }): Acuidade {
+export function acuidadeDe(row: LinhaTriagem & {status_leito?: StatusLeito}): Acuidade {
     // Óbito antes de tudo: nenhum limiar fisiológico se aplica. Derivado de
     // `status_leito` (onde o desfecho mora desde o P0), não de gravidade.
     if (row.status_leito === 'obito') return 'OBITO';
@@ -105,7 +105,7 @@ const RANK: Record<Acuidade, number> = {
 };
 
 /** Ordena leitos por acuidade (mais grave primeiro) — base do War Room/SITREP. */
-export function triagem<T extends LinhaTriagem>(rows: T[]): Array<T & { acuidade: Acuidade }> {
+export function triagem<T extends LinhaTriagem>(rows: T[]): Array<T & {acuidade: Acuidade}> {
     return rows
         .map((r) => ({...r, acuidade: acuidadeDe(r)}))
         .sort((a, b) => RANK[a.acuidade] - RANK[b.acuidade]);
@@ -129,7 +129,7 @@ export interface TriadoParaGrade {
  * carregamentos — leito trocando de lugar na tela de comando é erro de leitura
  * esperando acontecer.
  */
-export function triagemDeLeitos<T extends LinhaSemaforo & LinhaTriagem & { leito: string }>(
+export function triagemDeLeitos<T extends LinhaSemaforo & LinhaTriagem & {leito: string}>(
     rows: T[],
 ): Array<T & TriadoParaGrade> {
     return rows

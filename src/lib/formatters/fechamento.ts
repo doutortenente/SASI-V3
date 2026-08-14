@@ -304,9 +304,7 @@ export function linhaVital(janelas: JanelaProntaParaNota[], tipo: string): strin
  */
 export function linhaDva(infusoes: InfusaoOuTexto[] | null | undefined): string | null {
     if (!infusoes || infusoes.length === 0) return null;
-    const rotulos = infusoes
-        .map((i) => rotuloInfusao(i))
-        .filter((r) => r.trim() !== '');
+    const rotulos = infusoes.map((i) => rotuloInfusao(i)).filter((r) => r.trim() !== '');
     return juntar(rotulos, ' · ');
 }
 
@@ -354,7 +352,9 @@ export function linhaSofa(
         sofa === null
             ? ['Respiratório', 'Coagulação', 'Hepático', 'Cardiovascular', 'Neurológico', 'Renal']
             : sofa.faltando;
-    partes.push(`componentes capturados: ${apurados}/6 · faltando: ${faltando.length > 0 ? faltando.join('; ') : 'nenhum'}`);
+    partes.push(
+        `componentes capturados: ${apurados}/6 · faltando: ${faltando.length > 0 ? faltando.join('; ') : 'nenhum'}`,
+    );
     if (sofa && sofa.suprimidos.length > 0) partes.push(`suprimidos: ${sofa.suprimidos.join('; ')}`);
 
     return `${partes.join('. ')}.`;
@@ -366,9 +366,7 @@ export function linhaSofa(
  * primeiro). A tarefa NUNCA é redigida de novo aqui.
  */
 export function checklistPendencias(pendencias: PendenciaParaTexto[], marcador = '☐ '): string[] {
-    return [...pendencias]
-        .sort((a, b) => a.prioridade - b.prioridade)
-        .map((p) => `${marcador}${p.tarefa}`);
+    return [...pendencias].sort((a, b) => a.prioridade - b.prioridade).map((p) => `${marcador}${p.tarefa}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -385,9 +383,14 @@ function textoCursoAtb(a: AtbCursoParaNota): string {
     const aberto = a.dataFimISO === null || a.dataFimISO === undefined;
     const janelaDatas = juntar([dataBR(a.dataInicioISO), dataBR(a.dataFimISO)], ' a ');
     const periodo = aberto
-        ? (a.diasTerapia != null ? `D${a.diasTerapia}` : null)
-        : (janelaDatas !== null ? `(${janelaDatas})` : '(encerrado)');
-    const corpo = juntar([a.droga, numTexto(a.dose), numTexto(a.via), numTexto(a.frequencia), periodo], ' ') ?? a.droga;
+        ? a.diasTerapia != null
+            ? `D${a.diasTerapia}`
+            : null
+        : janelaDatas !== null
+          ? `(${janelaDatas})`
+          : '(encerrado)';
+    const corpo =
+        juntar([a.droga, numTexto(a.dose), numTexto(a.via), numTexto(a.frequencia), periodo], ' ') ?? a.droga;
     return a.foco ? `${corpo} — foco ${a.foco}` : corpo;
 }
 
@@ -436,7 +439,9 @@ export function montarEvolucao(insumos: InsumosEvolucao): string {
     // 2. Admissão — CONGELADO da admissão original, não atualiza (template).
     if (i.admissao) {
         escreve('');
-        escreve(`Admissão (${dataBRCurta(i.admissao.dataISO) ?? dataBR(i.admissao.dataISO) ?? ''}): ${i.admissao.texto}`);
+        escreve(
+            `Admissão (${dataBRCurta(i.admissao.dataISO) ?? dataBR(i.admissao.dataISO) ?? ''}): ${i.admissao.texto}`,
+        );
     }
 
     // 3. Intercorrências 24h — vem do array `evolucoes.intercorrencias`.
@@ -468,7 +473,10 @@ export function montarEvolucao(insumos: InsumosEvolucao): string {
         escreve(
             i.dispositivos
                 .map((d) => {
-                    const detalhe = juntar([numTexto(d.sitio), d.diasEmUso != null ? `D${d.diasEmUso}` : null]);
+                    const detalhe = juntar([
+                        numTexto(d.sitio),
+                        d.diasEmUso != null ? `D${d.diasEmUso}` : null,
+                    ]);
                     return detalhe ? `${d.rotulo} - ${detalhe}.` : `${d.rotulo}.`;
                 })
                 .join(' '),
@@ -480,10 +488,7 @@ export function montarEvolucao(insumos: InsumosEvolucao): string {
     const usoDva = linhaDva(i.dvas);
     const usoSedacao = linhaDva(i.sedativos);
     const usoAtb = i.atbs.length > 0 ? i.atbs.map(textoCursoAtb).join('; ') : null;
-    const usoNutricao = juntar(
-        [rotulado('NPT:', i.nutricao?.npt), rotulado('TNE:', i.nutricao?.tne)],
-        '. ',
-    );
+    const usoNutricao = juntar([rotulado('NPT:', i.nutricao?.npt), rotulado('TNE:', i.nutricao?.tne)], '. ');
     if (usoDva !== null || usoSedacao !== null || usoAtb !== null || usoNutricao !== null) {
         escreve('');
         escreve('Uso:');
@@ -498,48 +503,75 @@ export function montarEvolucao(insumos: InsumosEvolucao): string {
     //    remontar aqui criaria um segundo formato. Sistema sem nada = "não avaliado".
     escreve('');
     escreve('Exame físico por sistemas:');
-    escreve(linhaSistema('Neurológico', juntar([
-        numTexto(s.neuro?.descricao),
-        rotulado('RASS', s.neuro?.rass),
-    ])));
-    escreve(linhaSistema('Cardiovascular', juntar([
-        linhaVital(i.janelas, 'pa_sys'),
-        linhaVital(i.janelas, 'pa_dia'),
-        linhaVital(i.janelas, 'pam'),
-        linhaVital(i.janelas, 'fc'),
-        numTexto(s.hemo?.ritmo),
-        numTexto(s.hemo?.obs),
-        linhaDva(i.dvas),
-    ])));
-    escreve(linhaSistema('Respiratório', juntar([
-        numTexto(s.resp?.suporte),
-        linhaVital(i.janelas, 'fr'),
-        linhaVital(i.janelas, 'spo2'),
-        rotulado('P/F', i.pf),
-        numTexto(s.resp?.obs),
-    ])));
+    escreve(
+        linhaSistema('Neurológico', juntar([numTexto(s.neuro?.descricao), rotulado('RASS', s.neuro?.rass)])),
+    );
+    escreve(
+        linhaSistema(
+            'Cardiovascular',
+            juntar([
+                linhaVital(i.janelas, 'pa_sys'),
+                linhaVital(i.janelas, 'pa_dia'),
+                linhaVital(i.janelas, 'pam'),
+                linhaVital(i.janelas, 'fc'),
+                numTexto(s.hemo?.ritmo),
+                numTexto(s.hemo?.obs),
+                linhaDva(i.dvas),
+            ]),
+        ),
+    );
+    escreve(
+        linhaSistema(
+            'Respiratório',
+            juntar([
+                numTexto(s.resp?.suporte),
+                linhaVital(i.janelas, 'fr'),
+                linhaVital(i.janelas, 'spo2'),
+                rotulado('P/F', i.pf),
+                numTexto(s.resp?.obs),
+            ]),
+        ),
+    );
     escreve(linhaSistema('TGI', juntar([numTexto(s.tgi?.dieta), numTexto(s.tgi?.obs)])));
-    escreve(linhaSistema('Renal', juntar([
-        linhaVital(i.janelas, 'diurese_24h'),
-        i.bh24h != null ? `BH ${i.bh24h > 0 ? '+' : ''}${numTexto(i.bh24h)} mL` : null,
-        rotulado('Cr', s.renal?.cr),
-        rotulado('Ur', s.renal?.ur),
-        numTexto(s.renal?.descricao),
-        numTexto(s.renal?.obs),
-    ])));
-    escreve(linhaSistema('Hematológico', juntar([
-        rotulado('Hb', s.hemato?.hb, ' g/dL'),
-        rotulado('Ht', s.hemato?.ht, '%'),
-        rotulado('Plaq', s.hemato?.plaq, '×10³/µL'),
-        numTexto(s.hemato?.obs),
-    ])));
-    escreve(linhaSistema('Infeccioso', juntar([
-        i.atbs.filter((a) => a.dataFimISO == null).map(linhaAtbAtivo2).join(' · ') || null,
-        rotulado('Tmax', s.infecto?.tmax),
-        rotulado('Leuco', s.infecto?.leuco),
-        numTexto(s.infecto?.obs),
-        numTexto(i.culturas),
-    ])));
+    escreve(
+        linhaSistema(
+            'Renal',
+            juntar([
+                linhaVital(i.janelas, 'diurese_24h'),
+                i.bh24h != null ? `BH ${i.bh24h > 0 ? '+' : ''}${numTexto(i.bh24h)} mL` : null,
+                rotulado('Cr', s.renal?.cr),
+                rotulado('Ur', s.renal?.ur),
+                numTexto(s.renal?.descricao),
+                numTexto(s.renal?.obs),
+            ]),
+        ),
+    );
+    escreve(
+        linhaSistema(
+            'Hematológico',
+            juntar([
+                rotulado('Hb', s.hemato?.hb, ' g/dL'),
+                rotulado('Ht', s.hemato?.ht, '%'),
+                rotulado('Plaq', s.hemato?.plaq, '×10³/µL'),
+                numTexto(s.hemato?.obs),
+            ]),
+        ),
+    );
+    escreve(
+        linhaSistema(
+            'Infeccioso',
+            juntar([
+                i.atbs
+                    .filter((a) => a.dataFimISO == null)
+                    .map(linhaAtbAtivo2)
+                    .join(' · ') || null,
+                rotulado('Tmax', s.infecto?.tmax),
+                rotulado('Leuco', s.infecto?.leuco),
+                numTexto(s.infecto?.obs),
+                numTexto(i.culturas),
+            ]),
+        ),
+    );
     const gaso = numTexto(s.gaso);
     if (gaso !== null) escreve(`Metabólico/Gaso: ${gaso}.`);
 
@@ -653,17 +685,33 @@ function blocoPassagemPaciente(i: InsumosPassagem): string {
 
     // Moldura e identificação — o esqueleto (e os glifos) são do arquivo 05.
     escreve(molduraTopo());
-    escreve(molduraTitulo(juntar([
-        `PASSAGEM — Leito ${digitosDoLeito(p.leito)} ${p.uti}`,
-        juntar([dataBR(i.dataPlantaoISO), i.turno], ' '),
-    ], ' — ') ?? ''));
+    escreve(
+        molduraTitulo(
+            juntar(
+                [
+                    `PASSAGEM — Leito ${digitosDoLeito(p.leito)} ${p.uti}`,
+                    juntar([dataBR(i.dataPlantaoISO), i.turno], ' '),
+                ],
+                ' — ',
+            ) ?? '',
+        ),
+    );
     escreve(molduraBase());
     escreve('');
-    escreve(`🏷️  ${juntar([
-        juntar([p.nome, p.idade != null ? `${p.idade}a` : null, p.peso != null ? `${numTexto(p.peso)}kg` : null]),
-        i.diasInternacao != null ? `DH ${i.diasInternacao}º` : null,
-        numTexto(p.hd) !== null ? `HD: ${numTexto(p.hd)}` : null,
-    ], ' · ')}`);
+    escreve(
+        `🏷️  ${juntar(
+            [
+                juntar([
+                    p.nome,
+                    p.idade != null ? `${p.idade}a` : null,
+                    p.peso != null ? `${numTexto(p.peso)}kg` : null,
+                ]),
+                i.diasInternacao != null ? `DH ${i.diasInternacao}º` : null,
+                numTexto(p.hd) !== null ? `HD: ${numTexto(p.hd)}` : null,
+            ],
+            ' · ',
+        )}`,
+    );
     // Alergia sem fonte = linha omitida (nunca "nega" inventado).
     const alergias = numTexto(p.alergias);
     escreve(alergias !== null ? `⚠️  Alergias: ${alergias}` : null);
@@ -671,10 +719,12 @@ function blocoPassagemPaciente(i: InsumosPassagem): string {
 
     // Escores — o Δ é numérico (+2 / -1), nunca seta; transparência X/6 sempre.
     const sofaBase = linhaSofa(i.sofa, i.deltaSofa24h, i.qSofa).replace(/\.$/, '');
-    escreve(`📊 ${juntar([
-        sofaBase,
-        i.gravidade !== null ? `gravidade: ${GRAVIDADE_TEXTO[i.gravidade]}` : null,
-    ], ' · ')}`);
+    escreve(
+        `📊 ${juntar(
+            [sofaBase, i.gravidade !== null ? `gravidade: ${GRAVIDADE_TEXTO[i.gravidade]}` : null],
+            ' · ',
+        )}`,
+    );
     escreve('');
 
     // STATUS POR SISTEMA (pior valor 24h) — fragmento ausente some; sistema
@@ -682,37 +732,83 @@ function blocoPassagemPaciente(i: InsumosPassagem): string {
     escreve(divisoria('STATUS POR SISTEMA (pior valor 24h)'));
     const linhaStatus = (emoji: string, rotulo: string, conteudo: string | null): string =>
         `${emoji} ${rotulo.padEnd(8, ' ')}${conteudo ?? 'não avaliado'}`;
-    escreve(linhaStatus('🧠', 'NEURO', juntar([
-        numTexto(s.neuro?.descricao),
-        rotulado('RASS', s.neuro?.rass),
-        linhaDva(i.sedativos),
-    ], ' · ')));
-    escreve(linhaStatus('🫁', 'RESP', juntar([
-        numTexto(s.resp?.suporte),
-        rotulado('FiO2', i.fio2, '%'),
-        rotulado('SpO2', piorValor(i.janelas, 'spo2', 'min', '%')),
-        rotulado('P/F', i.pf),
-    ], ' · ')));
-    escreve(linhaStatus('🫀', 'HEMO', juntar([
-        rotulado('PAM', piorValor(i.janelas, 'pam', 'min')),
-        rotulado('FC', piorValor(i.janelas, 'fc', 'max')),
-        linhaDva(i.dvas),
-    ], ' · ')));
-    escreve(linhaStatus('💧', 'RENAL', juntar([
-        rotulado('DU', i.duMlKgH, ' mL/kg/h'),
-        i.bh24h != null ? `BH ${i.bh24h > 0 ? '+' : ''}${numTexto(i.bh24h)} mL` : null,
-        rotulado('Cr', s.renal?.cr),
-        numTexto(s.renal?.descricao),
-    ], ' · ')));
-    escreve(linhaStatus('🩸', 'HEMATO', juntar([
-        rotulado('Hb', s.hemato?.hb),
-        rotulado('Plaq', s.hemato?.plaq),
-        numTexto(s.hemato?.obs),
-    ], ' · ')));
-    escreve(linhaStatus('🦠', 'INFEC', juntar([
-        i.atbsAtivos.length > 0 ? i.atbsAtivos.map(linhaAtbAtivo).join(' · ') : null,
-        numTexto(i.culturasAtivas),
-    ], ' · ')));
+    escreve(
+        linhaStatus(
+            '🧠',
+            'NEURO',
+            juntar(
+                [numTexto(s.neuro?.descricao), rotulado('RASS', s.neuro?.rass), linhaDva(i.sedativos)],
+                ' · ',
+            ),
+        ),
+    );
+    escreve(
+        linhaStatus(
+            '🫁',
+            'RESP',
+            juntar(
+                [
+                    numTexto(s.resp?.suporte),
+                    rotulado('FiO2', i.fio2, '%'),
+                    rotulado('SpO2', piorValor(i.janelas, 'spo2', 'min', '%')),
+                    rotulado('P/F', i.pf),
+                ],
+                ' · ',
+            ),
+        ),
+    );
+    escreve(
+        linhaStatus(
+            '🫀',
+            'HEMO',
+            juntar(
+                [
+                    rotulado('PAM', piorValor(i.janelas, 'pam', 'min')),
+                    rotulado('FC', piorValor(i.janelas, 'fc', 'max')),
+                    linhaDva(i.dvas),
+                ],
+                ' · ',
+            ),
+        ),
+    );
+    escreve(
+        linhaStatus(
+            '💧',
+            'RENAL',
+            juntar(
+                [
+                    rotulado('DU', i.duMlKgH, ' mL/kg/h'),
+                    i.bh24h != null ? `BH ${i.bh24h > 0 ? '+' : ''}${numTexto(i.bh24h)} mL` : null,
+                    rotulado('Cr', s.renal?.cr),
+                    numTexto(s.renal?.descricao),
+                ],
+                ' · ',
+            ),
+        ),
+    );
+    escreve(
+        linhaStatus(
+            '🩸',
+            'HEMATO',
+            juntar(
+                [rotulado('Hb', s.hemato?.hb), rotulado('Plaq', s.hemato?.plaq), numTexto(s.hemato?.obs)],
+                ' · ',
+            ),
+        ),
+    );
+    escreve(
+        linhaStatus(
+            '🦠',
+            'INFEC',
+            juntar(
+                [
+                    i.atbsAtivos.length > 0 ? i.atbsAtivos.map(linhaAtbAtivo).join(' · ') : null,
+                    numTexto(i.culturasAtivas),
+                ],
+                ' · ',
+            ),
+        ),
+    );
     escreve('');
 
     // PONTOS DE ATENÇÃO — só o que muda decisão; MÁXIMO 3 (corte do arquivo 05).

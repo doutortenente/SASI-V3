@@ -2,18 +2,11 @@
   "mcpServers": {
     "next-devtools": {
       "command": "npx",
-      "args": [
-        "-y",
-        "next-devtools-mcp@latest"
-      ]
+      "args": ["-y", "next-devtools-mcp@latest"]
     },
     "supabase": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@supabase/mcp-server-supabase@latest",
-        "--project-ref=idswehsvvqczzkiatuzu"
-      ],
+      "args": ["-y", "@supabase/mcp-server-supabase@latest", "--project-ref=idswehsvvqczzkiatuzu"],
       "env": {
         "SUPABASE_ACCESS_TOKEN": "${SUPABASE_SECRET_KEY}"
       }

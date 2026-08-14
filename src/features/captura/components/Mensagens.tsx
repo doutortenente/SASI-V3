@@ -13,7 +13,7 @@ export function ErroDeGravacao({mensagem}: {mensagem: string}) {
     return (
         <p
             role="alert"
-            className="bg-gravidade-critico-bg text-gravidade-critico-text rounded-md px-3 py-2 text-xs font-medium"
+            className="rounded-md bg-gravidade-critico-bg px-3 py-2 text-xs font-medium text-gravidade-critico-text"
         >
             {mensagem}
         </p>
@@ -25,7 +25,7 @@ export function ConfirmacaoDeGravacao({children}: {children: React.ReactNode}) {
     return (
         <p
             role="status"
-            className="bg-gravidade-estavel-bg text-gravidade-estavel-text rounded-md px-3 py-2 text-xs font-medium"
+            className="rounded-md bg-gravidade-estavel-bg px-3 py-2 text-xs font-medium text-gravidade-estavel-text"
         >
             {children}
         </p>
@@ -35,7 +35,7 @@ export function ConfirmacaoDeGravacao({children}: {children: React.ReactNode}) {
 /** Aviso amarelo — a malha de faixas e a substituição de janela: SINALIZA, nunca bloqueia. */
 export function AvisoAmarelo({children}: {children: React.ReactNode}) {
     return (
-        <p className="bg-gravidade-watcher-bg text-gravidade-watcher-text rounded-md px-3 py-2 text-xs font-medium">
+        <p className="rounded-md bg-gravidade-watcher-bg px-3 py-2 text-xs font-medium text-gravidade-watcher-text">
             {children}
         </p>
     );
@@ -44,7 +44,7 @@ export function AvisoAmarelo({children}: {children: React.ReactNode}) {
 /** Falha de LEITURA — "não sei" é diferente de "não tem", e exige aviso vermelho. */
 export function AvisoDeFalhaDeLeitura({mensagem}: {mensagem: string}) {
     return (
-        <p className="bg-gravidade-critico-bg text-gravidade-critico-text rounded-sm px-2 py-1.5 text-2xs font-medium">
+        <p className="rounded-sm bg-gravidade-critico-bg px-2 py-1.5 text-2xs font-medium text-gravidade-critico-text">
             {mensagem}
         </p>
     );

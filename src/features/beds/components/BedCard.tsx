@@ -16,54 +16,63 @@
  * aberto — é lá que vivem o ack de alerta e a conclusão de pendência; assim um
  * card fechado não dispara consulta nenhuma.
  */
-import { ChevronDown, ChevronUp } from 'lucide-react';
-import { useState } from 'react';
+import {ChevronDown, ChevronUp} from 'lucide-react';
+import {useState} from 'react';
 
-import { GravityBadge } from '@/components/clinical/GravityBadge';
-import { SofaBadge } from '@/components/clinical/SofaBadge';
-import { TherapyBadge } from '@/components/clinical/TherapyBadge';
-import type { Acuidade } from '@/lib/clinical/sasi';
+import {GravityBadge} from '@/components/clinical/GravityBadge';
+import {SofaBadge} from '@/components/clinical/SofaBadge';
+import {TherapyBadge} from '@/components/clinical/TherapyBadge';
+import type {Acuidade} from '@/lib/clinical/sasi';
 import {
-  CLASSE_SEMAFORO,
-  SEM_DADO,
-  dataComIdade,
-  numeroDoLeito,
-  rotuloInfusao,
-  txt,
+    CLASSE_SEMAFORO,
+    SEM_DADO,
+    dataComIdade,
+    numeroDoLeito,
+    rotuloInfusao,
+    txt,
 } from '@/lib/formatters/clinico';
-import type { Dispositivos, InfusaoOuTexto, Isolamento } from '@/types';
-import { DetalheDoLeito } from '@/features/beds/components/DetalheDoLeito';
-import type { PropsBedCard } from '@/features/beds/types';
+import type {Dispositivos, InfusaoOuTexto, Isolamento} from '@/types';
+import {DetalheDoLeito} from '@/features/beds/components/DetalheDoLeito';
+import type {PropsBedCard} from '@/features/beds/types';
 
 /** Barra esquerda por acuidade — o olho acha o grave antes de ler. */
 const BARRA_ACUIDADE: Record<Acuidade, string> = {
-  CRITICO: 'bg-gravidade-critico',
-  INSTAVEL: 'bg-gravidade-instavel',
-  VIGILANCIA: 'bg-gravidade-watcher',
-  ESTAVEL: 'bg-gravidade-estavel',
-  // Óbito tem token próprio (cinza). Nunca verde: verde na tela de comando
-  // significa "estável", e um paciente morto não é um paciente estável.
-  OBITO: 'bg-gravidade-obito',
+    CRITICO: 'bg-gravidade-critico',
+    INSTAVEL: 'bg-gravidade-instavel',
+    VIGILANCIA: 'bg-gravidade-watcher',
+    ESTAVEL: 'bg-gravidade-estavel',
+    // Óbito tem token próprio (cinza). Nunca verde: verde na tela de comando
+    // significa "estável", e um paciente morto não é um paciente estável.
+    OBITO: 'bg-gravidade-obito',
 };
 
 const ROTULO_ISOLAMENTO: Record<Isolamento, string | null> = {
-  none: null,
-  contact: 'Contato',
-  droplet: 'Gotícula',
-  aerosol: 'Aerossol',
+    none: null,
+    contact: 'Contato',
+    droplet: 'Gotícula',
+    aerosol: 'Aerossol',
 };
 
 /** Só dispositivo invasivo, que muda conduta. `detalhe` não é dispositivo. */
 const ROTULO_DISPOSITIVO: Partial<Record<keyof Dispositivos, string>> = {
-  iot: 'IOT', tqt: 'TQT', cvc: 'CVC', pai: 'PAI', svd: 'SVD', sne: 'SNE',
-  avp: 'AVP', picc: 'PICC', dreno: 'Dreno', mpd: 'MPD', shilley: 'Shilley',
+    iot: 'IOT',
+    tqt: 'TQT',
+    cvc: 'CVC',
+    pai: 'PAI',
+    svd: 'SVD',
+    sne: 'SNE',
+    avp: 'AVP',
+    picc: 'PICC',
+    dreno: 'Dreno',
+    mpd: 'MPD',
+    shilley: 'Shilley',
 };
 
 function dispositivosAtivos(d: Dispositivos | null): string[] {
-  if (!d) return [];
-  return (Object.keys(ROTULO_DISPOSITIVO) as Array<keyof Dispositivos>)
-    .filter((k) => d[k] === true)
-    .map((k) => ROTULO_DISPOSITIVO[k]!);
+    if (!d) return [];
+    return (Object.keys(ROTULO_DISPOSITIVO) as Array<keyof Dispositivos>)
+        .filter((k) => d[k] === true)
+        .map((k) => ROTULO_DISPOSITIVO[k]!);
 }
 
 /*
@@ -73,253 +82,259 @@ function dispositivosAtivos(d: Dispositivos | null): string[] {
   da passagem" do v2. Aqui só sai o que é vazio de verdade.
 */
 function infusoesReais(lista: InfusaoOuTexto[] | null | undefined): InfusaoOuTexto[] {
-  return (lista ?? []).filter((d) => (typeof d === 'string' ? d.trim() !== '' : Boolean(d?.droga)));
+    return (lista ?? []).filter((d) => (typeof d === 'string' ? d.trim() !== '' : Boolean(d?.droga)));
 }
 
 export function BedCard({
-  leito,
-  agoraISO,
-  alertasAbertos,
-  pendencias: pendenciasVivas,
-  erroPendencias = null,
-  dispositivos: dispositivosVivos,
-  erroDispositivos = null,
+    leito,
+    agoraISO,
+    alertasAbertos,
+    pendencias: pendenciasVivas,
+    erroPendencias = null,
+    dispositivos: dispositivosVivos,
+    erroDispositivos = null,
 }: PropsBedCard) {
-  const [expandido, setExpandido] = useState(false);
+    const [expandido, setExpandido] = useState(false);
 
-  const dispositivos = dispositivosAtivos(leito.dispositivos);
-  const isolamento = leito.isolation ? ROTULO_ISOLAMENTO[leito.isolation] : null;
-  const dvas = infusoesReais(leito.dvas);
-  const sedativos = infusoesReais(leito.sedativos);
+    const dispositivos = dispositivosAtivos(leito.dispositivos);
+    const isolamento = leito.isolation ? ROTULO_ISOLAMENTO[leito.isolation] : null;
+    const dvas = infusoesReais(leito.dvas);
+    const sedativos = infusoesReais(leito.sedativos);
 
-  // Via aérea artificial: o selo VM sai de dispositivo, não de campo próprio —
-  // a view não tem coluna de ventilação.
-  const emVM = Boolean(leito.dispositivos?.iot || leito.dispositivos?.tqt);
-  // Contagem AO VIVO quando a consulta já respondeu (a lista só tem abertas);
-  // até lá, o retrato do servidor (`vw_dashboard_uti.pendencias_abertas`).
-  // Duas fontes, uma de cada vez — nunca somadas.
-  const pendencias = pendenciasVivas ? pendenciasVivas.length : (leito.pendencias_abertas ?? 0);
-  const critico = leito.acuidade === 'CRITICO';
-  const alertas = alertasAbertos ?? null;
-  const temAlerta = alertas !== null && alertas.criticos + alertas.warnings + alertas.infos > 0;
-  const idDetalhe = `detalhe-${leito.paciente_id}`;
+    // Via aérea artificial: o selo VM sai de dispositivo, não de campo próprio —
+    // a view não tem coluna de ventilação.
+    const emVM = Boolean(leito.dispositivos?.iot || leito.dispositivos?.tqt);
+    // Contagem AO VIVO quando a consulta já respondeu (a lista só tem abertas);
+    // até lá, o retrato do servidor (`vw_dashboard_uti.pendencias_abertas`).
+    // Duas fontes, uma de cada vez — nunca somadas.
+    const pendencias = pendenciasVivas ? pendenciasVivas.length : (leito.pendencias_abertas ?? 0);
+    const critico = leito.acuidade === 'CRITICO';
+    const alertas = alertasAbertos ?? null;
+    const temAlerta = alertas !== null && alertas.criticos + alertas.warnings + alertas.infos > 0;
+    const idDetalhe = `detalhe-${leito.paciente_id}`;
 
-  return (
-    <article
-      className={`bg-superficie-card text-texto-corpo border-borda-padrao shadow-card hover:shadow-elevada relative flex flex-col overflow-hidden rounded-xl border pl-4 transition-shadow duration-200 ${critico ? 'sasi-critical-pulse' : ''}`}
-      aria-label={`Leito ${leito.leito}, acuidade ${leito.acuidade}`}
-    >
-      {/* Barra de gravidade: 6px cheios, do topo ao pé do card. */}
-      <span
-        className={`absolute inset-y-0 left-0 w-1.5 ${BARRA_ACUIDADE[leito.acuidade]}`}
-        aria-hidden="true"
-      />
-
-      <div className="flex flex-col gap-3 p-3.5">
-        {/* Linha 1 — leito, gravidade, semáforo */}
-        <header className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <p className="sasi-eyebrow">{leito.uti ?? SEM_DADO}</p>
-            <h3 data-clinical-number className="text-texto-titulo text-xl leading-none font-bold">
-              {numeroDoLeito(leito.leito ?? '')}
-            </h3>
-          </div>
-          <div className="flex shrink-0 items-center gap-1.5">
-            <GravityBadge nivel={leito.acuidade} tamanho="sm" />
+    return (
+        <article
+            className={`relative flex flex-col overflow-hidden rounded-xl border border-borda-padrao bg-superficie-card pl-4 text-texto-corpo shadow-card transition-shadow duration-200 hover:shadow-elevada ${critico ? 'sasi-critical-pulse' : ''}`}
+            aria-label={`Leito ${leito.leito}, acuidade ${leito.acuidade}`}
+        >
+            {/* Barra de gravidade: 6px cheios, do topo ao pé do card. */}
             <span
-              className={`size-2.5 shrink-0 rounded-full ${CLASSE_SEMAFORO[leito.semaforo]}`}
-              aria-label={`Semáforo ${leito.semaforo}`}
+                className={`absolute inset-y-0 left-0 w-1.5 ${BARRA_ACUIDADE[leito.acuidade]}`}
+                aria-hidden="true"
             />
-          </div>
-        </header>
 
-        {/*
+            <div className="flex flex-col gap-3 p-3.5">
+                {/* Linha 1 — leito, gravidade, semáforo */}
+                <header className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                        <p className="sasi-eyebrow">{leito.uti ?? SEM_DADO}</p>
+                        <h3 data-clinical-number className="text-xl leading-none font-bold text-texto-titulo">
+                            {numeroDoLeito(leito.leito ?? '')}
+                        </h3>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1.5">
+                        <GravityBadge nivel={leito.acuidade} tamanho="sm" />
+                        <span
+                            className={`size-2.5 shrink-0 rounded-full ${CLASSE_SEMAFORO[leito.semaforo]}`}
+                            aria-label={`Semáforo ${leito.semaforo}`}
+                        />
+                    </div>
+                </header>
+
+                {/*
           Alertas abertos — badge de contagem, visível sem expandir o card.
           Só aparece quando a consulta respondeu E há alerta: ausência de badge
           com dado carregado = zero alertas (fato); sem dado, nada se afirma.
         */}
-        {temAlerta && (
-          <ul className="flex flex-wrap gap-1" aria-label="Alertas abertos deste leito">
-            {alertas.criticos > 0 && (
-              <li className="bg-gravidade-critico-bg text-gravidade-critico-text text-2xs inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 font-semibold tracking-wide">
-                ALERTA CRÍTICO
-                <span data-clinical-number className="font-bold">
-                  {alertas.criticos}
-                </span>
-              </li>
-            )}
-            {alertas.warnings > 0 && (
-              <li className="bg-gravidade-watcher-bg text-gravidade-watcher-text text-2xs inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 font-semibold tracking-wide">
-                ALERTA
-                <span data-clinical-number className="font-bold">
-                  {alertas.warnings}
-                </span>
-              </li>
-            )}
-            {alertas.infos > 0 && (
-              <li className="bg-superficie-afundada text-texto-suave text-2xs inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 font-semibold tracking-wide">
-                INFO
-                <span data-clinical-number className="font-bold">
-                  {alertas.infos}
-                </span>
-              </li>
-            )}
-          </ul>
-        )}
+                {temAlerta && (
+                    <ul className="flex flex-wrap gap-1" aria-label="Alertas abertos deste leito">
+                        {alertas.criticos > 0 && (
+                            <li className="inline-flex items-center gap-1 rounded-sm bg-gravidade-critico-bg px-1.5 py-0.5 text-2xs font-semibold tracking-wide text-gravidade-critico-text">
+                                ALERTA CRÍTICO
+                                <span data-clinical-number className="font-bold">
+                                    {alertas.criticos}
+                                </span>
+                            </li>
+                        )}
+                        {alertas.warnings > 0 && (
+                            <li className="inline-flex items-center gap-1 rounded-sm bg-gravidade-watcher-bg px-1.5 py-0.5 text-2xs font-semibold tracking-wide text-gravidade-watcher-text">
+                                ALERTA
+                                <span data-clinical-number className="font-bold">
+                                    {alertas.warnings}
+                                </span>
+                            </li>
+                        )}
+                        {alertas.infos > 0 && (
+                            <li className="inline-flex items-center gap-1 rounded-sm bg-superficie-afundada px-1.5 py-0.5 text-2xs font-semibold tracking-wide text-texto-suave">
+                                INFO
+                                <span data-clinical-number className="font-bold">
+                                    {alertas.infos}
+                                </span>
+                            </li>
+                        )}
+                    </ul>
+                )}
 
-        {/*
+                {/*
           Divergência de dado: o semáforo guardado no banco discorda da
           gravidade. A tela pinta o derivado da gravidade e AVISA — não
           corrige o banco.
         */}
-        {leito.divergenciaDeSemaforo && (
-          <p className="bg-gravidade-critico-bg text-gravidade-critico-text rounded-sm px-2 py-1 text-2xs font-medium">
-            Dado inconsistente: gravidade {txt(leito.gravidade)}, semáforo gravado{' '}
-            {txt(leito.severidade_visual)}. A tela mostra o derivado da gravidade. Conferir no cadastro.
-          </p>
-        )}
+                {leito.divergenciaDeSemaforo && (
+                    <p className="rounded-sm bg-gravidade-critico-bg px-2 py-1 text-2xs font-medium text-gravidade-critico-text">
+                        Dado inconsistente: gravidade {txt(leito.gravidade)}, semáforo gravado{' '}
+                        {txt(leito.severidade_visual)}. A tela mostra o derivado da gravidade. Conferir no
+                        cadastro.
+                    </p>
+                )}
 
-        {/* Linha 2 — identificação */}
-        <div className="min-w-0">
-          <p className="text-texto-titulo truncate text-sm font-semibold" title={leito.nome ?? undefined}>
-            {txt(leito.nome)}
-          </p>
-          <p className="text-texto-suave text-xs">
-            {leito.idade == null ? SEM_DADO : `${leito.idade} anos`} · {txt(leito.dias_internacao)} dias
-            internado
-          </p>
-          <p className="text-texto-corpo mt-1 line-clamp-2 text-xs" title={leito.hd ?? undefined}>
-            {txt(leito.hd)}
-          </p>
-        </div>
+                {/* Linha 2 — identificação */}
+                <div className="min-w-0">
+                    <p
+                        className="truncate text-sm font-semibold text-texto-titulo"
+                        title={leito.nome ?? undefined}
+                    >
+                        {txt(leito.nome)}
+                    </p>
+                    <p className="text-xs text-texto-suave">
+                        {leito.idade == null ? SEM_DADO : `${leito.idade} anos`} ·{' '}
+                        {txt(leito.dias_internacao)} dias internado
+                    </p>
+                    <p className="mt-1 line-clamp-2 text-xs text-texto-corpo" title={leito.hd ?? undefined}>
+                        {txt(leito.hd)}
+                    </p>
+                </div>
 
-        {/*
+                {/*
           Linha 3 — números. SOFA ausente mostra travessão, nunca 0.
           Hoje 0 de 16 evoluções têm `sofa_total`: o travessão é o normal.
         */}
-        <dl className="border-borda-sutil bg-superficie-elevada grid grid-cols-2 gap-px overflow-hidden rounded-md border">
-          <div className="bg-superficie-card flex flex-col gap-1 px-2.5 py-2">
-            <dt className="sasi-eyebrow">SOFA</dt>
-            <dd>
-              <SofaBadge escore={leito.sofa_total} delta={leito.delta_sofa_24h} />
-            </dd>
-          </div>
-          <div className="bg-superficie-card flex flex-col gap-1 px-2.5 py-2">
-            <dt className="sasi-eyebrow">Pendências</dt>
-            <dd
-              data-clinical-number
-              className={`text-xl leading-none font-semibold ${pendencias > 0 ? 'text-gravidade-watcher' : 'text-texto-tenue'}`}
-            >
-              {txt(pendencias)}
-            </dd>
-          </div>
-        </dl>
+                <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-md border border-borda-sutil bg-superficie-elevada">
+                    <div className="flex flex-col gap-1 bg-superficie-card px-2.5 py-2">
+                        <dt className="sasi-eyebrow">SOFA</dt>
+                        <dd>
+                            <SofaBadge escore={leito.sofa_total} delta={leito.delta_sofa_24h} />
+                        </dd>
+                    </div>
+                    <div className="flex flex-col gap-1 bg-superficie-card px-2.5 py-2">
+                        <dt className="sasi-eyebrow">Pendências</dt>
+                        <dd
+                            data-clinical-number
+                            className={`text-xl leading-none font-semibold ${pendencias > 0 ? 'text-gravidade-watcher' : 'text-texto-tenue'}`}
+                        >
+                            {txt(pendencias)}
+                        </dd>
+                    </div>
+                </dl>
 
-        {/* Linha 4 — selos de terapia, o resumo de um segundo */}
-        {(dvas.length > 0 || sedativos.length > 0 || emVM || pendencias > 0 || isolamento) && (
-          <ul className="flex flex-wrap gap-1">
-            {isolamento && (
-              <li>
-                <TherapyBadge tipo="pend" rotulo={`Isolamento ${isolamento}`} />
-              </li>
-            )}
-            {dvas.length > 0 && (
-              <li>
-                <TherapyBadge tipo="dva" contagem={dvas.length} />
-              </li>
-            )}
-            {sedativos.length > 0 && (
-              <li>
-                <TherapyBadge tipo="sed" contagem={sedativos.length} />
-              </li>
-            )}
-            {emVM && (
-              <li>
-                <TherapyBadge tipo="vm" />
-              </li>
-            )}
-            {pendencias > 0 && (
-              <li>
-                <TherapyBadge tipo="pend" contagem={pendencias} />
-              </li>
-            )}
-          </ul>
-        )}
+                {/* Linha 4 — selos de terapia, o resumo de um segundo */}
+                {(dvas.length > 0 || sedativos.length > 0 || emVM || pendencias > 0 || isolamento) && (
+                    <ul className="flex flex-wrap gap-1">
+                        {isolamento && (
+                            <li>
+                                <TherapyBadge tipo="pend" rotulo={`Isolamento ${isolamento}`} />
+                            </li>
+                        )}
+                        {dvas.length > 0 && (
+                            <li>
+                                <TherapyBadge tipo="dva" contagem={dvas.length} />
+                            </li>
+                        )}
+                        {sedativos.length > 0 && (
+                            <li>
+                                <TherapyBadge tipo="sed" contagem={sedativos.length} />
+                            </li>
+                        )}
+                        {emVM && (
+                            <li>
+                                <TherapyBadge tipo="vm" />
+                            </li>
+                        )}
+                        {pendencias > 0 && (
+                            <li>
+                                <TherapyBadge tipo="pend" contagem={pendencias} />
+                            </li>
+                        )}
+                    </ul>
+                )}
 
-        {/*
+                {/*
           Drogas vasoativas COM A DATA do lançamento.
           Sem data, "Noradrenalina 0,3" numa tela de comando é lido como
           "está correndo agora". Se a última evolução é de dias atrás, isso é
           história e não conduta — e o card estaria mentindo por omissão.
         */}
-        {dvas.length > 0 && (
-          <div className="border-borda-sutil border-t pt-2">
-            <p className="sasi-eyebrow">Infusões · {dataComIdade(leito.ultima_evolucao, agoraISO)}</p>
-            <ul className="mt-1 space-y-0.5">
-              {dvas.map((d, i) => {
-                const rotulo = rotuloInfusao(d);
-                return (
-                  <li
-                    key={`${rotulo}-${i}`}
-                    data-clinical-number
-                    className="text-sistema-hemo text-xs font-medium"
-                  >
-                    {rotulo}
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        )}
+                {dvas.length > 0 && (
+                    <div className="border-t border-borda-sutil pt-2">
+                        <p className="sasi-eyebrow">
+                            Infusões · {dataComIdade(leito.ultima_evolucao, agoraISO)}
+                        </p>
+                        <ul className="mt-1 space-y-0.5">
+                            {dvas.map((d, i) => {
+                                const rotulo = rotuloInfusao(d);
+                                return (
+                                    <li
+                                        key={`${rotulo}-${i}`}
+                                        data-clinical-number
+                                        className="text-xs font-medium text-sistema-hemo"
+                                    >
+                                        {rotulo}
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    </div>
+                )}
 
-        {/*
+                {/*
           Dispositivos (chip HERDADO de `vw_dashboard_uti.dispositivos`):
           informação de fundo, peso visual mínimo. Os dias de uso da tabela
           nova aparecem no detalhe expandido — fontes distintas, não misturar.
         */}
-        {dispositivos.length > 0 && (
-          <ul className="flex flex-wrap gap-1">
-            {dispositivos.map((d) => (
-              <li
-                key={d}
-                className="bg-superficie-afundada text-texto-suave text-2xs rounded-xs px-1.5 py-0.5 font-medium"
-              >
-                {d}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+                {dispositivos.length > 0 && (
+                    <ul className="flex flex-wrap gap-1">
+                        {dispositivos.map((d) => (
+                            <li
+                                key={d}
+                                className="rounded-xs bg-superficie-afundada px-1.5 py-0.5 text-2xs font-medium text-texto-suave"
+                            >
+                                {d}
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </div>
 
-      {/*
+            {/*
         Expansão — a ilha interativa do card. Alvo de toque ≥ 44px (min-h-11):
         uma mão, andando pelo corredor. O detalhe só monta quando aberto, então
         card fechado não consulta o banco.
       */}
-      <button
-        type="button"
-        onClick={() => setExpandido((e) => !e)}
-        aria-expanded={expandido}
-        aria-controls={idDetalhe}
-        className="border-borda-sutil text-texto-suave hover:text-texto-titulo hover:bg-superficie-elevada flex min-h-11 w-full items-center justify-center gap-1 border-t text-xs font-medium transition-colors duration-(--dur-fast)"
-      >
-        {expandido ? 'Fechar detalhes' : 'Alertas, pendências e dispositivos'}
-        {expandido ? <ChevronUp aria-hidden size={14} /> : <ChevronDown aria-hidden size={14} />}
-      </button>
-      {expandido && (
-        <div id={idDetalhe}>
-          <DetalheDoLeito
-            pacienteId={leito.paciente_id}
-            deltaSofa24h={leito.delta_sofa_24h}
-            outOfRangeCount={leito.out_of_range_count}
-            agoraISO={agoraISO}
-            pendencias={pendenciasVivas}
-            erroPendencias={erroPendencias}
-            dispositivos={dispositivosVivos}
-            erroDispositivos={erroDispositivos}
-          />
-        </div>
-      )}
-    </article>
-  );
+            <button
+                type="button"
+                onClick={() => setExpandido((e) => !e)}
+                aria-expanded={expandido}
+                aria-controls={idDetalhe}
+                className="flex min-h-11 w-full items-center justify-center gap-1 border-t border-borda-sutil text-xs font-medium text-texto-suave transition-colors duration-(--dur-fast) hover:bg-superficie-elevada hover:text-texto-titulo"
+            >
+                {expandido ? 'Fechar detalhes' : 'Alertas, pendências e dispositivos'}
+                {expandido ? <ChevronUp aria-hidden size={14} /> : <ChevronDown aria-hidden size={14} />}
+            </button>
+            {expandido && (
+                <div id={idDetalhe}>
+                    <DetalheDoLeito
+                        pacienteId={leito.paciente_id}
+                        deltaSofa24h={leito.delta_sofa_24h}
+                        outOfRangeCount={leito.out_of_range_count}
+                        agoraISO={agoraISO}
+                        pendencias={pendenciasVivas}
+                        erroPendencias={erroPendencias}
+                        dispositivos={dispositivosVivos}
+                        erroDispositivos={erroDispositivos}
+                    />
+                </div>
+            )}
+        </article>
+    );
 }

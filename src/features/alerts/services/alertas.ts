@@ -111,8 +111,8 @@ export class FalhaAoReconhecerAlerta extends Error {
     constructor(alvo: string, causaOriginal?: string) {
         super(
             `Falha ao reconhecer ${alvo}. O alerta CONTINUA ABERTO — ` +
-            `não tratar como resolvido.` +
-            (causaOriginal ? ` Causa: ${causaOriginal}` : ''),
+                `não tratar como resolvido.` +
+                (causaOriginal ? ` Causa: ${causaOriginal}` : ''),
         );
         this.name = 'FalhaAoReconhecerAlerta';
         this.alvo = alvo;
@@ -172,9 +172,7 @@ export function normalizarResumo(linhas: LinhaCruaDoResumo[]): ResumoDeAlertasDo
  * Falha de leitura não vira lista vazia — `exigirDado` lança e a exceção sobe
  * até `app/error.tsx`.
  */
-export async function lerResumoDeAlertasAbertos(
-    supabase: ClienteSasi,
-): Promise<ResumoDeAlertasDoLeito[]> {
+export async function lerResumoDeAlertasAbertos(supabase: ClienteSasi): Promise<ResumoDeAlertasDoLeito[]> {
     const resposta = await supabase.from('vw_alertas_abertos').select(COLUNAS_RESUMO);
     const linhas = exigirDado(resposta, 'vw_alertas_abertos (painel de alertas)');
     return normalizarResumo(linhas as unknown as LinhaCruaDoResumo[]);
@@ -300,10 +298,7 @@ export async function reconhecerAlertasDoPaciente(
         .select('id');
 
     if (resposta.error) {
-        throw new FalhaAoReconhecerAlerta(
-            `os alertas do paciente ${pacienteId}`,
-            resposta.error.message,
-        );
+        throw new FalhaAoReconhecerAlerta(`os alertas do paciente ${pacienteId}`, resposta.error.message);
     }
     return resposta.data?.length ?? 0;
 }

@@ -80,9 +80,7 @@ export function sistemaParaEdicao(
  * e ausência no banco é a chave não existir (o motor de texto então omite a
  * linha, e a tela mostra travessão).
  */
-export function sistemaLimpo<T extends Record<string, unknown>>(
-    sistema: T | null | undefined,
-): T {
+export function sistemaLimpo<T extends Record<string, unknown>>(sistema: T | null | undefined): T {
     const limpo: Record<string, unknown> = {};
     if (sistema) {
         for (const [chave, valor] of Object.entries(sistema)) {
@@ -160,11 +158,7 @@ export interface SofaDerivado {
  * (regra de `rotuloInfusao`). O cardiovascular pode então subestimar, e o
  * aviso diz isso na tela em vez de fingir precisão.
  */
-export function sofaDaFicha(
-    fonte: FonteParaSofa,
-    pesoKg: number | null,
-    agora?: Date,
-): SofaDerivado {
+export function sofaDaFicha(fonte: FonteParaSofa, pesoKg: number | null, agora?: Date): SofaDerivado {
     const infusoes = fonte.dvas ?? [];
     const objetos: InfusaoParaSofa[] = [];
     let temTextoLivre = false;
@@ -180,7 +174,7 @@ export function sofaDaFicha(
     if (temTextoLivre) {
         avisos.push(
             'DVA registrada como texto livre não entra no cálculo do SOFA cardiovascular — ' +
-            'o componente pode sair menor que o real. Conferir contra a linha de drogas vasoativas.',
+                'o componente pode sair menor que o real. Conferir contra a linha de drogas vasoativas.',
         );
     }
 
@@ -259,9 +253,7 @@ export function janelasParaNota(janelas: JanelaRender[]): JanelaProntaParaNota[]
 
 /** Só as ABERTAS viram texto: pendência concluída no checklist da passagem mentiria. */
 export function pendenciasAbertasParaTexto(pendencias: Pendencia[]): PendenciaParaTexto[] {
-    return pendencias
-        .filter((p) => !p.concluida)
-        .map((p) => ({tarefa: p.tarefa, prioridade: p.prioridade}));
+    return pendencias.filter((p) => !p.concluida).map((p) => ({tarefa: p.tarefa, prioridade: p.prioridade}));
 }
 
 /**
@@ -269,10 +261,7 @@ export function pendenciasAbertasParaTexto(pendencias: Pendencia[]): PendenciaPa
  * vem de `vw_dias_atb_ativo` (cruzado pelo id) — decisão de 10-ago: a contagem
  * de dias é do banco, nunca conta local.
  */
-export function atbsParaNota(
-    historico: AtbRegistro[],
-    ativos: AtbAtivo[],
-): AtbCursoParaNota[] {
+export function atbsParaNota(historico: AtbRegistro[], ativos: AtbAtivo[]): AtbCursoParaNota[] {
     const diasPorId = new Map(ativos.map((a) => [a.atb_id, a.dias_terapia]));
     return historico.map((r) => ({
         droga: r.droga,
@@ -324,9 +313,7 @@ export function resumoDaAdmissao(summary: Json | null): ResumoDaAdmissao {
     const dataISO = textoOuNull(s.data_admissao);
     const motivo = textoOuNull(s.motivo_admissao);
     const meds = Array.isArray(s.medicamentos_domiciliares)
-        ? s.medicamentos_domiciliares.filter(
-            (m): m is string => typeof m === 'string' && m.trim() !== '',
-        )
+        ? s.medicamentos_domiciliares.filter((m): m is string => typeof m === 'string' && m.trim() !== '')
         : [];
     return {
         admissao: dataISO !== null && motivo !== null ? {dataISO, texto: motivo} : null,
@@ -402,9 +389,7 @@ export interface EntradaEvolucaoParaTexto {
  */
 export function insumosDaEvolucao(e: EntradaEvolucaoParaTexto): InsumosEvolucao {
     const admissao = resumoDaAdmissao(e.paciente.patient_summary);
-    const problemas = e.ficha.problemasAtivos
-        .map((p) => p.texto.trim())
-        .filter((t) => t !== '');
+    const problemas = e.ficha.problemasAtivos.map((p) => p.texto.trim()).filter((t) => t !== '');
     const hd = e.paciente.hd?.trim() ?? '';
     return {
         paciente: pacienteParaTexto(e.paciente),

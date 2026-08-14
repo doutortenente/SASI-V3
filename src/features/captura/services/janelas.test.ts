@@ -33,7 +33,7 @@ const FIM = '2026-08-13T07:00:00.000Z';
  * Dublê thenable — padrão de `pendencias.test.ts`, acrescido de `upsert`
  * (que anota payload E opções, para o teste provar o `onConflict`).
  */
-function clienteFalso(resposta: { data: unknown; error: { message: string } | null }) {
+function clienteFalso(resposta: {data: unknown; error: {message: string} | null}) {
     const registro = {
         from: [] as string[],
         select: [] as string[],
@@ -237,10 +237,7 @@ describe('registrarJanela', () => {
 
     it('faz UPSERT com onConflict paciente_id,tipo,janela_fim — reprocessar substitui', async () => {
         const {supabase, registro} = clienteFalso({data: [linhaGravada], error: null});
-        const {janela, avisos} = await registrarJanela(
-            supabase,
-            entradaBase({n_fora_baixo: 4}),
-        );
+        const {janela, avisos} = await registrarJanela(supabase, entradaBase({n_fora_baixo: 4}));
 
         expect(registro.from).toEqual(['janelas_24h']);
         expect(registro.upsert).toHaveLength(1);
@@ -263,18 +260,13 @@ describe('registrarJanela', () => {
 
     it('propaga o aviso (revisar) da inversão junto da linha gravada', async () => {
         const {supabase} = clienteFalso({data: [linhaGravada], error: null});
-        const {avisos} = await registrarJanela(
-            supabase,
-            entradaBase({valor_max: 56, valor_min: 90}),
-        );
+        const {avisos} = await registrarJanela(supabase, entradaBase({valor_max: 56, valor_min: 90}));
         expect(avisos[0]).toContain('(revisar)');
     });
 
     it('falha de escrita lança erro que diz que NÃO foi salva', async () => {
         const {supabase} = clienteFalso({data: null, error: {message: 'conexão perdida'}});
-        await expect(registrarJanela(supabase, entradaBase())).rejects.toBeInstanceOf(
-            FalhaAoGravarJanela,
-        );
+        await expect(registrarJanela(supabase, entradaBase())).rejects.toBeInstanceOf(FalhaAoGravarJanela);
         await expect(registrarJanela(supabase, entradaBase())).rejects.toThrow(/NÃO registrou/);
     });
 });
@@ -293,8 +285,6 @@ describe('lerJanelasDoPaciente', () => {
     it('falha de leitura LANÇA, nunca vira lista vazia', async () => {
         // Tabela vazia é fato ("nada ingerido ainda"); banco mudo é outra coisa.
         const {supabase} = clienteFalso({data: null, error: {message: 'timeout'}});
-        await expect(lerJanelasDoPaciente(supabase, PAC_A)).rejects.toBeInstanceOf(
-            FalhaDeLeitura,
-        );
+        await expect(lerJanelasDoPaciente(supabase, PAC_A)).rejects.toBeInstanceOf(FalhaDeLeitura);
     });
 });

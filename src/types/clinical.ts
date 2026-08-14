@@ -10,10 +10,7 @@
 // Mantenha ESTE arquivo como fonte dos tipos JSONB (o gerador trata JSONB como `Json`).
 // ============================================================================
 
-export type Json =
-    | string | number | boolean | null
-    | { [key: string]: Json | undefined }
-    | Json[];
+export type Json = string | number | boolean | null | {[key: string]: Json | undefined} | Json[];
 
 // ---------------------------------------------------------------------------
 // 1. ENUMS (vocabulários fechados — espelham os enums nativos do Postgres)
@@ -35,26 +32,79 @@ export type Plantao = 'manha' | 'tarde' | 'noite' | 'plantao_24h';
 export type ViaAtb = 'EV' | 'VO' | 'IM' | 'SC' | 'SNE' | 'SNG' | 'IT' | 'Tópico';
 export type IntencaoAtb = 'empirica' | 'dirigida' | 'profilatica';
 export type MaterialCultura =
-    | 'hemocultura' | 'urocultura' | 'aspirado_traqueal' | 'lavado_bal' | 'lcr'
-    | 'secrecao_ferida' | 'liquido_peritoneal' | 'liquido_pleural' | 'outro';
+    | 'hemocultura'
+    | 'urocultura'
+    | 'aspirado_traqueal'
+    | 'lavado_bal'
+    | 'lcr'
+    | 'secrecao_ferida'
+    | 'liquido_peritoneal'
+    | 'liquido_pleural'
+    | 'outro';
 export type AntibiogramaResultado = 'S' | 'I' | 'R';
 export type SeveridadeAlerta = 'info' | 'warning' | 'critical';
 export type FonteEvento =
-    | 'manual' | 'gemini_ocr' | 'claude_ocr' | 'appsheet'
-    | 'auto_trigger' | 'edge_function' | 'api_import';
+    'manual' | 'gemini_ocr' | 'claude_ocr' | 'appsheet' | 'auto_trigger' | 'edge_function' | 'api_import';
 export type Comparador = 'lt' | 'lte' | 'gt' | 'gte';
 export type TrendModo = 'subida_abs' | 'subida_rel' | 'queda_abs';
 
 // Códigos de tipo de evento (dimensão evento_tipo_ref). Extensível como DADO.
 export type EventoTipo =
-    | 'pa_sys' | 'pa_dia' | 'pam' | 'pam_min' | 'fc' | 'fr' | 'spo2' | 'temp' | 'glicemia'
-    | 'pf_ratio' | 'lactato' | 'ph' | 'pco2' | 'po2' | 'hco3' | 'be'
-    | 'diurese_h' | 'bh_h' | 'bh_acumulado' | 'cr' | 'ur' | 'na' | 'k' | 'mg' | 'ca' | 'p'
-    | 'hb' | 'ht' | 'plaq' | 'leuco' | 'inr' | 'bb' | 'pcr' | 'procalcitonina'
-    | 'nor_dose' | 'adr_dose' | 'vaso_dose' | 'dobuta_dose' | 'dopa_dose'
-    | 'fent_dose' | 'midaz_dose' | 'propofol_dose' | 'precedex_dose'
-    | 'gcs' | 'rass' | 'cam_icu' | 'bps' | 'cpot'
-    | 'sofa_total' | 'sofa_resp' | 'sofa_coag' | 'sofa_liver' | 'sofa_cardio' | 'sofa_neuro' | 'sofa_renal'
+    | 'pa_sys'
+    | 'pa_dia'
+    | 'pam'
+    | 'pam_min'
+    | 'fc'
+    | 'fr'
+    | 'spo2'
+    | 'temp'
+    | 'glicemia'
+    | 'pf_ratio'
+    | 'lactato'
+    | 'ph'
+    | 'pco2'
+    | 'po2'
+    | 'hco3'
+    | 'be'
+    | 'diurese_h'
+    | 'bh_h'
+    | 'bh_acumulado'
+    | 'cr'
+    | 'ur'
+    | 'na'
+    | 'k'
+    | 'mg'
+    | 'ca'
+    | 'p'
+    | 'hb'
+    | 'ht'
+    | 'plaq'
+    | 'leuco'
+    | 'inr'
+    | 'bb'
+    | 'pcr'
+    | 'procalcitonina'
+    | 'nor_dose'
+    | 'adr_dose'
+    | 'vaso_dose'
+    | 'dobuta_dose'
+    | 'dopa_dose'
+    | 'fent_dose'
+    | 'midaz_dose'
+    | 'propofol_dose'
+    | 'precedex_dose'
+    | 'gcs'
+    | 'rass'
+    | 'cam_icu'
+    | 'bps'
+    | 'cpot'
+    | 'sofa_total'
+    | 'sofa_resp'
+    | 'sofa_coag'
+    | 'sofa_liver'
+    | 'sofa_cardio'
+    | 'sofa_neuro'
+    | 'sofa_renal'
     | 'custom';
 
 // ---------------------------------------------------------------------------
@@ -90,9 +140,9 @@ export interface RiscosFlags {
 export interface Infusao {
     id?: string;
     droga: string;
-    dose?: string;            // forma simples (legado do molde)
+    dose?: string; // forma simples (legado do molde)
     unidade?: string;
-    diluicao_mg?: number;     // forma rica (skill de ingestão)
+    diluicao_mg?: number; // forma rica (skill de ingestão)
     diluicao_ml?: number;
     diluicao_UI?: number;
     vazao_ml_h?: number;
@@ -282,7 +332,7 @@ export interface EventoTipoRef {
     unidade_padrao: string | null;
     faixa_min: number | null;
     faixa_max: number | null;
-    loinc_code: string | null;   // FHIR Observation.code (http://loinc.org)
+    loinc_code: string | null; // FHIR Observation.code (http://loinc.org)
     ativo: boolean;
     ordem: number;
 }
@@ -295,7 +345,7 @@ export interface Paciente {
     nome: string;
     idade: number | null;
     peso: number | null;
-    altura: number | null;         // cm
+    altura: number | null; // cm
     hd: string | null;
     data_adm: string;
     alergias: string | null;
@@ -308,7 +358,7 @@ export interface Paciente {
     dispositivos: Dispositivos;
     riscos_flags: RiscosFlags;
     patient_summary: PatientSummary | null;
-    imc: number | null;            // gerado (stored)
+    imc: number | null; // gerado (stored)
     created_at: string;
     updated_at: string;
 }
@@ -346,12 +396,12 @@ export interface EventoClinico {
     evolucao_id: string | null;
     user_id: string | null;
     ts: string;
-    tipo: EventoTipo | string;   // FK -> evento_tipo_ref
+    tipo: EventoTipo | string; // FK -> evento_tipo_ref
     valor_num: number | null;
-    valor_json: Json | null;     // custom: {dominio,subtipo,unidade,...}; pf_ratio: {suporte_vent}
+    valor_json: Json | null; // custom: {dominio,subtipo,unidade,...}; pf_ratio: {suporte_vent}
     unidade: string | null;
     fonte: FonteEvento;
-    confidence: number | null;   // 0..1
+    confidence: number | null; // 0..1
     source_text: string | null;
     requires_review: boolean;
     created_at: string;
@@ -518,15 +568,21 @@ export interface VwDashboardUti {
 export interface OcrIngestPayloadV1 {
     $schema: 'sasi-ocr-ingest/v1';
     extracted_at: string;
-    source: { type?: string; fonte: FonteEvento; confidence_overall?: number; warnings?: string[] };
-    target: { uti: Uti; leito: string; paciente_id?: string | null };
+    source: {type?: string; fonte: FonteEvento; confidence_overall?: number; warnings?: string[]};
+    target: {uti: Uti; leito: string; paciente_id?: string | null};
     paciente_upsert?: Partial<Paciente> | null;
     evolucao_snapshot?: Partial<Evolucao> | null;
     eventos_clinicos?: Array<{
-        ts: string; tipo: EventoTipo | string; valor_num?: number | null; valor_json?: Json;
-        unidade?: string | null; confidence?: number | null; source_text?: string | null; requires_review?: boolean;
+        ts: string;
+        tipo: EventoTipo | string;
+        valor_num?: number | null;
+        valor_json?: Json;
+        unidade?: string | null;
+        confidence?: number | null;
+        source_text?: string | null;
+        requires_review?: boolean;
     }>;
-    pendencias?: Array<{ tarefa: string; prioridade?: 1 | 2 | 3 }>;
+    pendencias?: Array<{tarefa: string; prioridade?: 1 | 2 | 3}>;
 }
 
 // ---------------------------------------------------------------------------

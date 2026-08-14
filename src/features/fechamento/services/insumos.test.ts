@@ -43,7 +43,7 @@ const COLUNAS_EVOLUCAO_ESPERADAS =
     'sofa_snapshot, sofa_total, data_plantao, turno, tipo_nota, ' +
     'illness_severity, autor_crm, autor_nome, finalizada_em';
 
-type Resposta = { data: unknown; error: { message: string } | null };
+type Resposta = {data: unknown; error: {message: string} | null};
 
 interface RegistroDeTabela {
     select: string[];

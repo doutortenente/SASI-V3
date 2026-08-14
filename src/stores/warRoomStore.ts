@@ -87,12 +87,9 @@ export const useLeitoEmFoco = (): string | null => useWarRoomStore((s) => s.leit
 export const useDesatualizado = (): boolean => useWarRoomStore((s) => s.desatualizado);
 export const useMotivoQueda = (): MotivoQueda | null => useWarRoomStore((s) => s.motivoQueda);
 
-export const useAlternarWarRoom = (): (() => void) =>
-    useWarRoomStore((s) => s.alternarWarRoom);
-export const useSetWarRoom = (): WarRoomState['setWarRoom'] =>
-    useWarRoomStore((s) => s.setWarRoom);
+export const useAlternarWarRoom = (): (() => void) => useWarRoomStore((s) => s.alternarWarRoom);
+export const useSetWarRoom = (): WarRoomState['setWarRoom'] => useWarRoomStore((s) => s.setWarRoom);
 export const useFocarLeito = (): WarRoomState['focarLeito'] => useWarRoomStore((s) => s.focarLeito);
 export const useMarcarDesatualizado = (): WarRoomState['marcarDesatualizado'] =>
     useWarRoomStore((s) => s.marcarDesatualizado);
-export const useMarcarAtualizado = (): (() => void) =>
-    useWarRoomStore((s) => s.marcarAtualizado);
+export const useMarcarAtualizado = (): (() => void) => useWarRoomStore((s) => s.marcarAtualizado);

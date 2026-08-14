@@ -33,9 +33,7 @@ export interface OpcoesAssinatura<T extends Record<string, unknown>> {
  * Chame o cancelamento no cleanup do `useEffect` — canal não fechado vaza conexão
  * e o Supabase corta o projeto por excesso de canais abertos.
  */
-export function assinarTabela<T extends Record<string, unknown>>(
-    opcoes: OpcoesAssinatura<T>,
-): () => void {
+export function assinarTabela<T extends Record<string, unknown>>(opcoes: OpcoesAssinatura<T>): () => void {
     const supabase = getSupabaseBrowser();
     const nomeCanal = `sasi:${opcoes.tabela}:${opcoes.filtro ?? 'tudo'}`;
 

@@ -55,8 +55,8 @@ export class FalhaAoGravarFicha extends Error {
     constructor(alvo: string, causaOriginal?: string) {
         super(
             `Falha ao gravar ${alvo}. O banco NÃO registrou a mudança — ` +
-            `não tratar como salva.` +
-            (causaOriginal ? ` Causa: ${causaOriginal}` : ''),
+                `não tratar como salva.` +
+                (causaOriginal ? ` Causa: ${causaOriginal}` : ''),
         );
         this.name = 'FalhaAoGravarFicha';
         this.alvo = alvo;
@@ -102,7 +102,7 @@ export function derivarPlantaoLegado(turno: TurnoDaNota): PlantaoLegado {
  * roda no INSERT; quando a ficha atualiza nota existente, quem garante os
  * relógios é o app — por isso esta função existe.
  */
-export function derivarRelogiosDaNota(agora: Date): { dataPlantao: string; turno: TurnoDaNota } {
+export function derivarRelogiosDaNota(agora: Date): {dataPlantao: string; turno: TurnoDaNota} {
     const janela = derivarJanelaDePlantao(agora);
     // 'YYYY-MM-DDTHH:mm' no relógio de São Paulo → os 10 primeiros são o dia.
     const dataPlantao = datetimeLocalEmSaoPaulo(janela.inicioISO).slice(0, 10);
@@ -123,10 +123,7 @@ export function derivarRelogiosDaNota(agora: Date): { dataPlantao: string; turno
  *
  * `internacao_id` NUNCA é enviado — o trigger carimba o episódio vigente.
  */
-export async function salvarFicha(
-    supabase: ClienteSasi,
-    entrada: EntradaDeFicha,
-): Promise<string> {
+export async function salvarFicha(supabase: ClienteSasi, entrada: EntradaDeFicha): Promise<string> {
     const pPac: Record<string, Json> = {
         hd: entrada.paciente.hd,
         alergias: entrada.paciente.alergias,
@@ -238,17 +235,10 @@ export async function complementarEvolucao(
         );
     }
 
-    const resposta = await supabase
-        .from('evolucoes')
-        .update(patch)
-        .eq('id', evolucaoId)
-        .select('id');
+    const resposta = await supabase.from('evolucoes').update(patch).eq('id', evolucaoId).select('id');
 
     if (resposta.error) {
-        throw new FalhaAoGravarFicha(
-            `o complemento da evolução ${evolucaoId}`,
-            resposta.error.message,
-        );
+        throw new FalhaAoGravarFicha(`o complemento da evolução ${evolucaoId}`, resposta.error.message);
     }
     return resposta.data?.length ?? 0;
 }
