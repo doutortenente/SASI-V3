@@ -1,5 +1,6 @@
 # Arquivos GERADOS — reformatar aqui cria ruído no próximo comando que os regenera.
 src/types/supabase.ts
+next-env.d.ts
 src/components/ui/
 pnpm-lock.yaml
 
