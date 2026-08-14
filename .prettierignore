@@ -1,0 +1,18 @@
+# Arquivos GERADOS — reformatar aqui cria ruído no próximo comando que os regenera.
+src/types/supabase.ts
+src/components/ui/
+pnpm-lock.yaml
+
+# Saída de build e dependências
+.next/
+node_modules/
+coverage/
+playwright-report/
+test-results/
+
+# Dado real de paciente — fora do git e fora daqui
+_material/
+**/amostras/
+
+# Ferramenta de agente, não é código do projeto
+.agentbridge/
