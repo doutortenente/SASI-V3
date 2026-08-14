@@ -12,53 +12,16 @@
  * dois em sequência custa segundos, não minutos. `reuseExistingServer` deixa
  * o desenvolvedor manter um `pnpm start` aberto ao lado sem o robô matá-lo.
  *
- * Chromium: já instalado em `/opt/pw-browsers` e NÃO se roda
- * `playwright install` (não há rede para baixar). Medido em 13-ago-2026: o
- * navegador presente é o build 1194 e esta versão do Playwright pede o 1234,
- * então o caminho é apontado à mão — ver `acharChromium` abaixo.
+ * Navegador: o **Google Chrome já instalado na máquina** (`channel: 'chrome'`),
+ * o mesmo em que o app é usado no plantão. Não se baixa Chromium e não se roda
+ * `playwright install` — não há rede para baixar navegador, e testar num
+ * navegador diferente do de uso real esconde justamente o defeito que só
+ * aparece nele.
  */
-import { existsSync, readdirSync } from 'node:fs';
-import { join } from 'node:path';
-
 import { defineConfig, devices } from '@playwright/test';
 
 const PORTA = 3000;
 const BASE_URL = `http://localhost:${PORTA}`;
-
-/**
- * Acha o Chromium já instalado na máquina, seja qual for o número do build.
- *
- * POR QUE existe: o Playwright procura uma pasta com o número de build exato
- * que ELE espera (`chromium_headless_shell-1234`). A máquina tem outro número
- * (`chromium-1194`). Sem este apontamento o robô manda rodar
- * `playwright install` — que aqui não funciona, porque não há rede para baixar
- * navegador. Fixar o número no código quebraria na próxima imagem; por isso a
- * pasta é procurada por prefixo.
- *
- * Devolve `undefined` quando não acha nada: aí o Playwright volta ao caminho
- * padrão dele e a mensagem de erro é a original, sem ficar mascarada por esta
- * função.
- */
-function acharChromium(): string | undefined {
-  const raiz = process.env.PLAYWRIGHT_BROWSERS_PATH ?? '/opt/pw-browsers';
-  if (!existsSync(raiz)) return undefined;
-
-  // Ordem decrescente = build mais novo primeiro. E o `chromium-` completo vem
-  // antes do `chromium_headless_shell-` de propósito: o navegador completo roda
-  // tanto com janela quanto sem.
-  const pastas = readdirSync(raiz)
-    .filter((nome) => nome.startsWith('chromium-'))
-    .sort()
-    .reverse();
-
-  for (const pasta of pastas) {
-    const binario = join(raiz, pasta, 'chrome-linux', 'chrome');
-    if (existsSync(binario)) return binario;
-  }
-  return undefined;
-}
-
-const CHROMIUM = acharChromium();
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -82,13 +45,13 @@ export default defineConfig({
 
   projects: [
     {
-      name: 'chromium',
+      name: 'chrome',
       use: {
         ...devices['Desktop Chrome'],
-        // `exactOptionalPropertyTypes` está ligado no tsconfig: passar
-        // `executablePath: undefined` não compila. Ou a chave existe com
-        // caminho, ou não existe.
-        ...(CHROMIUM === undefined ? {} : { launchOptions: { executablePath: CHROMIUM } }),
+        // `devices['Desktop Chrome']` só define viewport e user agent — o canal
+        // não vem junto (conferido na API em 14-ago-2026). Sem esta linha o
+        // Playwright procura o Chromium próprio dele, que não existe aqui.
+        channel: 'chrome',
       },
     },
   ],
