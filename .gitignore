@@ -46,7 +46,7 @@ blob-report/
 .idea/*
 !.idea/compiler.xml
 !.idea/prettier.xml
-!.idea/SASI-V3-SEM_MIGUE.iml
+!.idea/SASI-V3.iml
 !.idea/runConfigurations/
 !.idea/runConfigurations/**
 *.log
