@@ -152,13 +152,7 @@ export function datetimeLocalEmSaoPaulo(iso: string): string {
 export function isoDeDatetimeLocalSaoPaulo(valor: string): string | null {
     const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(valor.trim());
     if (!m) return null;
-    const [ano, mes, dia, hora, minuto] = m.slice(1).map(Number) as [
-        number,
-        number,
-        number,
-        number,
-        number,
-    ];
+    const [ano, mes, dia, hora, minuto] = m.slice(1).map(Number) as [number, number, number, number, number];
     const instante = instanteDaParedeSP(ano, mes, dia, hora, minuto);
     // Confere o caminho de volta: se o instante encontrado não marca exatamente
     // o que foi digitado (mês 13, dia 32, hora 25…), a entrada era inválida.

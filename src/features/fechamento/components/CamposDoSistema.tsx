@@ -26,10 +26,10 @@ export function CamposDoSistema({
     return (
         <section
             aria-label={`Sistema ${painel.rotulo}`}
-            className="border-borda-padrao bg-superficie-card rounded-lg border p-3"
+            className="rounded-lg border border-borda-padrao bg-superficie-card p-3"
         >
-            <h3 className="text-texto-titulo text-sm font-semibold">{painel.rotulo}</h3>
-            {painel.nota && <p className="text-texto-tenue mt-0.5 text-2xs">{painel.nota}</p>}
+            <h3 className="text-sm font-semibold text-texto-titulo">{painel.rotulo}</h3>
+            {painel.nota && <p className="mt-0.5 text-2xs text-texto-tenue">{painel.nota}</p>}
 
             {/* Duas colunas: é o que põe Máx e Mín lado a lado, como se lê. */}
             <div className="mt-2 grid grid-cols-2 gap-2">
@@ -49,7 +49,7 @@ export function CamposDoSistema({
                                     value={valores[campo.chave] ?? ''}
                                     onChange={(e) => aoMudar(campo.chave, e.target.value)}
                                     placeholder={campo.exemplo}
-                                    className="border-borda-padrao bg-superficie-card text-texto-titulo mt-0.5 w-full rounded-md border px-3 py-2 text-sm"
+                                    className="mt-0.5 w-full rounded-md border border-borda-padrao bg-superficie-card px-3 py-2 text-sm text-texto-titulo"
                                 />
                             ) : (
                                 <input
@@ -59,7 +59,7 @@ export function CamposDoSistema({
                                     value={valores[campo.chave] ?? ''}
                                     onChange={(e) => aoMudar(campo.chave, e.target.value)}
                                     placeholder={campo.exemplo}
-                                    className="border-borda-padrao bg-superficie-card text-texto-titulo mt-0.5 min-h-11 w-full rounded-md border px-3 py-2 text-sm"
+                                    className="mt-0.5 min-h-11 w-full rounded-md border border-borda-padrao bg-superficie-card px-3 py-2 text-sm text-texto-titulo"
                                 />
                             )}
                         </label>

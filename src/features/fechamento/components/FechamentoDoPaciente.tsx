@@ -221,7 +221,7 @@ export function FechamentoDoPaciente({
         <div className="space-y-4">
             {/* Estado da nota — dito em palavra, antes de qualquer edição. */}
             <div className="flex flex-wrap items-center gap-2">
-                <p className="text-texto-suave text-xs">
+                <p className="text-xs text-texto-suave">
                     {evolucaoId === null
                         ? 'Salvar vai CRIAR a nota deste plantão.'
                         : `Editando a nota deste plantão${finalizadaEm ? ` — finalizada às ${carimboBR(finalizadaEm)}` : ' (rascunho aberto)'}.`}
@@ -229,12 +229,11 @@ export function FechamentoDoPaciente({
             </div>
 
             {evolucao && !ehNotaDestePlantao && (
-                <p className="bg-gravidade-watcher-bg text-gravidade-watcher-text rounded-md px-3 py-2 text-xs font-medium">
+                <p className="rounded-md bg-gravidade-watcher-bg px-3 py-2 text-xs font-medium text-gravidade-watcher-text">
                     A ficha foi preenchida com a nota de{' '}
-                    {evolucao.data_plantao.split('-').reverse().join('/')} ({evolucao.turno}) — a
-                    mais recente deste paciente. Salvar CRIA uma nota nova deste plantão; a
-                    anterior fica intacta. Revise sistema por sistema antes: o exame de ontem não
-                    é o de hoje.
+                    {evolucao.data_plantao.split('-').reverse().join('/')} ({evolucao.turno}) — a mais recente
+                    deste paciente. Salvar CRIA uma nota nova deste plantão; a anterior fica intacta. Revise
+                    sistema por sistema antes: o exame de ontem não é o de hoje.
                 </p>
             )}
 
@@ -249,13 +248,13 @@ export function FechamentoDoPaciente({
                       é longa, e botão de salvar só no fim da página é botão que
                       não se acha às 6h da manhã.
                     */}
-                    <div className="border-borda-padrao bg-superficie-card shadow-elevada sticky bottom-24 z-[5] space-y-2 rounded-lg border p-3">
+                    <div className="sticky bottom-24 z-[5] space-y-2 rounded-lg border border-borda-padrao bg-superficie-card p-3 shadow-elevada">
                         <div className="flex flex-wrap gap-2">
                             <button
                                 type="button"
                                 onClick={() => gravar(false)}
                                 disabled={salvar.isPending}
-                                className="bg-acento min-h-12 flex-1 rounded-lg text-base font-semibold text-(--texto-sobre-acento) hover:bg-(--acento-hover) disabled:opacity-50"
+                                className="min-h-12 flex-1 rounded-lg bg-acento text-base font-semibold text-(--texto-sobre-acento) hover:bg-(--acento-hover) disabled:opacity-50"
                             >
                                 {salvar.isPending ? 'Gravando…' : 'Salvar'}
                             </button>
@@ -264,7 +263,7 @@ export function FechamentoDoPaciente({
                                     type="button"
                                     onClick={() => setConfirmandoFim(true)}
                                     disabled={salvar.isPending}
-                                    className="border-borda-padrao text-texto-corpo hover:bg-superficie-elevada min-h-12 flex-1 rounded-lg border text-sm font-semibold disabled:opacity-50"
+                                    className="min-h-12 flex-1 rounded-lg border border-borda-padrao text-sm font-semibold text-texto-corpo hover:bg-superficie-elevada disabled:opacity-50"
                                 >
                                     Finalizar nota
                                 </button>
@@ -279,33 +278,33 @@ export function FechamentoDoPaciente({
                           Correção posterior continua podendo ser salva.
                         */}
                         {finalizadaEm !== null && (
-                            <p className="text-texto-suave text-2xs">
-                                Nota finalizada às {carimboBR(finalizadaEm)}. Correção salva agora
-                                atualiza o conteúdo e NÃO muda a hora de fechamento.
+                            <p className="text-2xs text-texto-suave">
+                                Nota finalizada às {carimboBR(finalizadaEm)}. Correção salva agora atualiza o
+                                conteúdo e NÃO muda a hora de fechamento.
                             </p>
                         )}
 
                         {/* Confirmação INLINE, sem modal: janela que cobre a tela
                             esconde justamente a ficha que se quer conferir. */}
                         {confirmandoFim && (
-                            <div className="border-gravidade-watcher bg-gravidade-watcher-bg rounded-md border p-2">
-                                <p className="text-gravidade-watcher-text text-xs font-medium">
-                                    Finalizar grava a ficha e carimba a hora de fechamento da nota.
-                                    O texto continua sendo rascunho para revisão no prontuário.
+                            <div className="rounded-md border border-gravidade-watcher bg-gravidade-watcher-bg p-2">
+                                <p className="text-xs font-medium text-gravidade-watcher-text">
+                                    Finalizar grava a ficha e carimba a hora de fechamento da nota. O texto
+                                    continua sendo rascunho para revisão no prontuário.
                                 </p>
                                 <div className="mt-2 flex gap-2">
                                     <button
                                         type="button"
                                         onClick={() => gravar(true)}
                                         disabled={salvar.isPending}
-                                        className="bg-acento min-h-11 flex-1 rounded-md text-sm font-semibold text-(--texto-sobre-acento) disabled:opacity-50"
+                                        className="min-h-11 flex-1 rounded-md bg-acento text-sm font-semibold text-(--texto-sobre-acento) disabled:opacity-50"
                                     >
                                         {salvar.isPending ? 'Gravando…' : 'Confirmar e finalizar'}
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => setConfirmandoFim(false)}
-                                        className="border-borda-padrao text-texto-corpo min-h-11 flex-1 rounded-md border text-sm font-medium"
+                                        className="min-h-11 flex-1 rounded-md border border-borda-padrao text-sm font-medium text-texto-corpo"
                                     >
                                         Cancelar
                                     </button>

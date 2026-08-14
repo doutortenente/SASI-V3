@@ -13,7 +13,8 @@
  * nenhum. Segredo de verdade (SUPABASE_SECRET_KEY etc.) continua proibido no
  * repositório: mora no cofre e nunca ganha reserva em código.
  */
-export const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'https://idswehsvvqczzkiatuzu.supabase.co';
+export const SUPABASE_URL =
+    process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'https://idswehsvvqczzkiatuzu.supabase.co';
 
 export const SUPABASE_PUBLISHABLE_KEY =
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? 'sb_publishable_9DVsZExR5QOIowCbpirhyw_dRuEVHsy';

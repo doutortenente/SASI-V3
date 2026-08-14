@@ -73,9 +73,7 @@ export function usePendencias(): RetornoUsePendencias {
     }, [queryClient]);
 
     return {
-        pendenciasPorPaciente: consulta.data
-            ? indexarPendenciasPorPaciente(consulta.data)
-            : undefined,
+        pendenciasPorPaciente: consulta.data ? indexarPendenciasPorPaciente(consulta.data) : undefined,
         carregando: consulta.isPending,
         erro: consulta.error,
         desatualizado,
@@ -95,8 +93,7 @@ export function usePendencias(): RetornoUsePendencias {
 export function useConcluirPendencia() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (pendenciaId: string) =>
-            concluirPendencia(getSupabaseBrowser(), pendenciaId),
+        mutationFn: (pendenciaId: string) => concluirPendencia(getSupabaseBrowser(), pendenciaId),
         // `onSettled`: invalida também na falha, para reconciliar com o banco.
         onSettled: () => queryClient.invalidateQueries({queryKey: CHAVE_PENDENCIAS}),
     });

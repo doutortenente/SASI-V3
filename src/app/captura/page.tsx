@@ -31,8 +31,8 @@ export default async function CapturaPage() {
                 no topo. `pr-14` reserva o canto direito para o BotaoTema do layout. */}
             <header className="sasi-chrome sticky top-0 z-10">
                 <div className="mx-auto flex max-w-[1600px] items-baseline gap-3 px-4 py-3 pr-14 sm:px-6 sm:pr-14">
-                    <span className="text-chrome-texto text-md font-bold tracking-tight">SASI</span>
-                    <span className="text-chrome-suave text-xs font-medium tracking-wide uppercase">
+                    <span className="text-md font-bold tracking-tight text-chrome-texto">SASI</span>
+                    <span className="text-xs font-medium tracking-wide text-chrome-suave uppercase">
                         Captura · escolha o paciente
                     </span>
                 </div>
@@ -40,9 +40,9 @@ export default async function CapturaPage() {
 
             <main className="mx-auto max-w-xl p-4 sm:p-6">
                 {leitos.length === 0 && (
-                    <p className="border-borda-padrao bg-superficie-card text-texto-suave rounded-lg border p-4 text-sm">
-                        Nenhum leito ocupado no painel — não há em quem lançar. Se isso não bate com o
-                        plantão real, o problema é de ingestão, não desta tela.
+                    <p className="rounded-lg border border-borda-padrao bg-superficie-card p-4 text-sm text-texto-suave">
+                        Nenhum leito ocupado no painel — não há em quem lançar. Se isso não bate com o plantão
+                        real, o problema é de ingestão, não desta tela.
                     </p>
                 )}
 
@@ -52,25 +52,25 @@ export default async function CapturaPage() {
                         <li key={l.paciente_id}>
                             <Link
                                 href={`/captura/${l.paciente_id}`}
-                                className="bg-superficie-card border-borda-padrao shadow-card hover:shadow-elevada flex min-h-16 items-center gap-3 rounded-xl border p-3 transition-shadow duration-(--dur-fast)"
+                                className="flex min-h-16 items-center gap-3 rounded-xl border border-borda-padrao bg-superficie-card p-3 shadow-card transition-shadow duration-(--dur-fast) hover:shadow-elevada"
                             >
                                 <div className="w-14 shrink-0">
                                     <p className="sasi-eyebrow">{l.uti}</p>
                                     <p
                                         data-clinical-number
-                                        className="text-texto-titulo text-2xl leading-none font-bold"
+                                        className="text-2xl leading-none font-bold text-texto-titulo"
                                     >
                                         {numeroDoLeito(l.leito)}
                                     </p>
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                    <p className="text-texto-titulo truncate text-sm font-semibold">
+                                    <p className="truncate text-sm font-semibold text-texto-titulo">
                                         {txt(l.nome)}
                                     </p>
-                                    <p className="text-texto-suave truncate text-xs">{txt(l.hd)}</p>
+                                    <p className="truncate text-xs text-texto-suave">{txt(l.hd)}</p>
                                 </div>
                                 <GravityBadge nivel={l.acuidade} tamanho="sm" />
-                                <ChevronRight aria-hidden size={18} className="text-texto-tenue shrink-0" />
+                                <ChevronRight aria-hidden size={18} className="shrink-0 text-texto-tenue" />
                             </Link>
                         </li>
                     ))}

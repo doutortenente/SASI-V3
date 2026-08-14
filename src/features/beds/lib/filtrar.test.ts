@@ -90,9 +90,7 @@ describe('filtrarLeitos', () => {
     });
 
     it('filtra por gravidade (enum pós-P0)', () => {
-        expect(filtrarLeitos(GRADE, {gravidade: 'watcher'}).map((l) => l.paciente_id)).toEqual([
-            'p3',
-        ]);
+        expect(filtrarLeitos(GRADE, {gravidade: 'watcher'}).map((l) => l.paciente_id)).toEqual(['p3']);
     });
 
     it('severidade filtra pelo semáforo DERIVADO, não pela coluna do banco', () => {
@@ -101,22 +99,18 @@ describe('filtrarLeitos', () => {
         // paciente que a tela pinta de vermelho e marca como divergente.
         expect(filtrarLeitos(GRADE, {severidade: 'red'}).map((l) => l.paciente_id)).toEqual(['p2']);
         // E por 'green' ele NÃO pode aparecer — a coluna mentirosa não filtra.
-        expect(filtrarLeitos(GRADE, {severidade: 'green'}).map((l) => l.paciente_id)).toEqual([
-            'p1',
-        ]);
+        expect(filtrarLeitos(GRADE, {severidade: 'green'}).map((l) => l.paciente_id)).toEqual(['p1']);
     });
 
     it('filtra por isolamento', () => {
-        expect(filtrarLeitos(GRADE, {isolamento: 'contact'}).map((l) => l.paciente_id)).toEqual([
-            'p3',
-        ]);
+        expect(filtrarLeitos(GRADE, {isolamento: 'contact'}).map((l) => l.paciente_id)).toEqual(['p3']);
     });
 
     it('somenteComAlerta usa o conjunto de pacientes com alerta', () => {
         const comAlerta = new Set(['p2']);
-        expect(
-            filtrarLeitos(GRADE, {somenteComAlerta: true}, comAlerta).map((l) => l.paciente_id),
-        ).toEqual(['p2']);
+        expect(filtrarLeitos(GRADE, {somenteComAlerta: true}, comAlerta).map((l) => l.paciente_id)).toEqual([
+            'p2',
+        ]);
     });
 
     it('somenteComAlerta sem o conjunto carregado é IGNORADO, não esconde a grade', () => {
@@ -128,9 +122,7 @@ describe('filtrarLeitos', () => {
     it('critérios combinam por E', () => {
         const comAlerta = new Set(['p2', 'p3']);
         expect(
-            filtrarLeitos(GRADE, {uti: 'UTI4', somenteComAlerta: true}, comAlerta).map(
-                (l) => l.paciente_id,
-            ),
+            filtrarLeitos(GRADE, {uti: 'UTI4', somenteComAlerta: true}, comAlerta).map((l) => l.paciente_id),
         ).toEqual(['p3']);
     });
 });

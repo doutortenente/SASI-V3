@@ -8,7 +8,16 @@
  */
 import type {TriadoParaGrade} from '@/lib/clinical/sasi';
 import type {DispositivoAtivo} from '@/features/devices/services/dispositivos';
-import type {Dispositivos, Gravidade, Isolamento, Pendencia, SeveridadeVisual, StatusLeito, Uti, VwDashboardUti,} from '@/types';
+import type {
+    Dispositivos,
+    Gravidade,
+    Isolamento,
+    Pendencia,
+    SeveridadeVisual,
+    StatusLeito,
+    Uti,
+    VwDashboardUti,
+} from '@/types';
 
 /**
  * Uma linha da grade de leitos, já triada.
@@ -18,8 +27,7 @@ import type {Dispositivos, Gravidade, Isolamento, Pendencia, SeveridadeVisual, S
  * O card pinta `semaforo`, NÃO `severidade_visual` — ver o comentário em
  * `lib/clinical/sasi.ts`, seção "Semáforo exibido".
  */
-export interface LeitoNaGrade extends VwDashboardUti, TriadoParaGrade {
-}
+export interface LeitoNaGrade extends VwDashboardUti, TriadoParaGrade {}
 
 /** Filtro da grade. Todo campo é opcional: ausente = não filtra. */
 export interface FiltroLeitos {

@@ -25,11 +25,7 @@ import {FormPendencia} from '@/features/captura/components/FormPendencia';
 import {CamposDoSistema} from '@/features/fechamento/components/CamposDoSistema';
 import {ListaEditavel} from '@/features/fechamento/components/ListaEditavel';
 import {PAINEIS_DOS_SISTEMAS, type ChaveSistema} from '@/features/fechamento/lib/campos';
-import {
-    GRAVIDADES_DA_NOTA,
-    TIPOS_DE_NOTA,
-    type EstadoDaFicha,
-} from '@/features/fechamento/lib/estado';
+import {GRAVIDADES_DA_NOTA, TIPOS_DE_NOTA, type EstadoDaFicha} from '@/features/fechamento/lib/estado';
 import type {Gravidade} from '@/types';
 
 /** Classe do botão de escolha única (tipo da nota, gravidade da nota). */
@@ -80,7 +76,7 @@ export function PainelDaFicha({
             {/* 1. Que nota é esta, e quão grave ela classifica o paciente HOJE. */}
             <section
                 aria-label="Identificação da nota"
-                className="border-borda-padrao bg-superficie-card space-y-3 rounded-lg border p-3"
+                className="space-y-3 rounded-lg border border-borda-padrao bg-superficie-card p-3"
             >
                 <div>
                     <h3 className="sasi-eyebrow">Tipo da nota</h3>
@@ -101,9 +97,9 @@ export function PainelDaFicha({
 
                 <div>
                     <h3 className="sasi-eyebrow">Gravidade desta nota</h3>
-                    <p className="text-texto-tenue text-2xs">
-                        É a gravidade que ESTA nota registra, não a do painel. Sem escolha, o campo
-                        fica em branco — classificar por omissão seria inventar julgamento.
+                    <p className="text-2xs text-texto-tenue">
+                        É a gravidade que ESTA nota registra, não a do painel. Sem escolha, o campo fica em
+                        branco — classificar por omissão seria inventar julgamento.
                     </p>
                     <div className="mt-1 grid grid-cols-4 gap-1.5">
                         {GRAVIDADES_DA_NOTA.map((g) => {
@@ -133,7 +129,7 @@ export function PainelDaFicha({
 
             {/* 2. Os 7 sistemas, na ordem em que a nota os escreve. */}
             <section aria-label="Exame físico por sistemas" className="space-y-2">
-                <h3 className="text-texto-titulo text-sm font-semibold">Exame por sistemas</h3>
+                <h3 className="text-sm font-semibold text-texto-titulo">Exame por sistemas</h3>
                 {PAINEIS_DOS_SISTEMAS.map((painel) => (
                     <CamposDoSistema
                         key={painel.chave}
@@ -147,7 +143,7 @@ export function PainelDaFicha({
             {/* 3. Infusões — TEXTO LIVRE, que é a forma do banco vivo. */}
             <section
                 aria-label="Drogas em infusão"
-                className="border-borda-padrao bg-superficie-card space-y-3 rounded-lg border p-3"
+                className="space-y-3 rounded-lg border border-borda-padrao bg-superficie-card p-3"
             >
                 <ListaEditavel
                     rotulo="Drogas vasoativas"
@@ -172,7 +168,7 @@ export function PainelDaFicha({
             {/* 4. Intercorrências — SÓ o delta das 24h, não a história inteira. */}
             <section
                 aria-label="Intercorrências das 24 horas"
-                className="border-borda-padrao bg-superficie-card rounded-lg border p-3"
+                className="rounded-lg border border-borda-padrao bg-superficie-card p-3"
             >
                 <ListaEditavel
                     rotulo="Intercorrências 24h"
@@ -187,7 +183,7 @@ export function PainelDaFicha({
             {/* 5. Impressão e conduta — 1:1, numeradas, como o template exige. */}
             <section
                 aria-label="Impressão e conduta"
-                className="border-borda-padrao bg-superficie-card space-y-3 rounded-lg border p-3"
+                className="space-y-3 rounded-lg border border-borda-padrao bg-superficie-card p-3"
             >
                 <ListaEditavel
                     rotulo="Impressão"
@@ -207,10 +203,10 @@ export function PainelDaFicha({
                     rotuloDeAdicionar="Adicionar conduta"
                 />
                 {desalinhado && (
-                    <p className="bg-gravidade-watcher-bg text-gravidade-watcher-text rounded-md px-3 py-2 text-xs font-medium">
-                        {impressoesPreenchidas} impressões e {condutasPreenchidas} condutas. O
-                        template pede 1:1 — confira qual problema ficou sem plano. O texto sai
-                        assim mesmo, sem completar nada por conta própria.
+                    <p className="rounded-md bg-gravidade-watcher-bg px-3 py-2 text-xs font-medium text-gravidade-watcher-text">
+                        {impressoesPreenchidas} impressões e {condutasPreenchidas} condutas. O template pede
+                        1:1 — confira qual problema ficou sem plano. O texto sai assim mesmo, sem completar
+                        nada por conta própria.
                     </p>
                 )}
             </section>
@@ -218,12 +214,12 @@ export function PainelDaFicha({
             {/* 6. Pendências — casa própria, formulário reusado da Captura. */}
             <section
                 aria-label="Pendências"
-                className="border-borda-padrao bg-superficie-card rounded-lg border p-3"
+                className="rounded-lg border border-borda-padrao bg-superficie-card p-3"
             >
-                <h3 className="text-texto-titulo text-sm font-semibold">Pendências</h3>
-                <p className="text-texto-tenue mt-0.5 mb-2 text-2xs">
-                    Fonte única da passagem de plantão. O que for tarefa entra aqui, não na
-                    conduta — escrito nos dois lugares, aparece duas vezes e é feito zero.
+                <h3 className="text-sm font-semibold text-texto-titulo">Pendências</h3>
+                <p className="mt-0.5 mb-2 text-2xs text-texto-tenue">
+                    Fonte única da passagem de plantão. O que for tarefa entra aqui, não na conduta — escrito
+                    nos dois lugares, aparece duas vezes e é feito zero.
                 </p>
                 <FormPendencia pacienteId={pacienteId} />
             </section>

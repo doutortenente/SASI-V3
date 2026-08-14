@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
 
-import {calcularSofa, sofaCardio, sofaCoag, sofaHepatico, sofaNeuro, sofaRenal, sofaResp,} from './sofa';
+import {calcularSofa, sofaCardio, sofaCoag, sofaHepatico, sofaNeuro, sofaRenal, sofaResp} from './sofa';
 
 // ===========================================================================
 // Os 7 defeitos P0 da auditoria do motor v2. Um teste por defeito.
@@ -117,9 +117,7 @@ describe('P0 #1 e #11 — cardiovascular usa DOSE calculada e PAM mínima', () =
     });
 
     it('dopamina segue os três degraus (5 e 15)', () => {
-        expect(sofaCardio(null, [{droga: 'Dopamina', vazaoMlH: 1}], 70).pontos).toBeLessThanOrEqual(
-            3,
-        );
+        expect(sofaCardio(null, [{droga: 'Dopamina', vazaoMlH: 1}], 70).pontos).toBeLessThanOrEqual(3);
     });
 
     it('sem peso, a droga não some: pontua o piso da classe e avisa', () => {
@@ -150,9 +148,7 @@ describe('DIVERGÊNCIA da fonte — vasodilatador não é vasopressor', () => {
         expect(r.pontos).toBe(0); // pontua pela PAM, que está boa
     });
     it('nitroprussiato e esmolol também não pontuam', () => {
-        expect(sofaCardio(85, [{droga: 'Nitroprussiato (Nipride)', vazaoMlH: 10}], 70).pontos).toBe(
-            0,
-        );
+        expect(sofaCardio(85, [{droga: 'Nitroprussiato (Nipride)', vazaoMlH: 10}], 70).pontos).toBe(0);
         expect(sofaCardio(85, [{droga: 'Esmolol', vazaoMlH: 10}], 70).pontos).toBe(0);
     });
 });

@@ -94,10 +94,17 @@ describe('semáforo exibido (a tela não confia na coluna severidade_visual)', (
 });
 
 describe('triagemDeLeitos', () => {
-    const linha = (leito: string, gravidade: 'critico' | 'instavel' | 'watcher' | 'estavel',
-                   severidade_visual: 'red' | 'yellow' | 'green') => ({
-        leito, gravidade, severidade_visual,
-        delta_sofa_24h: 0, out_of_range_count: 0, pendencias_abertas: 0,
+    const linha = (
+        leito: string,
+        gravidade: 'critico' | 'instavel' | 'watcher' | 'estavel',
+        severidade_visual: 'red' | 'yellow' | 'green',
+    ) => ({
+        leito,
+        gravidade,
+        severidade_visual,
+        delta_sofa_24h: 0,
+        out_of_range_count: 0,
+        pendencias_abertas: 0,
     });
 
     it('o crítico pintado de verde no banco ranqueia como CRITICO, não como ESTAVEL', () => {
@@ -112,7 +119,7 @@ describe('triagemDeLeitos', () => {
         // O defeito real: o enum velho no código fazia esses dois caírem no
         // default e o paciente instável aparecia verde na tela de comando.
         const triados = triagemDeLeitos([
-            linha('UTI3-L01', 'watcher', 'green'),   // coluna mente; gravidade manda
+            linha('UTI3-L01', 'watcher', 'green'), // coluna mente; gravidade manda
             linha('UTI3-L02', 'instavel', 'green'),
         ]);
         const porLeito = Object.fromEntries(triados.map((t) => [t.leito, t]));

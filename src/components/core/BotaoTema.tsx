@@ -22,33 +22,33 @@
  * Cores: só token do tema. A barra de comando é navy nos DOIS temas, então o
  * botão usa os tokens `chrome-*`, feitos para escrever sobre ela.
  */
-import { Moon, Sun } from 'lucide-react';
-import { useEffect } from 'react';
+import {Moon, Sun} from 'lucide-react';
+import {useEffect} from 'react';
 
-import { useAlternarTema, useSincronizarTema, useTemaEscuro } from '@/stores/userStore';
+import {useAlternarTema, useSincronizarTema, useTemaEscuro} from '@/stores/userStore';
 
 export function BotaoTema() {
-  const sincronizarTema = useSincronizarTema();
-  const alternarTema = useAlternarTema();
-  const temaEscuro = useTemaEscuro();
+    const sincronizarTema = useSincronizarTema();
+    const alternarTema = useAlternarTema();
+    const temaEscuro = useTemaEscuro();
 
-  // Uma vez, pós-montagem: relê o localStorage e reaplica no <html>.
-  useEffect(() => {
-    sincronizarTema();
-  }, [sincronizarTema]);
+    // Uma vez, pós-montagem: relê o localStorage e reaplica no <html>.
+    useEffect(() => {
+        sincronizarTema();
+    }, [sincronizarTema]);
 
-  return (
-    <button
-      type="button"
-      onClick={alternarTema}
-      // O rótulo diz o que o clique FAZ, não o estado atual — leitor de tela
-      // anuncia a ação, como em qualquer interruptor.
-      aria-label={temaEscuro ? 'Ativar tema claro (Clinical)' : 'Ativar tema escuro (Tactical)'}
-      title={temaEscuro ? 'Tema claro (Clinical)' : 'Tema escuro (Tactical)'}
-      className="fixed top-1.5 right-2 z-20 flex h-11 w-11 items-center justify-center rounded-md text-chrome-texto transition-colors duration-(--dur-fast) hover:bg-(--chrome-borda)"
-    >
-      {/* Lua = "vá para o escuro", Sol = "vá para o claro": o ícone mostra o destino. */}
-      {temaEscuro ? <Sun aria-hidden size={20} /> : <Moon aria-hidden size={20} />}
-    </button>
-  );
+    return (
+        <button
+            type="button"
+            onClick={alternarTema}
+            // O rótulo diz o que o clique FAZ, não o estado atual — leitor de tela
+            // anuncia a ação, como em qualquer interruptor.
+            aria-label={temaEscuro ? 'Ativar tema claro (Clinical)' : 'Ativar tema escuro (Tactical)'}
+            title={temaEscuro ? 'Tema claro (Clinical)' : 'Tema escuro (Tactical)'}
+            className="fixed top-1.5 right-2 z-20 flex h-11 w-11 items-center justify-center rounded-md text-chrome-texto transition-colors duration-(--dur-fast) hover:bg-(--chrome-borda)"
+        >
+            {/* Lua = "vá para o escuro", Sol = "vá para o claro": o ícone mostra o destino. */}
+            {temaEscuro ? <Sun aria-hidden size={20} /> : <Moon aria-hidden size={20} />}
+        </button>
+    );
 }

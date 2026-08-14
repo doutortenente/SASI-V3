@@ -18,15 +18,7 @@
  */
 
 /** As 7 chaves de sistema de `evolucoes`, na ordem em que a nota as escreve. */
-export const CHAVES_SISTEMAS = [
-    'neuro',
-    'resp',
-    'hemo',
-    'tgi',
-    'renal',
-    'hemato',
-    'infecto',
-] as const;
+export const CHAVES_SISTEMAS = ['neuro', 'resp', 'hemo', 'tgi', 'renal', 'hemato', 'infecto'] as const;
 
 export type ChaveSistema = (typeof CHAVES_SISTEMAS)[number];
 

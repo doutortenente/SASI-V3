@@ -43,7 +43,7 @@ export function PainelDoTexto({
             <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
                     <p className="sasi-eyebrow">Texto da evolução</p>
-                    <h2 className="text-texto-titulo text-base font-semibold">
+                    <h2 className="text-base font-semibold text-texto-titulo">
                         TEMPLATE-BASE v2 — montado da ficha ao lado
                     </h2>
                 </div>
@@ -57,27 +57,24 @@ export function PainelDoTexto({
             */}
             <p
                 role="note"
-                className="bg-gravidade-watcher-bg text-gravidade-watcher-text rounded-md px-3 py-2 text-xs font-medium"
+                className="rounded-md bg-gravidade-watcher-bg px-3 py-2 text-xs font-medium text-gravidade-watcher-text"
             >
-                Rascunho a revisar. Leia linha a linha antes de colar no prontuário: o que não
-                tinha fonte no banco saiu como &quot;não avaliado&quot; ou foi omitido — ausência
-                aqui não é normalidade.
+                Rascunho a revisar. Leia linha a linha antes de colar no prontuário: o que não tinha fonte no
+                banco saiu como &quot;não avaliado&quot; ou foi omitido — ausência aqui não é normalidade.
             </p>
 
             {/* SOFA com a transparência obrigatória: o número grande e, do lado,
                 quantos dos 6 componentes foram apurados e o que falta colher. */}
-            <div className="border-borda-padrao bg-superficie-elevada flex flex-wrap items-center gap-3 rounded-md border p-3">
+            <div className="flex flex-wrap items-center gap-3 rounded-md border border-borda-padrao bg-superficie-elevada p-3">
                 <SofaBadge escore={sofa?.total ?? null} delta={deltaSofa24h} tamanho="lg" />
-                <p className="text-texto-suave min-w-0 flex-1 text-2xs">
-                    {linhaSofa(sofa, deltaSofa24h)}
-                </p>
+                <p className="min-w-0 flex-1 text-2xs text-texto-suave">{linhaSofa(sofa, deltaSofa24h)}</p>
             </div>
 
             {avisosDoSofa.map((aviso) => (
                 <AvisoAmarelo key={aviso}>{aviso}</AvisoAmarelo>
             ))}
 
-            <pre className="border-borda-padrao bg-superficie-afundada text-texto-corpo max-h-[70vh] overflow-auto rounded-lg border p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap">
+            <pre className="max-h-[70vh] overflow-auto rounded-lg border border-borda-padrao bg-superficie-afundada p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap text-texto-corpo">
                 {texto}
             </pre>
         </div>

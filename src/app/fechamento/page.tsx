@@ -73,8 +73,8 @@ export default async function FechamentoPage() {
         <>
             <header className="sasi-chrome sticky top-0 z-10">
                 <div className="mx-auto flex max-w-[1600px] items-baseline gap-3 px-4 py-3 pr-14 sm:px-6 sm:pr-14">
-                    <span className="text-chrome-texto text-md font-bold tracking-tight">SASI</span>
-                    <span className="text-chrome-suave text-xs font-medium tracking-wide uppercase">
+                    <span className="text-md font-bold tracking-tight text-chrome-texto">SASI</span>
+                    <span className="text-xs font-medium tracking-wide text-chrome-suave uppercase">
                         Fechamento · fim do turno
                     </span>
                 </div>
@@ -87,16 +87,16 @@ export default async function FechamentoPage() {
                     da lista, porque é o que se abre com a mão na maçaneta. */}
                 <Link
                     href="/fechamento/passagem"
-                    className="bg-acento shadow-card hover:bg-(--acento-hover) mt-2 flex min-h-14 items-center justify-center gap-2 rounded-xl text-base font-semibold text-(--texto-sobre-acento)"
+                    className="mt-2 flex min-h-14 items-center justify-center gap-2 rounded-xl bg-acento text-base font-semibold text-(--texto-sobre-acento) shadow-card hover:bg-(--acento-hover)"
                 >
                     <FileText aria-hidden size={18} />
                     Passagem do plantão
                 </Link>
 
                 {leitos.length === 0 && (
-                    <p className="border-borda-padrao bg-superficie-card text-texto-suave mt-4 rounded-lg border p-4 text-sm">
-                        Nenhum leito ocupado no painel — não há nota a fechar. Se isso não bate com
-                        o plantão real, o problema é de ingestão, não desta tela.
+                    <p className="mt-4 rounded-lg border border-borda-padrao bg-superficie-card p-4 text-sm text-texto-suave">
+                        Nenhum leito ocupado no painel — não há nota a fechar. Se isso não bate com o plantão
+                        real, o problema é de ingestão, não desta tela.
                     </p>
                 )}
 
@@ -108,19 +108,19 @@ export default async function FechamentoPage() {
                             <li key={l.paciente_id}>
                                 <Link
                                     href={`/fechamento/${l.paciente_id}`}
-                                    className="bg-superficie-card border-borda-padrao shadow-card hover:shadow-elevada flex min-h-16 items-center gap-3 rounded-xl border p-3 transition-shadow duration-(--dur-fast)"
+                                    className="flex min-h-16 items-center gap-3 rounded-xl border border-borda-padrao bg-superficie-card p-3 shadow-card transition-shadow duration-(--dur-fast) hover:shadow-elevada"
                                 >
                                     <div className="w-14 shrink-0">
                                         <p className="sasi-eyebrow">{l.uti}</p>
                                         <p
                                             data-clinical-number
-                                            className="text-texto-titulo text-2xl leading-none font-bold"
+                                            className="text-2xl leading-none font-bold text-texto-titulo"
                                         >
                                             {numeroDoLeito(l.leito)}
                                         </p>
                                     </div>
                                     <div className="min-w-0 flex-1">
-                                        <p className="text-texto-titulo truncate text-sm font-semibold">
+                                        <p className="truncate text-sm font-semibold text-texto-titulo">
                                             {txt(l.nome)}
                                         </p>
                                         <p className={`truncate text-xs font-medium ${estado.classe}`}>
@@ -131,7 +131,7 @@ export default async function FechamentoPage() {
                                     <ChevronRight
                                         aria-hidden
                                         size={18}
-                                        className="text-texto-tenue shrink-0"
+                                        className="shrink-0 text-texto-tenue"
                                     />
                                 </Link>
                             </li>

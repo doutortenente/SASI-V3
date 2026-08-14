@@ -1,10 +1,10 @@
-import type { Metadata, Viewport } from 'next';
-import { IBM_Plex_Mono, IBM_Plex_Sans } from 'next/font/google';
+import type {Metadata, Viewport} from 'next';
+import {IBM_Plex_Mono, IBM_Plex_Sans} from 'next/font/google';
 import '@/styles/globals.css';
 
-import { Providers } from '@/app/providers';
-import { BotaoTema } from '@/components/core/BotaoTema';
-import { NavPrincipal } from '@/components/core/NavPrincipal';
+import {Providers} from '@/app/providers';
+import {BotaoTema} from '@/components/core/BotaoTema';
+import {NavPrincipal} from '@/components/core/NavPrincipal';
 
 /**
  * IBM Plex — a fonte do design system.
@@ -20,46 +20,42 @@ import { NavPrincipal } from '@/components/core/NavPrincipal';
  * 1,5 e 15.
  */
 const plexSans = IBM_Plex_Sans({
-  subsets: ['latin', 'latin-ext'], // latin-ext: acentuação portuguesa completa
-  weight: ['400', '500', '600', '700'],
-  variable: '--fonte-sans',
-  display: 'swap',
+    subsets: ['latin', 'latin-ext'], // latin-ext: acentuação portuguesa completa
+    weight: ['400', '500', '600', '700'],
+    variable: '--fonte-sans',
+    display: 'swap',
 });
 
 const plexMono = IBM_Plex_Mono({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--fonte-mono',
-  display: 'swap',
+    subsets: ['latin'],
+    weight: ['400', '500', '600', '700'],
+    variable: '--fonte-mono',
+    display: 'swap',
 });
 
 export const metadata: Metadata = {
-  title: {
-    default: 'SASI — War Room UTI',
-    template: '%s · SASI',
-  },
-  description: 'Sistema de Apoio à Situação Intensiva. Dado sem fonte é null.',
-  robots: { index: false, follow: false }, // dado clínico: nunca indexar
+    title: {
+        default: 'SASI — War Room UTI',
+        template: '%s · SASI',
+    },
+    description: 'Sistema de Apoio à Situação Intensiva. Dado sem fonte é null.',
+    robots: {index: false, follow: false}, // dado clínico: nunca indexar
 };
 
 export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  // ÚNICO hex permitido fora de globals.css: a meta tag theme-color não lê
-  // var() do CSS, então o valor é copiado do fim do gradiente --chrome-bg do
-  // tema clinical (globals.css). Mudou o token lá, muda aqui junto.
-  themeColor: '#0b1d35',
+    width: 'device-width',
+    initialScale: 1,
+    // ÚNICO hex permitido fora de globals.css: a meta tag theme-color não lê
+    // var() do CSS, então o valor é copiado do fim do gradiente --chrome-bg do
+    // tema clinical (globals.css). Mudou o token lá, muda aqui junto.
+    themeColor: '#0b1d35',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html
-      lang="pt-BR"
-      className={`${plexSans.variable} ${plexMono.variable}`}
-      suppressHydrationWarning
-    >
-      <body className="min-h-dvh bg-superficie-app text-texto-corpo antialiased">
-        {/*
+export default function RootLayout({children}: {children: React.ReactNode}) {
+    return (
+        <html lang="pt-BR" className={`${plexSans.variable} ${plexMono.variable}`} suppressHydrationWarning>
+            <body className="min-h-dvh bg-superficie-app text-texto-corpo antialiased">
+                {/*
           `Providers` liga o TanStack Query para o app inteiro (ver providers.tsx).
 
           A ORDEM DAS CAMADAS:
@@ -71,12 +67,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             que puser conteúdo nesse canto reserva o espaço (`pr-14`).
           - `NavPrincipal` por último no DOM, mas fixa no rodapé via CSS.
         */}
-        <Providers>
-          <BotaoTema />
-          <div className="pb-24">{children}</div>
-          <NavPrincipal />
-        </Providers>
-      </body>
-    </html>
-  );
+                <Providers>
+                    <BotaoTema />
+                    <div className="pb-24">{children}</div>
+                    <NavPrincipal />
+                </Providers>
+            </body>
+        </html>
+    );
 }

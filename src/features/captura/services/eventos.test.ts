@@ -68,7 +68,7 @@ const REF_PH: TipoDeEvento = {
 };
 
 /** Dublê thenable — padrão de `pendencias.test.ts`. */
-function clienteFalso(resposta: { data: unknown; error: { message: string } | null }) {
+function clienteFalso(resposta: {data: unknown; error: {message: string} | null}) {
     const registro = {
         from: [] as string[],
         select: [] as string[],
@@ -148,14 +148,16 @@ describe('registrarEvento — formato do insert', () => {
         });
 
         expect(registro.from).toEqual(['eventos_clinicos']);
-        expect(registro.insert).toEqual([{
-            paciente_id: PAC_A,
-            tipo: 'spo2',
-            ts: TS_COLETA,       // hora da coleta, do chamador — nunca now() calado
-            fonte: 'manual',     // obrigatória: a coluna NÃO tem default no banco
-            valor_num: 95,
-            unidade: '%',        // a unidade_padrao da ref, nunca digitada solta
-        }]);
+        expect(registro.insert).toEqual([
+            {
+                paciente_id: PAC_A,
+                tipo: 'spo2',
+                ts: TS_COLETA, // hora da coleta, do chamador — nunca now() calado
+                fonte: 'manual', // obrigatória: a coluna NÃO tem default no banco
+                valor_num: 95,
+                unidade: '%', // a unidade_padrao da ref, nunca digitada solta
+            },
+        ]);
         expect(registro.insert[0]).not.toHaveProperty('internacao_id');
         expect(registro.insert[0]).not.toHaveProperty('requires_review');
         expect(evento).toEqual(eventoGravado());
@@ -223,7 +225,7 @@ describe('registrarEvento — a faixa sinaliza, NUNCA bloqueia', () => {
             tsISO: TS_COLETA,
             valor: 145,
         });
-        expect(registro.insert).toHaveLength(1);           // o envio aconteceu
+        expect(registro.insert).toHaveLength(1); // o envio aconteceu
         expect(registro.insert[0]!['valor_num']).toBe(145); // com o valor ORIGINAL
         expect(posicao).toBe('fora_alto');
     });
@@ -233,9 +235,7 @@ describe('registrarEvento — falha de escrita', () => {
     it('lança erro que diz que NÃO foi salvo', async () => {
         const {supabase} = clienteFalso({data: null, error: {message: 'conexão perdida'}});
         const entrada = {paciente_id: PAC_A, ref: REF_SPO2, tsISO: TS_COLETA, valor: 95};
-        await expect(registrarEvento(supabase, entrada)).rejects.toBeInstanceOf(
-            FalhaAoGravarEvento,
-        );
+        await expect(registrarEvento(supabase, entrada)).rejects.toBeInstanceOf(FalhaAoGravarEvento);
         await expect(registrarEvento(supabase, entrada)).rejects.toThrow(/NÃO registrou/);
     });
 

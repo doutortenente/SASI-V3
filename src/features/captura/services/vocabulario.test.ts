@@ -15,11 +15,10 @@ import {FalhaDeLeitura} from '@/lib/data/erros';
 
 import type {ClienteSasi, TipoDeEvento} from '@/features/captura/types';
 
-const COLUNAS_ESPERADAS =
-    'codigo, rotulo, categoria, unidade_padrao, faixa_min, faixa_max, ordem, ativo';
+const COLUNAS_ESPERADAS = 'codigo, rotulo, categoria, unidade_padrao, faixa_min, faixa_max, ordem, ativo';
 
 /** Dublê thenable — o mesmo padrão de `pendencias.test.ts`. */
-function clienteFalso(resposta: { data: unknown; error: { message: string } | null }) {
+function clienteFalso(resposta: {data: unknown; error: {message: string} | null}) {
     const registro = {
         from: [] as string[],
         select: [] as string[],
@@ -94,12 +93,22 @@ describe('agruparPorCategoria', () => {
         // Categorias reais das migrations: vital, gaso, renal (entre as 13).
         const fc = tipoSintetico({codigo: 'fc', categoria: 'vital', ordem: 14});
         const lactato = tipoSintetico({
-            codigo: 'lactato', categoria: 'gaso', rotulo: 'Lactato',
-            unidade_padrao: 'mmol/L', faixa_min: 0.5, faixa_max: 25, ordem: 21,
+            codigo: 'lactato',
+            categoria: 'gaso',
+            rotulo: 'Lactato',
+            unidade_padrao: 'mmol/L',
+            faixa_min: 0.5,
+            faixa_max: 25,
+            ordem: 21,
         });
         const spo2 = tipoSintetico({
-            codigo: 'spo2', categoria: 'vital', rotulo: 'Saturação O₂',
-            unidade_padrao: '%', faixa_min: 0, faixa_max: 100, ordem: 16,
+            codigo: 'spo2',
+            categoria: 'vital',
+            rotulo: 'Saturação O₂',
+            unidade_padrao: '%',
+            faixa_min: 0,
+            faixa_max: 100,
+            ordem: 16,
         });
 
         // A lista chega ordenada por `ordem` (spo2 16 antes de fc? não: 14 < 16)

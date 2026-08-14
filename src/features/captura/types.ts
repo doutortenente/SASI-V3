@@ -91,8 +91,7 @@ export interface PayloadDeJanela {
  * `sasi-ingest-export` — inverte e marca, nunca descarta).
  */
 export type ResultadoMontarJanela =
-    | { ok: true; payload: PayloadDeJanela; avisos: string[] }
-    | { ok: false; motivo: string };
+    {ok: true; payload: PayloadDeJanela; avisos: string[]} | {ok: false; motivo: string};
 
 /** A linha de `janelas_24h` como o serviço a devolve (sem `internacao_id`). */
 export interface Janela24h {

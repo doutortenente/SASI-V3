@@ -97,16 +97,7 @@ export interface RetornoUseAlertas {
  * `select('*')` numa view de agregação é barato hoje, mas a view pode ganhar coluna e
  * ninguém revisa o que nunca foi escrito.
  */
-const COLUNAS = [
-    'paciente_id',
-    'leito',
-    'uti',
-    'nome',
-    'criticos',
-    'warnings',
-    'infos',
-    'total',
-].join(',');
+const COLUNAS = ['paciente_id', 'leito', 'uti', 'nome', 'criticos', 'warnings', 'infos', 'total'].join(',');
 
 /** Linha crua da view: o gerador de tipos marca TUDO como nullable porque é view. */
 interface LinhaCrua {
@@ -141,7 +132,7 @@ export async function lerAlertasAbertos(): Promise<AlertasDoLeito[]> {
 
     return (linhas as unknown as LinhaCrua[])
         .filter(
-            (l): l is LinhaCrua & { paciente_id: string; leito: string; uti: Uti } =>
+            (l): l is LinhaCrua & {paciente_id: string; leito: string; uti: Uti} =>
                 l.paciente_id != null && l.leito != null && l.uti != null,
         )
         .map((l) => ({

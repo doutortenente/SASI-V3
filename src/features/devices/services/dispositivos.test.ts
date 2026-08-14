@@ -29,14 +29,13 @@ const PAC_B = '22222222-2222-4222-8222-222222222222';
 const INT_1 = '44444444-4444-4444-8444-444444444444';
 const EPI_1 = '55555555-5555-4555-8555-555555555555';
 
-const COLUNAS_ESPERADAS =
-    'paciente_id, internacao_id, episodio_id, tipo, sitio, data_inicio, dias_em_uso';
+const COLUNAS_ESPERADAS = 'paciente_id, internacao_id, episodio_id, tipo, sitio, data_inicio, dias_em_uso';
 
 /**
  * Dublê do cliente Supabase — mesmo padrão thenable de `alertas.test.ts`:
  * anota cada elo da corrente para o teste conferir a consulta MONTADA.
  */
-function clienteFalso(resposta: { data: unknown; error: { message: string } | null }) {
+function clienteFalso(resposta: {data: unknown; error: {message: string} | null}) {
     const registro = {
         from: [] as string[],
         select: [] as string[],

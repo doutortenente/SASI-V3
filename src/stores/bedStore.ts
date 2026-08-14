@@ -40,14 +40,11 @@ export const ROTULO_UTI: Record<OpcaoUti, string> = {
  * No v3 "todas" é representado pela AUSÊNCIA do campo (`undefined`), não por uma string.
  * Ex.: `leitos.filter((l) => passaFiltroUti(filtro.uti, l.uti))`
  */
-export const passaFiltroUti = (
-    filtro: Uti | undefined,
-    uti: string | null | undefined,
-): boolean => filtro === undefined || uti === filtro;
+export const passaFiltroUti = (filtro: Uti | undefined, uti: string | null | undefined): boolean =>
+    filtro === undefined || uti === filtro;
 
 /** Traduz a opção da barra ("todas") para o campo do filtro (`undefined`). */
-export const utiDaOpcao = (opcao: OpcaoUti): Uti | undefined =>
-    opcao === 'todas' ? undefined : opcao;
+export const utiDaOpcao = (opcao: OpcaoUti): Uti | undefined => (opcao === 'todas' ? undefined : opcao);
 
 /** Traduz o campo do filtro de volta para a opção que a barra precisa marcar. */
 export const opcaoDaUti = (uti: Uti | undefined): OpcaoUti => uti ?? 'todas';
@@ -117,8 +114,7 @@ function aplicarRemendo(atual: FiltroLeitos, remendo: RemendoFiltro): FiltroLeit
 }
 
 /** Função pura: o filtro está mexido em algum campo? Serve fora de componente também. */
-export const temFiltroAtivo = (filtro: FiltroLeitos): boolean =>
-    Object.keys(filtro).length > 0;
+export const temFiltroAtivo = (filtro: FiltroLeitos): boolean => Object.keys(filtro).length > 0;
 
 // ---------------------------------------------------------------------------
 // Store
@@ -173,9 +169,7 @@ export const useOpcaoUti = (): OpcaoUti => useBedStore((s) => opcaoDaUti(s.filtr
 /** Verdadeiro quando a grade está mostrando um recorte, não o hospital inteiro. */
 export const useTemFiltroAtivo = (): boolean => useBedStore((s) => temFiltroAtivo(s.filtro));
 
-export const useDefinirFiltro = (): BedState['definirFiltro'] =>
-    useBedStore((s) => s.definirFiltro);
-export const useDefinirOpcaoUti = (): BedState['definirOpcaoUti'] =>
-    useBedStore((s) => s.definirOpcaoUti);
+export const useDefinirFiltro = (): BedState['definirFiltro'] => useBedStore((s) => s.definirFiltro);
+export const useDefinirOpcaoUti = (): BedState['definirOpcaoUti'] => useBedStore((s) => s.definirOpcaoUti);
 export const useLimparFiltros = (): (() => void) => useBedStore((s) => s.limparFiltros);
 export const useDefinirOrdem = (): BedState['definirOrdem'] => useBedStore((s) => s.definirOrdem);

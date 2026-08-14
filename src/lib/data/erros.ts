@@ -18,8 +18,8 @@ export class FalhaDeLeitura extends Error {
     constructor(fonte: string, causaOriginal?: string) {
         super(
             `Falha ao ler ${fonte} do banco. A tela NÃO tem dado para mostrar — ` +
-            `isto não significa que o dado não existe.` +
-            (causaOriginal ? ` Causa: ${causaOriginal}` : ''),
+                `isto não significa que o dado não existe.` +
+                (causaOriginal ? ` Causa: ${causaOriginal}` : ''),
         );
         this.name = 'FalhaDeLeitura';
         this.fonte = fonte;
@@ -34,10 +34,7 @@ export class FalhaDeLeitura extends Error {
  * devolve array, mesmo vazio; null ali significa que a consulta não chegou).
  * Array vazio é resultado LEGÍTIMO: "nenhum leito ocupado" é um fato.
  */
-export function exigirDado<T>(
-    resposta: { data: T | null; error: { message: string } | null },
-    fonte: string,
-): T {
+export function exigirDado<T>(resposta: {data: T | null; error: {message: string} | null}, fonte: string): T {
     if (resposta.error) throw new FalhaDeLeitura(fonte, resposta.error.message);
     if (resposta.data === null || resposta.data === undefined) throw new FalhaDeLeitura(fonte);
     return resposta.data;

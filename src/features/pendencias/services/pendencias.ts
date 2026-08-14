@@ -74,8 +74,8 @@ export class FalhaAoGravarPendencia extends Error {
     constructor(alvo: string, causaOriginal?: string) {
         super(
             `Falha ao gravar ${alvo}. O banco NÃO registrou a mudança — ` +
-            `não tratar como salva.` +
-            (causaOriginal ? ` Causa: ${causaOriginal}` : ''),
+                `não tratar como salva.` +
+                (causaOriginal ? ` Causa: ${causaOriginal}` : ''),
         );
         this.name = 'FalhaAoGravarPendencia';
         this.alvo = alvo;
@@ -160,10 +160,7 @@ export async function lerPendenciasDoPaciente(
  * Devolver a linha (e não `void`) permite à Captura mostrar a pendência
  * recém-criada sem uma segunda consulta.
  */
-export async function criarPendencia(
-    supabase: ClienteSasi,
-    nova: NovaPendencia,
-): Promise<Pendencia> {
+export async function criarPendencia(supabase: ClienteSasi, nova: NovaPendencia): Promise<Pendencia> {
     const resposta = await supabase
         .from('pendencias')
         .insert({
@@ -174,10 +171,7 @@ export async function criarPendencia(
         .select(COLUNAS);
 
     if (resposta.error) {
-        throw new FalhaAoGravarPendencia(
-            `a pendência "${nova.tarefa}"`,
-            resposta.error.message,
-        );
+        throw new FalhaAoGravarPendencia(`a pendência "${nova.tarefa}"`, resposta.error.message);
     }
     const linha = resposta.data?.[0];
     if (!linha) {
@@ -213,10 +207,7 @@ export async function concluirPendencia(
         .select('id');
 
     if (resposta.error) {
-        throw new FalhaAoGravarPendencia(
-            `a conclusão da pendência ${pendenciaId}`,
-            resposta.error.message,
-        );
+        throw new FalhaAoGravarPendencia(`a conclusão da pendência ${pendenciaId}`, resposta.error.message);
     }
     return resposta.data?.length ?? 0;
 }
@@ -231,10 +222,7 @@ export async function concluirPendencia(
  * update grava os mesmos valores), diferente do concluir, onde o filtro
  * protege o carimbo de hora.
  */
-export async function reabrirPendencia(
-    supabase: ClienteSasi,
-    pendenciaId: string,
-): Promise<number> {
+export async function reabrirPendencia(supabase: ClienteSasi, pendenciaId: string): Promise<number> {
     const resposta = await supabase
         .from('pendencias')
         .update({
@@ -245,10 +233,7 @@ export async function reabrirPendencia(
         .select('id');
 
     if (resposta.error) {
-        throw new FalhaAoGravarPendencia(
-            `a reabertura da pendência ${pendenciaId}`,
-            resposta.error.message,
-        );
+        throw new FalhaAoGravarPendencia(`a reabertura da pendência ${pendenciaId}`, resposta.error.message);
     }
     return resposta.data?.length ?? 0;
 }

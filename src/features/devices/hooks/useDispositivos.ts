@@ -47,9 +47,7 @@ export function useDispositivos(): RetornoUseDispositivos {
     });
 
     return {
-        dispositivosPorPaciente: consulta.data
-            ? indexarDispositivosPorPaciente(consulta.data)
-            : undefined,
+        dispositivosPorPaciente: consulta.data ? indexarDispositivosPorPaciente(consulta.data) : undefined,
         carregando: consulta.isPending,
         erro: consulta.error,
     };

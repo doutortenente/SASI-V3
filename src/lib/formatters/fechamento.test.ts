@@ -71,10 +71,7 @@ const evolucaoCompleta: InsumosEvolucao = {
         hd: 'Choque séptico de foco pulmonar',
         alergias: 'dipirona (rash cutâneo)',
     },
-    problemas: [
-        'Choque séptico de foco pulmonar — noradrenalina em desmame',
-        'IRA KDIGO 2 em recuperação',
-    ],
+    problemas: ['Choque séptico de foco pulmonar — noradrenalina em desmame', 'IRA KDIGO 2 em recuperação'],
     admissao: {dataISO: '2026-08-01', texto: 'admitido em insuficiência respiratória aguda, IOT na chegada.'},
     diasInternacao: 12,
     dataPlantaoISO: '2026-08-13',
@@ -150,7 +147,14 @@ const evolucaoCompleta: InsumosEvolucao = {
 
 /** O mínimo que o tipo exige — exercita TODOS os caminhos de omissão. */
 const evolucaoMinima: InsumosEvolucao = {
-    paciente: {nome: 'Paciente Sintético Beta', idade: null, peso: null, uti: 'UTI3', leito: 'UTI3-L02', alergias: null},
+    paciente: {
+        nome: 'Paciente Sintético Beta',
+        idade: null,
+        peso: null,
+        uti: 'UTI3',
+        leito: 'UTI3-L02',
+        alergias: null,
+    },
     problemas: [],
     diasInternacao: null,
     dataPlantaoISO: '2026-08-13',
@@ -222,7 +226,15 @@ const passagemCompleta: InsumosPassagem = {
 };
 
 const passagemMinima: InsumosPassagem = {
-    paciente: {nome: 'Paciente Sintético Beta', idade: null, peso: null, uti: 'UTI4', leito: 'UTI4-L03', hd: null, alergias: null},
+    paciente: {
+        nome: 'Paciente Sintético Beta',
+        idade: null,
+        peso: null,
+        uti: 'UTI4',
+        leito: 'UTI4-L03',
+        hd: null,
+        alergias: null,
+    },
     diasInternacao: null,
     dataPlantaoISO: '2026-08-13',
     turno: 'diurna',
@@ -301,8 +313,10 @@ describe('montarEvolucao — esqueleto IMUTÁVEL do TEMPLATE-BASE v2', () => {
     });
 
     it('Intercorrências 24h renderiza o array `evolucoes.intercorrencias`', () => {
-        expect(saida).toContain('Intercorrências 24h: pico febril 38,9 às 02h, colhidas hemoculturas; ' +
-            'reduzida noradrenalina após estabilidade pressórica.');
+        expect(saida).toContain(
+            'Intercorrências 24h: pico febril 38,9 às 02h, colhidas hemoculturas; ' +
+                'reduzida noradrenalina após estabilidade pressórica.',
+        );
     });
 
     it('ATB é o histórico COMPLETO: curso aberto com D[n] do banco E curso fechado com período', () => {
@@ -477,9 +491,13 @@ describe('montarPassagem — ausência e omissões', () => {
 describe('montarPassagem — ordem e flags', () => {
     it('preserva a ordem da lista: quem chama já mandou o mais grave primeiro', () => {
         const saida = montarPassagem([passagemCompleta, passagemMinima]);
-        expect(saida.indexOf('Paciente Sintético Alfa')).toBeLessThan(saida.indexOf('Paciente Sintético Beta'));
+        expect(saida.indexOf('Paciente Sintético Alfa')).toBeLessThan(
+            saida.indexOf('Paciente Sintético Beta'),
+        );
         const invertida = montarPassagem([passagemMinima, passagemCompleta]);
-        expect(invertida.indexOf('Paciente Sintético Beta')).toBeLessThan(invertida.indexOf('Paciente Sintético Alfa'));
+        expect(invertida.indexOf('Paciente Sintético Beta')).toBeLessThan(
+            invertida.indexOf('Paciente Sintético Alfa'),
+        );
     });
 
     it('valor absurdo que ESTE arquivo compõe ganha a flag (revisar) — sinaliza, não corrige', () => {
@@ -529,8 +547,9 @@ describe('linhaVital — exibe o render pronto, nunca remonta', () => {
 
 describe('linhaDva — trata as DUAS formas do banco vivo', () => {
     it('texto puro e objeto rico na mesma lista, linha única com "·"', () => {
-        expect(linhaDva(['Tridil 12 ml/h', {droga: 'Noradrenalina', vazao_mcg_h: 480}]))
-            .toBe('Tridil 12 ml/h · Noradrenalina 480 mcg/h');
+        expect(linhaDva(['Tridil 12 ml/h', {droga: 'Noradrenalina', vazao_mcg_h: 480}])).toBe(
+            'Tridil 12 ml/h · Noradrenalina 480 mcg/h',
+        );
     });
     it('lista vazia devolve null — a linha some, não vira "Não"', () => {
         expect(linhaDva([])).toBeNull();
@@ -540,7 +559,9 @@ describe('linhaDva — trata as DUAS formas do banco vivo', () => {
 
 describe('linhaAtbAtivo — D-X vem do banco, nunca de conta local', () => {
     it('com dias e foco', () => {
-        expect(linhaAtbAtivo({droga: 'Meropenem', diasTerapia: 3, foco: 'pulmonar'})).toBe('Meropenem D-3 (pulmonar)');
+        expect(linhaAtbAtivo({droga: 'Meropenem', diasTerapia: 3, foco: 'pulmonar'})).toBe(
+            'Meropenem D-3 (pulmonar)',
+        );
     });
     it('sem dias informados, o D-X é omitido — nunca chutado', () => {
         expect(linhaAtbAtivo({droga: 'Meropenem', diasTerapia: null})).toBe('Meropenem');

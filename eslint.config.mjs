@@ -7,60 +7,60 @@ import prettier from 'eslint-config-prettier';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  {
-    // Nada aqui é código nosso: build, dependência e material de referência.
-    ignores: [
-      '.next/**',
-      'node_modules/**',
-      '_material/**',
-      // Worktree = cópia de trabalho paralela do repo, criada dentro de `.claude/`.
-      // Sem esta linha o lint varre o `node_modules` e o `.next` da cópia (12.612
-      // arquivos medidos em 08-ago-2026) e reporta milhares de erros que não são nossos.
-      '.claude/**',
-      // Ponte do agente: a ferramenta recria a pasta em toda sessão, com hooks .js
-      // que não são nosso código e quebram o lint com 9 erros de variável não usada.
-      // Saiu do git em 11-ago-2026 e está no .gitignore; esta linha é a segunda trava,
-      // para a pasta recriada não parar o `pnpm check` antes dos testes.
-      '.agentbridge/**',
-      'next-env.d.ts',
-      'src/types/supabase.ts', // gerado pelo Supabase — não editar na mão
-      'src/components/ui/**', // gerado pelo shadcn/ui
-    ],
-  },
-
-  ...nextCoreWebVitals,
-  ...nextTypescript,
-
-  {
-    rules: {
-      // Variável não usada vira erro, MENOS quando prefixada com _ (descarte intencional).
-      '@typescript-eslint/no-unused-vars': [
-        'error',
-        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
-      ],
-      // `any` desliga a checagem de tipo. Em dado clínico isso é prescrição em branco.
-      '@typescript-eslint/no-explicit-any': 'error',
-      // Import de tipo separado do import de valor (exigido por verbatimModuleSyntax).
-      '@typescript-eslint/consistent-type-imports': [
-        'error',
-        { prefer: 'type-imports', fixStyle: 'inline-type-imports' },
-      ],
-      // console.log esquecido em produção vaza dado de paciente pro navegador.
-      'no-console': ['error', { allow: ['warn', 'error'] }],
-      // `x != null` é permitido: é o idiom que pega null E undefined de uma vez.
-      eqeqeq: ['error', 'always', { null: 'ignore' }],
+    {
+        // Nada aqui é código nosso: build, dependência e material de referência.
+        ignores: [
+            '.next/**',
+            'node_modules/**',
+            '_material/**',
+            // Worktree = cópia de trabalho paralela do repo, criada dentro de `.claude/`.
+            // Sem esta linha o lint varre o `node_modules` e o `.next` da cópia (12.612
+            // arquivos medidos em 08-ago-2026) e reporta milhares de erros que não são nossos.
+            '.claude/**',
+            // Ponte do agente: a ferramenta recria a pasta em toda sessão, com hooks .js
+            // que não são nosso código e quebram o lint com 9 erros de variável não usada.
+            // Saiu do git em 11-ago-2026 e está no .gitignore; esta linha é a segunda trava,
+            // para a pasta recriada não parar o `pnpm check` antes dos testes.
+            '.agentbridge/**',
+            'next-env.d.ts',
+            'src/types/supabase.ts', // gerado pelo Supabase — não editar na mão
+            'src/components/ui/**', // gerado pelo shadcn/ui
+        ],
     },
-  },
 
-  {
-    // Teste pode ser mais frouxo: mock exige any de vez em quando.
-    files: ['tests/**/*.{ts,tsx}', '**/*.test.{ts,tsx}'],
-    rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
-      'no-console': 'off',
+    ...nextCoreWebVitals,
+    ...nextTypescript,
+
+    {
+        rules: {
+            // Variável não usada vira erro, MENOS quando prefixada com _ (descarte intencional).
+            '@typescript-eslint/no-unused-vars': [
+                'error',
+                {argsIgnorePattern: '^_', varsIgnorePattern: '^_'},
+            ],
+            // `any` desliga a checagem de tipo. Em dado clínico isso é prescrição em branco.
+            '@typescript-eslint/no-explicit-any': 'error',
+            // Import de tipo separado do import de valor (exigido por verbatimModuleSyntax).
+            '@typescript-eslint/consistent-type-imports': [
+                'error',
+                {prefer: 'type-imports', fixStyle: 'inline-type-imports'},
+            ],
+            // console.log esquecido em produção vaza dado de paciente pro navegador.
+            'no-console': ['error', {allow: ['warn', 'error']}],
+            // `x != null` é permitido: é o idiom que pega null E undefined de uma vez.
+            eqeqeq: ['error', 'always', {null: 'ignore'}],
+        },
     },
-  },
 
-  // Sempre por último: desliga regras de estilo que brigariam com o Prettier.
-  prettier,
+    {
+        // Teste pode ser mais frouxo: mock exige any de vez em quando.
+        files: ['tests/**/*.{ts,tsx}', '**/*.test.{ts,tsx}'],
+        rules: {
+            '@typescript-eslint/no-explicit-any': 'off',
+            'no-console': 'off',
+        },
+    },
+
+    // Sempre por último: desliga regras de estilo que brigariam com o Prettier.
+    prettier,
 );

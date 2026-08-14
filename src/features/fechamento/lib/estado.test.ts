@@ -123,9 +123,7 @@ describe('fichaParaTexto', () => {
         expect(texto.neuro).toEqual(payload.neuro);
         expect(texto.conduta).toEqual(payload.conduta);
         // A intercorrência só existe no lado do texto e do complemento.
-        expect(texto.intercorrencias).toEqual([
-            'Dessaturação às 03h20, revertida com aspiração',
-        ]);
+        expect(texto.intercorrencias).toEqual(['Dessaturação às 03h20, revertida com aspiração']);
     });
 });
 

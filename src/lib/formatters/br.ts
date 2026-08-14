@@ -1,10 +1,12 @@
 // Portado do SASI v2 (src/lib/formatters/br.ts) sem alteração de comportamento.
 // Números pt-BR (vírgula decimal). ZERO ALUCINAÇÃO: null -> travessão, nunca 0 inventado.
 export const num = (v: number | null | undefined, casas = 1) =>
-    v == null ? '—' : v.toLocaleString('pt-BR', {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: casas,
-    });
+    v == null
+        ? '—'
+        : v.toLocaleString('pt-BR', {
+              minimumFractionDigits: 0,
+              maximumFractionDigits: casas,
+          });
 export const naoAvaliado = 'não avaliado';
 
 // ─────────────────────────────────────────────────────────────────────────────

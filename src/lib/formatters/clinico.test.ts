@@ -69,8 +69,9 @@ describe('rotuloInfusao — a dose nunca desaparece', () => {
         expect(rotuloInfusao({droga: 'Noradrenalina', vazao_mcg_h: 480})).toBe('Noradrenalina 480 mcg/h');
     });
     it('forma simples com unidade insegura é normalizada', () => {
-        expect(rotuloInfusao({droga: 'Noradrenalina', dose: '0,3', unidade: 'Μg/kg/min'}))
-            .toBe('Noradrenalina 0,3 mcg/kg/min');
+        expect(rotuloInfusao({droga: 'Noradrenalina', dose: '0,3', unidade: 'Μg/kg/min'})).toBe(
+            'Noradrenalina 0,3 mcg/kg/min',
+        );
     });
     it('sem dose nenhuma, mostra travessão — não omite a droga nem inventa dose', () => {
         expect(rotuloInfusao({droga: 'Fentanil'})).toBe(`Fentanil ${SEM_DADO}`);

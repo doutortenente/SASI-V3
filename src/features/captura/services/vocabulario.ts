@@ -29,8 +29,7 @@ import type {ClienteSasi, TipoDeEvento} from '@/features/captura/types';
  * linha de volta. `loinc_code` fica de fora de propósito: a Captura não fala
  * FHIR (vetado pelo operador) — pedir a coluna seria carregar peso morto.
  */
-const COLUNAS_VOCABULARIO =
-    'codigo, rotulo, categoria, unidade_padrao, faixa_min, faixa_max, ordem, ativo';
+const COLUNAS_VOCABULARIO = 'codigo, rotulo, categoria, unidade_padrao, faixa_min, faixa_max, ordem, ativo';
 
 /**
  * Todos os tipos de evento ATIVOS, na ordem de exibição do vocabulário.

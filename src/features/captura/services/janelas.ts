@@ -49,7 +49,7 @@ import type {
  * `janela_limiar_chk` exige o limiar junto de qualquer excursão. Tipo sem
  * limiar padrão E sem limiar informado é recusado, nunca inventado.
  */
-export const LIMIARES_PADRAO: Readonly<Record<string, { baixo?: number; alto?: number }>> = {
+export const LIMIARES_PADRAO: Readonly<Record<string, {baixo?: number; alto?: number}>> = {
     pa_sys: {baixo: 90},
     pa_dia: {baixo: 50},
     pam: {baixo: 65},
@@ -75,8 +75,8 @@ export class FalhaAoGravarJanela extends Error {
     constructor(alvo: string, causaOriginal?: string) {
         super(
             `Falha ao gravar ${alvo}. O banco NÃO registrou a janela — ` +
-            `não tratar como salva.` +
-            (causaOriginal ? ` Causa: ${causaOriginal}` : ''),
+                `não tratar como salva.` +
+                (causaOriginal ? ` Causa: ${causaOriginal}` : ''),
         );
         this.name = 'FalhaAoGravarJanela';
         this.causaOriginal = causaOriginal;
@@ -151,7 +151,10 @@ export function montarJanela(entrada: EntradaDeJanela): ResultadoMontarJanela {
 
     const nTotal = lerCampo(entrada.n_total);
     if (nTotal !== null && (contagemInvalida(nTotal) || nTotal === 0)) {
-        return {ok: false, motivo: `n_total "${String(entrada.n_total)}" não é contagem válida (inteiro > 0)`};
+        return {
+            ok: false,
+            motivo: `n_total "${String(entrada.n_total)}" não é contagem válida (inteiro > 0)`,
+        };
     }
     // Sem n_total informado, o banco aplica 12 (folha completa) — a validação
     // de n_fora_* compara contra o que o banco vai de fato usar.
@@ -159,7 +162,10 @@ export function montarJanela(entrada: EntradaDeJanela): ResultadoMontarJanela {
 
     const nForaAlto = lerCampo(entrada.n_fora_alto);
     const nForaBaixo = lerCampo(entrada.n_fora_baixo);
-    for (const [nome, n] of [['n_fora_alto', nForaAlto], ['n_fora_baixo', nForaBaixo]] as const) {
+    for (const [nome, n] of [
+        ['n_fora_alto', nForaAlto],
+        ['n_fora_baixo', nForaBaixo],
+    ] as const) {
         if (n === null) continue;
         if (contagemInvalida(n)) {
             return {ok: false, motivo: `${nome} não é contagem válida (inteiro >= 0)`};
@@ -242,7 +248,7 @@ const COLUNAS_JANELA =
 export async function registrarJanela(
     supabase: ClienteSasi,
     entrada: EntradaDeJanela,
-): Promise<{ janela: Janela24h; avisos: string[] }> {
+): Promise<{janela: Janela24h; avisos: string[]}> {
     const montada = montarJanela(entrada);
     if (!montada.ok) throw new EntradaDeJanelaRecusada(montada.motivo);
 

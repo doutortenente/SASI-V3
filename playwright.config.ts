@@ -18,51 +18,51 @@
  * navegador diferente do de uso real esconde justamente o defeito que só
  * aparece nele.
  */
-import { defineConfig, devices } from '@playwright/test';
+import {defineConfig, devices} from '@playwright/test';
 
 const PORTA = 3000;
 const BASE_URL = `http://localhost:${PORTA}`;
 
 export default defineConfig({
-  testDir: './tests/e2e',
-  // Fumaça é sequencial de propósito: 1 servidor, poucas rotas, e falha
-  // paralela em suíte pequena só embaralha o relatório.
-  fullyParallel: false,
-  workers: 1,
-  // Teste que só passa na segunda tentativa está escondendo instabilidade.
-  retries: 0,
-  reporter: [['list']],
-  // O app lê do Supabase no servidor; a primeira renderização paga essa ida.
-  timeout: 60_000,
-  expect: { timeout: 15_000 },
+    testDir: './tests/e2e',
+    // Fumaça é sequencial de propósito: 1 servidor, poucas rotas, e falha
+    // paralela em suíte pequena só embaralha o relatório.
+    fullyParallel: false,
+    workers: 1,
+    // Teste que só passa na segunda tentativa está escondendo instabilidade.
+    retries: 0,
+    reporter: [['list']],
+    // O app lê do Supabase no servidor; a primeira renderização paga essa ida.
+    timeout: 60_000,
+    expect: {timeout: 15_000},
 
-  use: {
-    baseURL: BASE_URL,
-    trace: 'on-first-retry',
-    locale: 'pt-BR',
-    timezoneId: 'America/Sao_Paulo',
-  },
-
-  projects: [
-    {
-      name: 'chrome',
-      use: {
-        ...devices['Desktop Chrome'],
-        // `devices['Desktop Chrome']` só define viewport e user agent — o canal
-        // não vem junto (conferido na API em 14-ago-2026). Sem esta linha o
-        // Playwright procura o Chromium próprio dele, que não existe aqui.
-        channel: 'chrome',
-      },
+    use: {
+        baseURL: BASE_URL,
+        trace: 'on-first-retry',
+        locale: 'pt-BR',
+        timezoneId: 'America/Sao_Paulo',
     },
-  ],
 
-  webServer: {
-    command: 'pnpm build && pnpm start',
-    url: BASE_URL,
-    reuseExistingServer: !process.env.CI,
-    // Build a frio + subida do Next: 3 minutos é folga, não expectativa.
-    timeout: 180_000,
-    stdout: 'pipe',
-    stderr: 'pipe',
-  },
+    projects: [
+        {
+            name: 'chrome',
+            use: {
+                ...devices['Desktop Chrome'],
+                // `devices['Desktop Chrome']` só define viewport e user agent — o canal
+                // não vem junto (conferido na API em 14-ago-2026). Sem esta linha o
+                // Playwright procura o Chromium próprio dele, que não existe aqui.
+                channel: 'chrome',
+            },
+        },
+    ],
+
+    webServer: {
+        command: 'pnpm build && pnpm start',
+        url: BASE_URL,
+        reuseExistingServer: !process.env.CI,
+        // Build a frio + subida do Next: 3 minutos é folga, não expectativa.
+        timeout: 180_000,
+        stdout: 'pipe',
+        stderr: 'pipe',
+    },
 });

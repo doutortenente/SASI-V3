@@ -42,11 +42,7 @@ export function useSalvarFicha() {
         mutationFn: async ({entrada, complemento}) => {
             const supabase = getSupabaseBrowser();
             const evolucaoId = await salvarFicha(supabase, entrada);
-            const linhasComplementadas = await complementarEvolucao(
-                supabase,
-                evolucaoId,
-                complemento,
-            );
+            const linhasComplementadas = await complementarEvolucao(supabase, evolucaoId, complemento);
             return {evolucaoId, linhasComplementadas};
         },
     });

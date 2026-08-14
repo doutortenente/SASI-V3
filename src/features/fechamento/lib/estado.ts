@@ -27,16 +27,8 @@ import {
     sistemaParaEdicao,
     type FichaParaTexto,
 } from '@/features/fechamento/lib/paraTexto';
-import {
-    CHAVES_SISTEMAS,
-    camposDoSistema,
-    type ChaveSistema,
-} from '@/features/fechamento/lib/campos';
-import type {
-    EvolucaoCorrente,
-    EvolucaoDaFicha,
-    TipoDeNota,
-} from '@/features/fechamento/types';
+import {CHAVES_SISTEMAS, camposDoSistema, type ChaveSistema} from '@/features/fechamento/lib/campos';
+import type {EvolucaoCorrente, EvolucaoDaFicha, TipoDeNota} from '@/features/fechamento/types';
 import type {
     Gravidade,
     ProblemaAtivo,

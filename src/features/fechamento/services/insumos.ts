@@ -117,10 +117,7 @@ const COLUNAS_ATB =
  * Lista vazia é legítima (`atbs` está em 0 linhas até a ingestão alimentar —
  * medido em `docs/MAPA-BANCO-TELAS.md`); falha de leitura lança.
  */
-export async function lerAtbsDoPaciente(
-    supabase: ClienteSasi,
-    pacienteId: string,
-): Promise<AtbRegistro[]> {
+export async function lerAtbsDoPaciente(supabase: ClienteSasi, pacienteId: string): Promise<AtbRegistro[]> {
     const resposta = await supabase
         .from('atbs')
         .select(COLUNAS_ATB)
@@ -207,14 +204,8 @@ const COLUNAS_BH = 'paciente_id, bh_24h, bh_48h, bh_72h, eventos_24h';
  * travessão na seção, nunca "BH 0": zero é um balanço MEDIDO e neutro,
  * ausência é outra coisa).
  */
-export async function lerBhAcumulado(
-    supabase: ClienteSasi,
-    pacienteId: string,
-): Promise<BhAcumulado | null> {
-    const resposta = await supabase
-        .from('vw_bh_acumulado')
-        .select(COLUNAS_BH)
-        .eq('paciente_id', pacienteId);
+export async function lerBhAcumulado(supabase: ClienteSasi, pacienteId: string): Promise<BhAcumulado | null> {
+    const resposta = await supabase.from('vw_bh_acumulado').select(COLUNAS_BH).eq('paciente_id', pacienteId);
     const linhas = exigirDado(resposta, `vw_bh_acumulado do paciente ${pacienteId}`);
     const linha = (linhas as unknown as BhAcumulado[])[0];
     return linha ?? null;
