@@ -7,7 +7,12 @@
  * Por que os rótulos são constantes e não texto livre: no v2 o mesmo nível
  * aparecia como "Instável", "INSTAVEL" e "instavel" em telas diferentes, e a
  * passagem de turno virava discussão sobre palavra em vez de sobre paciente.
+ *
+ * A FORMA (linha, cantos, peso, caixa alta, escala de tamanho) mora em
+ * `core/Badge` — é a mesma do selo de terapia, e estava escrita duas vezes.
+ * Aqui fica só o que é clínico: o rótulo e o par de cor de cada nível.
  */
+import {Badge, type TamanhoSelo} from '@/components/core/Badge';
 import type {Acuidade} from '@/lib/clinical/sasi';
 
 /** Rótulo humano de cada nível. Casa única — não redeclarar em componente. */
@@ -37,19 +42,13 @@ export const SOLIDO_ACUIDADE: Record<Acuidade, string> = {
     OBITO: 'bg-gravidade-obito',
 };
 
-const TAMANHO = {
-    sm: 'text-2xs px-1.5 py-0.5',
-    md: 'text-xs px-2 py-0.5',
-    lg: 'text-sm px-2.5 py-1',
-} as const;
-
 export function GravityBadge({
     nivel,
     tamanho = 'md',
     ponto = false,
 }: {
     nivel: Acuidade;
-    tamanho?: keyof typeof TAMANHO;
+    tamanho?: TamanhoSelo;
     /** Forma mínima: só o ponto colorido e o rótulo, sem preenchimento. */
     ponto?: boolean;
 }) {
@@ -68,10 +67,8 @@ export function GravityBadge({
     }
 
     return (
-        <span
-            className={`inline-flex items-center rounded-sm font-semibold tracking-wide uppercase ${TAMANHO[tamanho]} ${CLASSE_ACUIDADE[nivel]}`}
-        >
+        <Badge classe={CLASSE_ACUIDADE[nivel]} tamanho={tamanho} caixaAlta>
             {rotulo}
-        </span>
+        </Badge>
     );
 }
