@@ -46,6 +46,27 @@ const BARRA_ACUIDADE: Record<Acuidade, string> = {
     OBITO: 'bg-gravidade-obito',
 };
 
+/** Mesmo token, cru (sem `bg-`), pro `color-mix` do lavado de fundo. */
+const TOKEN_ACUIDADE: Record<Acuidade, string> = {
+    CRITICO: '--color-gravidade-critico',
+    INSTAVEL: '--color-gravidade-instavel',
+    VIGILANCIA: '--color-gravidade-watcher',
+    ESTAVEL: '--color-gravidade-estavel',
+    OBITO: '--color-gravidade-obito',
+};
+
+/**
+ * Fundo do card inteiro tingido pela gravidade — a fórmula é a do BedCard.tsx
+ * do V2 REAL em produção (`sasi-uti.vercel.app`, conferido no código-fonte,
+ * não num mockup): `color-mix(in srgb, var(--grav-X-solid) 9%|5%, var(--surface-card))`.
+ * Sem o lavado, sobra fundo branco chapado + borda cheia — o card lê como
+ * bloco duro em vez de card clínico.
+ */
+function lavadoDeGravidade(acuidade: Acuidade): string {
+    const porcentagem = acuidade === 'CRITICO' ? 9 : 5;
+    return `color-mix(in srgb, var(${TOKEN_ACUIDADE[acuidade]}) ${porcentagem}%, var(--superficie-card))`;
+}
+
 const ROTULO_ISOLAMENTO: Record<Isolamento, string | null> = {
     none: null,
     contact: 'Contato',
@@ -108,14 +129,14 @@ export function BedCard({
     // até lá, o retrato do servidor (`vw_dashboard_uti.pendencias_abertas`).
     // Duas fontes, uma de cada vez — nunca somadas.
     const pendencias = pendenciasVivas ? pendenciasVivas.length : (leito.pendencias_abertas ?? 0);
-    const critico = leito.acuidade === 'CRITICO';
     const alertas = alertasAbertos ?? null;
     const temAlerta = alertas !== null && alertas.criticos + alertas.warnings + alertas.infos > 0;
     const idDetalhe = `detalhe-${leito.paciente_id}`;
 
     return (
         <article
-            className={`relative flex flex-col overflow-hidden rounded-xl border border-borda-padrao bg-superficie-card pl-4 text-texto-corpo shadow-card transition-shadow duration-200 hover:shadow-elevada ${critico ? 'sasi-critical-pulse' : ''}`}
+            className="relative flex flex-col overflow-hidden rounded-xl border border-borda-padrao pl-4 text-texto-corpo shadow-card transition-shadow duration-200 hover:shadow-elevada"
+            style={{background: lavadoDeGravidade(leito.acuidade)}}
             aria-label={`Leito ${leito.leito}, acuidade ${leito.acuidade}`}
         >
             {/* Barra de gravidade: 6px cheios, do topo ao pé do card. */}
