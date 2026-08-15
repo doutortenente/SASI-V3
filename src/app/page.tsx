@@ -14,6 +14,7 @@
 import type {Metadata} from 'next';
 
 import {StatPill} from '@/components/core/StatPill';
+import {TopBar} from '@/components/core/TopBar';
 import {PainelMeuPlantao} from '@/features/beds/components/PainelMeuPlantao';
 import {lerLeitosOcupados} from '@/features/beds/services/leitos';
 
@@ -42,26 +43,7 @@ export default async function MeuPlantaoPage() {
 
     return (
         <>
-            {/*
-        Barra de comando — navy nos dois temas, porque é a marca e não o tema.
-        Fica grudada no topo: rolando a grade, a contagem de críticos não pode
-        sair da tela. `pr-14` reserva o canto direito para o BotaoTema fixo do
-        layout (z-20, por cima deste header z-10) — sem a folga, o carimbo de
-        hora ficaria embaixo do botão em tela estreita.
-      */}
-            <header className="sasi-chrome sticky top-0 z-10">
-                <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-4 py-3 pr-14 sm:px-6 sm:pr-14">
-                    <div className="flex items-baseline gap-3">
-                        <span className="text-md font-bold tracking-tight text-chrome-texto">SASI</span>
-                        <span className="text-xs font-medium tracking-wide text-chrome-suave uppercase">
-                            Meu plantão
-                        </span>
-                    </div>
-                    <p data-clinical-number className="text-xs text-chrome-suave">
-                        {carimbo}
-                    </p>
-                </div>
-            </header>
+            <TopBar rotulo="Meu plantão" carimbo={carimbo} />
 
             <main className="mx-auto max-w-[1600px] p-4 sm:p-6">
                 <section aria-label="Resumo do plantão" className="mb-6">

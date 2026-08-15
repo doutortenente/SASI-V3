@@ -5,6 +5,7 @@ import '@/styles/globals.css';
 import {Providers} from '@/app/providers';
 import {BotaoTema} from '@/components/core/BotaoTema';
 import {NavPrincipal} from '@/components/core/NavPrincipal';
+import {Sidebar} from '@/components/core/Sidebar';
 
 /**
  * IBM Plex — a fonte do design system.
@@ -58,19 +59,28 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
                 {/*
           `Providers` liga o TanStack Query para o app inteiro (ver providers.tsx).
 
-          A ORDEM DAS CAMADAS:
-          - `children` leva `pb-24` no invólucro: a barra de navegação é FIXA no
-            rodapé e, sem essa folga, cobriria a última linha de conteúdo — no
-            plantão isso seria o último leito da grade.
+          FORMA: rail lateral (`Sidebar`) a partir do desktop, barra fixa no
+          rodapé (`NavPrincipal`) no celular — as duas leem a mesma lista de
+          3 destinos (`core/destinos.ts`) e nunca aparecem juntas (`md:` corta
+          uma, liga a outra).
+
+          A ORDEM DAS CAMADAS na coluna principal:
+          - `children` leva `pb-24 md:pb-0`: no celular a barra de navegação é
+            FIXA no rodapé e, sem essa folga, cobriria a última linha de
+            conteúdo; no desktop quem navega é a `Sidebar`, sem folga a repor.
           - `BotaoTema` flutua no canto superior direito, por cima da barra de
             comando que cada tela desenha (z-20 > z-10 do header sticky). Tela
             que puser conteúdo nesse canto reserva o espaço (`pr-14`).
-          - `NavPrincipal` por último no DOM, mas fixa no rodapé via CSS.
         */}
                 <Providers>
-                    <BotaoTema />
-                    <div className="pb-24">{children}</div>
-                    <NavPrincipal />
+                    <div className="flex min-h-dvh">
+                        <Sidebar />
+                        <div className="flex min-w-0 flex-1 flex-col">
+                            <BotaoTema />
+                            <div className="flex-1 pb-24 md:pb-0">{children}</div>
+                            <NavPrincipal />
+                        </div>
+                    </div>
                 </Providers>
             </body>
         </html>
