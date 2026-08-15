@@ -44,12 +44,14 @@ export function PainelRound({leitos, agoraISO}: {leitos: LeitoNaGrade[]; agoraIS
     const porUti = filtrarLeitos(leitos, filtro, pacientesComAlerta);
 
     const linhas = porUti.map((l) => {
-        const criticos = alertas.porPaciente.get(l.paciente_id)?.criticos ?? 0;
+        const contagem = alertas.porPaciente.get(l.paciente_id);
+        const criticos = contagem?.criticos ?? 0;
+        const totalAlertas = contagem?.total ?? 0;
         const pend = pendencias.pendenciasPorPaciente?.[l.paciente_id] ?? [];
         const pendAlta = pend.filter((p) => p.prioridade === 1).length;
         const semEvolucao = semEvolucaoEm24h(l.ultima_evolucao, agoraISO);
         const precisaAcao = criticos > 0 || pendAlta > 0 || semEvolucao;
-        return {l, criticos, pend, pendAlta, semEvolucao, precisaAcao};
+        return {l, criticos, totalAlertas, pend, pendAlta, semEvolucao, precisaAcao};
     });
 
     const visiveis = soAcao ? linhas.filter((r) => r.precisaAcao) : linhas;
@@ -100,7 +102,7 @@ export function PainelRound({leitos, agoraISO}: {leitos: LeitoNaGrade[]; agoraIS
             </div>
 
             <ul className="grid gap-3">
-                {visiveis.map(({l, criticos, pend, semEvolucao}) => {
+                {visiveis.map(({l, criticos, totalAlertas, pend, semEvolucao}) => {
                     const isolamento =
                         l.isolation && l.isolation !== 'none' ? (ROTULO_ISOLAMENTO[l.isolation] ?? l.isolation) : null;
                     const tarefa = pend[0]?.tarefa ?? null;
@@ -132,7 +134,15 @@ export function PainelRound({leitos, agoraISO}: {leitos: LeitoNaGrade[]; agoraIS
                                     <SofaBadge escore={l.sofa_total} delta={l.delta_sofa_24h} />
                                 </div>
                                 <p className="text-sm text-texto-suave">
-                                    {criticos > 0 ? `${criticos} alerta(s) crítico(s)` : 'sem alerta aberto'}
+                                    {/* Mesma régua do War Room: o card conta TODO alerta aberto
+                                        (`total` da `vw_alertas_abertos`), não só os críticos.
+                                        Contar só `criticos` fazia o mesmo paciente aparecer
+                                        "ALERTA 2" na grade e "sem alerta aberto" aqui. */}
+                                    {totalAlertas > 0
+                                        ? criticos > 0
+                                            ? `${totalAlertas} alerta(s) aberto(s) · ${criticos} crítico(s)`
+                                            : `${totalAlertas} alerta(s) aberto(s)`
+                                        : 'sem alerta aberto'}
                                     <br />
                                     {SEM_ATB_EM_CURSO}
                                 </p>
