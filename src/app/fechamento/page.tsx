@@ -21,6 +21,7 @@ import Link from 'next/link';
 import type {Metadata} from 'next';
 
 import {GravityBadge} from '@/components/clinical/GravityBadge';
+import {TopBar} from '@/components/core/TopBar';
 import {lerLeitosOcupados} from '@/features/beds/services/leitos';
 import {derivarRelogiosDaNota} from '@/features/fechamento/services/ficha';
 import {lerResumoDasNotas, type ResumoDeNota} from '@/features/fechamento/services/pacientes';
@@ -71,14 +72,7 @@ export default async function FechamentoPage() {
 
     return (
         <>
-            <header className="sasi-chrome sticky top-0 z-10">
-                <div className="mx-auto flex max-w-[1600px] items-baseline gap-3 px-4 py-3 pr-14 sm:px-6 sm:pr-14">
-                    <span className="text-md font-bold tracking-tight text-chrome-texto">SASI</span>
-                    <span className="text-xs font-medium tracking-wide text-chrome-suave uppercase">
-                        Fechamento · fim do turno
-                    </span>
-                </div>
-            </header>
+            <TopBar rotulo="Fechamento · fim do turno" />
 
             <main className="mx-auto max-w-2xl p-4 sm:p-6">
                 <p className="sasi-eyebrow">Plantão {rotuloDoPlantao}</p>

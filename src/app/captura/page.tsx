@@ -15,6 +15,7 @@ import Link from 'next/link';
 import type {Metadata} from 'next';
 
 import {GravityBadge} from '@/components/clinical/GravityBadge';
+import {TopBar} from '@/components/core/TopBar';
 import {lerLeitosOcupados} from '@/features/beds/services/leitos';
 import {numeroDoLeito, txt} from '@/lib/formatters/clinico';
 
@@ -27,16 +28,7 @@ export default async function CapturaPage() {
 
     return (
         <>
-            {/* Mesma barra de comando das outras telas: navy nos dois temas, grudada
-                no topo. `pr-14` reserva o canto direito para o BotaoTema do layout. */}
-            <header className="sasi-chrome sticky top-0 z-10">
-                <div className="mx-auto flex max-w-[1600px] items-baseline gap-3 px-4 py-3 pr-14 sm:px-6 sm:pr-14">
-                    <span className="text-md font-bold tracking-tight text-chrome-texto">SASI</span>
-                    <span className="text-xs font-medium tracking-wide text-chrome-suave uppercase">
-                        Captura · escolha o paciente
-                    </span>
-                </div>
-            </header>
+            <TopBar rotulo="Captura · escolha o paciente" />
 
             <main className="mx-auto max-w-xl p-4 sm:p-6">
                 {leitos.length === 0 && (

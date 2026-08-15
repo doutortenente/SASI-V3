@@ -68,6 +68,9 @@
     --dur-base: 220ms;
     --dur-slow: 360ms;
 
+    /* ---- rail de comando (desktop) — largura fixa do sasi-design-system ---- */
+    --sidebar-width: 232px;
+
     /* ======================================================================
      GRAVIDADE — escala clínica de 5 níveis, 3 camadas cada.
      `solid` pinta barra e ponto · `bg` preenche selo · `text` escreve nele.
@@ -174,6 +177,9 @@
     --chrome-texto: #e6edf6;
     --chrome-suave: #8aa1bd;
     --chrome-borda: rgba(255, 255, 255, 0.08);
+    /* Item ativo do rail lateral — mesmo acento do tema, sobre o navy do chrome. */
+    --chrome-active: rgba(59, 130, 246, 0.22);
+    --chrome-active-bar: #3b82f6;
 
     --sucesso: #059669;
     --aviso: #d97706;
@@ -231,6 +237,8 @@
     --chrome-texto: #e2e8f0;
     --chrome-suave: #7d93b0;
     --chrome-borda: rgba(255, 255, 255, 0.06);
+    --chrome-active: rgba(220, 38, 38, 0.22);
+    --chrome-active-bar: #dc2626;
 
     --sucesso: #10b981;
     --aviso: #f59e0b;
