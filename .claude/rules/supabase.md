@@ -12,12 +12,17 @@ Carrega só quando você abre um arquivo de banco. **Some depois de um `/compact
 por isso o que não pode ser esquecido nunca (dado ausente é `null`) mora no `CLAUDE.md` da raiz, não aqui.
 
 **Projeto: `idswehsvvqczzkiatuzu`** (São Paulo). É o único projeto Supabase da conta — conferido pela API em
-08-ago-2026. O `fpemjplgtyhztowwemfz` que aparecia aqui e em `docs/AUDITORIA-E-PLANO.md:81` **não existe**.
+08-ago-2026. O `fpemjplgtyhztowwemfz` que aparecia aqui e em `~/projetos/_material/docs/AUDITORIA-E-PLANO.md:81`
+**não existe**. (Aquele arquivo saiu do repositório em 14-ago-2026, junto com a `docs/` inteira.)
 
 ## O ponto que mais confundiu sessões anteriores
 
-`supabase/migrations/20260807000000_schema_inicial_v3.sql` (757 linhas) descreve um **banco novo, do zero**.
-O seu banco **vivo** é outra coisa: está em produção desde 30-jul, com pacientes reais, e vai à frente do arquivo.
+`supabase/schema-referencia/10_schema_producao_v3.sql` descreve um **banco novo, do zero**. O seu banco
+**vivo** é outra coisa: está em produção desde 30-jul, com pacientes reais, e vai à frente do arquivo.
+
+(Esse arquivo já morou em `supabase/migrations/`, com o nome `20260807000000_schema_inicial_v3.sql`, e foi
+tirado de lá na arrumação de 08-ago — ver a seção "Migration" abaixo. Este parágrafo ainda citava o caminho
+velho até 14-ago-2026.)
 
 **Ler a migration e concluir "o sistema não tem X" é o erro clássico deste repo.** Antes de chamar qualquer coisa
 de defeito, consulte o banco. As três coisas abaixo já foram reportadas como buraco e nenhuma era:
@@ -71,7 +76,7 @@ O que existe agora e de onde ler:
 | 1   | ~~17 policies de dono dormentes + 180 avisos~~ **RESOLVIDO em 08-ago** (`20260808121730`): 12 das 16 foram removidas — as das 9 tabelas que têm `dev_bypass`. `multiple_permissive_policies` foi de 180 para **0**; total de avisos de desempenho de 204 para 22. Acesso inalterado (policy permissiva é aditiva por OR, e `dev_bypass` usa `true`), conferido contando antes/depois. **Ainda de pé o fato de fundo:** `user_id` é null nos 15 pacientes, então se a `dev_bypass` saísse o app ficaria cego — voltar as policies **não** basta, é preciso preencher `user_id` primeiro. Volta atrás em `supabase/rollback/20260808_restaura_policies_de_dono.sql`. Preservadas: as 4 de `memorias` (não tem `dev_bypass`; apagar trancaria a tabela) e `evento_tipo_ref_read` | policies vivas    |
 | 2   | **`evolucoes` tem dois modelos de conduta no molde, mas só um em uso**: `conduta` (`text[]`) em 7 evoluções, `condutas_sistemas` (jsonb) em **0**. Medido em 08-ago. A duplicação é de schema, não de dado — unificar custa menos do que a nota antiga sugeria                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | migration 203-206 |
 | 3   | **8 tabelas usam `FOR ALL`** em vez das 4 policies separadas (`evolucoes`, `eventos_clinicos`, `pendencias`, `atbs`, `culturas`, `antibiograma`, `alerts_log`, `ingest_audit_log`). Contraria a regra abaixo — mas com um usuário só, não separa nada na prática. **Não é prioridade**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | policies vivas    |
-| 4   | **`11_migracao_do_vivo.sql` vive só em `_material/`**, fora do repo. O cabeçalho da migration o cita como se estivesse aqui                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | migration 21      |
+| 4   | **`11_migracao_do_vivo.sql` vive só em `~/projetos/_material/`**, fora do repo. O cabeçalho da migration o cita como se estivesse aqui                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | migration 21      |
 
 ## Ao criar ou alterar tabela
 
@@ -143,11 +148,11 @@ formatação: o arquivo é retrato do que rodou, não código de estilo.
 
 ## Cliente
 
-| Arquivo                      | Onde roda                                                                                                                   | Chave                                         |
-| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
-| `src/lib/supabase/client.ts` | navegador                                                                                                                   | publicável — segura de expor                  |
-| `src/lib/supabase/server.ts` | servidor. Começa com `import 'server-only'`: se alguém importar num Client Component, o build QUEBRA em vez de vazar cookie | publicável + cookie de sessão                 |
-| `src/middleware.ts`          | toda requisição                                                                                                             | renova a sessão com `supabase.auth.getUser()` |
+| Arquivo                      | Onde roda                                                                                                                   | Chave                         |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| `src/lib/supabase/client.ts` | navegador                                                                                                                   | publicável — segura de expor  |
+| `src/lib/supabase/server.ts` | servidor. Começa com `import 'server-only'`: se alguém importar num Client Component, o build QUEBRA em vez de vazar cookie | publicável + cookie de sessão |
+| `src/lib/supabase/config.ts` | os dois. Casa única do endereço e da chave publicável, com reserva no código para o caso de a Vercel subir sem as variáveis | —                             |
 
 **A variável é `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, não `..._ANON_KEY`.** O Supabase renomeou a chave; os
 três arquivos liam o nome velho e recebiam vazio. Corrigido em 08-ago. Os dois clientes são tipados com
@@ -155,6 +160,15 @@ três arquivos liam o nome velho e recebiam vazio. Corrigido em 08-ago. Os dois 
 
 **`SUPABASE_SERVICE_ROLE_KEY` ignora toda a RLS.** Nunca em arquivo com `'use client'`, nunca em variável
 `NEXT_PUBLIC_*`, nunca em componente. Só em Route Handler ou Edge Function.
+
+⚠️ **Não existe middleware de sessão neste projeto, e não deve voltar.** Esta tabela listava um
+`src/middleware.ts` até 14-ago-2026; o arquivo foi removido em `0b0af7e` porque derrubava o site com
+**500**, e no Next 16 o nome `middleware` deu lugar a `proxy`. Não há login (uso solo), então não há
+sessão a renovar — um middleware aqui é código que só pode falhar.
+
+Existe um `src/lib/supabase/middleware.ts`, instalado em 14-ago pelo bloco de biblioteca do registry
+Supabase. Ele é **inerte**: exporta `updateSession` e tem **0 referências** — está no disco e nada o
+chama. Só passaria a rodar se alguém criasse um `src/proxy.ts` que o importasse. Não crie.
 
 ## Regra de dado clínico
 

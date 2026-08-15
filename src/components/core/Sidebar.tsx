@@ -14,7 +14,6 @@
  */
 import Link from 'next/link';
 import {usePathname} from 'next/navigation';
-import {Activity} from 'lucide-react';
 
 import {DESTINOS, estaAtivo} from './destinos';
 
@@ -27,15 +26,12 @@ export function Sidebar() {
             className="sasi-chrome hidden md:flex md:w-(--sidebar-width) md:shrink-0 md:flex-col md:gap-2.5 md:border-r md:border-r-(--chrome-borda) md:p-3"
         >
             <div className="flex items-center gap-2.5 border-b border-b-(--chrome-borda) px-2 pb-3.5">
-                <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-acento text-(--texto-sobre-acento)">
-                    <Activity aria-hidden size={19} strokeWidth={2.4} />
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-(--chrome-active-bar) font-mono text-sm font-bold text-white">
+                    S2
                 </span>
                 <div className="leading-tight">
                     <b className="block text-md font-bold tracking-wide text-chrome-texto">SASI</b>
-                    <small className="block text-2xs text-chrome-suave">
-                        Sistema de Apoio
-                        <br />à Situação Intensiva
-                    </small>
+                    <small className="block text-2xs tracking-widest text-chrome-suave uppercase">Comando UTI</small>
                 </div>
             </div>
 

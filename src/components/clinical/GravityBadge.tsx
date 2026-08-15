@@ -25,7 +25,7 @@ export const ROTULO_ACUIDADE: Record<Acuidade, string> = {
 };
 
 /** Preenchimento + texto por nível. Óbito é cinza, nunca verde. */
-const CLASSE_ACUIDADE: Record<Acuidade, string> = {
+export const CLASSE_ACUIDADE: Record<Acuidade, string> = {
     ESTAVEL: 'bg-gravidade-estavel-bg text-gravidade-estavel-text',
     VIGILANCIA: 'bg-gravidade-watcher-bg text-gravidade-watcher-text',
     INSTAVEL: 'bg-gravidade-instavel-bg text-gravidade-instavel-text',
@@ -40,19 +40,6 @@ export const SOLIDO_ACUIDADE: Record<Acuidade, string> = {
     INSTAVEL: 'bg-gravidade-instavel',
     CRITICO: 'bg-gravidade-critico',
     OBITO: 'bg-gravidade-obito',
-};
-
-/**
- * Só a cor do texto (sem preenchimento) — pro rótulo de gravidade correndo
- * solto numa linha de metadado (`BedCard`), palavra colorida em vez de selo.
- * Mesma técnica do BedCard.tsx real do V2 em produção: `color: var(--grav-X-text)`.
- */
-export const TEXTO_ACUIDADE: Record<Acuidade, string> = {
-    ESTAVEL: 'text-gravidade-estavel-text',
-    VIGILANCIA: 'text-gravidade-watcher-text',
-    INSTAVEL: 'text-gravidade-instavel-text',
-    CRITICO: 'text-gravidade-critico-text',
-    OBITO: 'text-gravidade-obito-text',
 };
 
 export function GravityBadge({

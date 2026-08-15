@@ -1,5 +1,5 @@
 /**
- * Rota raiz — Meu plantão.
+ * Rota raiz — War Room.
  *
  * Server Component: a consulta dos leitos roda no servidor e o navegador
  * recebe HTML pronto. Nenhum cálculo clínico aqui — a triagem vem de
@@ -13,14 +13,14 @@
  */
 import type {Metadata} from 'next';
 
-import {StatPill} from '@/components/core/StatPill';
+import {AcuidadePill} from '@/components/clinical/AcuidadePill';
 import {TopBar} from '@/components/core/TopBar';
 import {PainelMeuPlantao} from '@/features/beds/components/PainelMeuPlantao';
 import {lerLeitosOcupados} from '@/features/beds/services/leitos';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {title: 'Meu plantão'};
+export const metadata: Metadata = {title: 'War Room'};
 
 export default async function MeuPlantaoPage() {
     const leitos = await lerLeitosOcupados();
@@ -31,7 +31,8 @@ export default async function MeuPlantaoPage() {
 
     const criticos = leitos.filter((l) => l.acuidade === 'CRITICO').length;
     const instaveis = leitos.filter((l) => l.acuidade === 'INSTAVEL').length;
-    const pendencias = leitos.reduce((s, l) => s + (l.pendencias_abertas ?? 0), 0);
+    const vigilancias = leitos.filter((l) => l.acuidade === 'VIGILANCIA').length;
+    const estaveis = leitos.filter((l) => l.acuidade === 'ESTAVEL').length;
     const divergencias = leitos.filter((l) => l.divergenciaDeSemaforo).length;
 
     const carimbo = new Date(agoraISO).toLocaleString('pt-BR', {
@@ -43,7 +44,7 @@ export default async function MeuPlantaoPage() {
 
     return (
         <>
-            <TopBar rotulo="Meu plantão" carimbo={carimbo} />
+            <TopBar rotulo="War Room" carimbo={carimbo} />
 
             <main className="mx-auto max-w-[1600px] p-4 sm:p-6">
                 <section aria-label="Resumo do plantão" className="mb-6">
@@ -57,24 +58,18 @@ export default async function MeuPlantaoPage() {
             Os números são do plantão INTEIRO, de propósito fora do filtro da
             ilha client: filtrar a grade não muda quantos críticos existem.
           */}
-                    <dl className="flex flex-wrap gap-2">
-                        <StatPill rotulo="Pacientes" valor={leitos.length} />
-                        <StatPill
-                            rotulo="Críticos"
-                            valor={criticos}
-                            tom={criticos > 0 ? 'critico' : 'neutro'}
-                        />
-                        <StatPill
-                            rotulo="Instáveis"
-                            valor={instaveis}
-                            tom={instaveis > 0 ? 'instavel' : 'neutro'}
-                        />
-                        <StatPill
-                            rotulo="Pendências"
-                            valor={pendencias}
-                            tom={pendencias > 0 ? 'vigilancia' : 'neutro'}
-                        />
-                    </dl>
+                    <div className="flex flex-wrap items-center gap-3">
+                        <p className="text-lg font-bold text-texto-titulo">
+                            {leitos.length} leito{leitos.length === 1 ? '' : 's'} ativo
+                            {leitos.length === 1 ? '' : 's'}
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                            {criticos > 0 && <AcuidadePill nivel="CRITICO" contagem={criticos} />}
+                            {instaveis > 0 && <AcuidadePill nivel="INSTAVEL" contagem={instaveis} />}
+                            {vigilancias > 0 && <AcuidadePill nivel="VIGILANCIA" contagem={vigilancias} />}
+                            {estaveis > 0 && <AcuidadePill nivel="ESTAVEL" contagem={estaveis} />}
+                        </div>
+                    </div>
 
                     {/* Aviso de qualidade de dado, não de estado clínico. */}
                     {divergencias > 0 && (

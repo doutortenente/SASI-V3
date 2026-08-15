@@ -1,8 +1,13 @@
 /**
- * As 3 telas do app — casa única da lista. `NavPrincipal` (barra do celular)
- * e `Sidebar` (rail do desktop) leem daqui; nenhuma das duas duplica a lista.
+ * Os 4 destinos do rail — casa única da lista. `NavPrincipal` (barra do
+ * celular) e `Sidebar` (rail do desktop) leem daqui; nenhuma das duas
+ * duplica a lista.
+ *
+ * Os 4 nomes são os do pacote de design (`templates/*.dc.html`): War Room ·
+ * Pacientes · Round · Passagem — literais, não traduzidos para os nomes
+ * antigos do produto.
  */
-import {FileText, LayoutGrid, PenLine} from 'lucide-react';
+import {ClipboardList, FileText, LayoutGrid, Users} from 'lucide-react';
 
 export interface Destino {
     href: string;
@@ -13,9 +18,10 @@ export interface Destino {
 }
 
 export const DESTINOS: Destino[] = [
-    {href: '/', rotulo: 'Meu plantão', Icone: LayoutGrid, exato: true},
-    {href: '/captura', rotulo: 'Captura', Icone: PenLine, exato: false},
-    {href: '/fechamento', rotulo: 'Fechamento', Icone: FileText, exato: false},
+    {href: '/', rotulo: 'War Room', Icone: LayoutGrid, exato: true},
+    {href: '/pacientes', rotulo: 'Pacientes', Icone: Users, exato: false},
+    {href: '/round', rotulo: 'Round', Icone: ClipboardList, exato: false},
+    {href: '/fechamento/passagem', rotulo: 'Passagem', Icone: FileText, exato: false},
 ];
 
 /** Rota ativa: exata para `/` (senão casaria com tudo), por prefixo nas outras

@@ -1,39 +1,42 @@
 /**
- * Estatística inline do painel — o número grande do cabeçalho do War Room.
- *
- * Portado do `sasi-design-system` do v2 (`components/core/StatPill`).
- *
- * O cabeçalho antigo listava os números como texto corrido ("Críticos 3"), e
- * o olho tinha que ler para achar. Aqui o número domina a peça e o rótulo é
- * sobrancelha: dá para contar críticos sem ler nada.
+ * Estatística inline do cabeçalho. Porta de
+ * `sasi-design-system/components/core/StatPill.jsx`.
  */
-export type TomEstatistica = 'neutro' | 'critico' | 'instavel' | 'vigilancia' | 'estavel' | 'acento';
+const COR_TEXTO = {
+    neutro: 'text-texto-titulo',
+    critico: 'text-gravidade-critico',
+    instavel: 'text-gravidade-instavel',
+    vigilancia: 'text-gravidade-watcher',
+    estavel: 'text-gravidade-estavel',
+    acento: 'text-acento-texto',
+} as const;
 
-const TOM: Record<TomEstatistica, {valor: string; borda: string}> = {
-    neutro: {valor: 'text-texto-titulo', borda: 'border-borda-padrao'},
-    critico: {valor: 'text-gravidade-critico', borda: 'border-gravidade-critico/35'},
-    instavel: {valor: 'text-gravidade-instavel', borda: 'border-gravidade-instavel/35'},
-    vigilancia: {valor: 'text-gravidade-watcher', borda: 'border-gravidade-watcher/35'},
-    estavel: {valor: 'text-gravidade-estavel', borda: 'border-gravidade-estavel/35'},
-    acento: {valor: 'text-acento-texto', borda: 'border-acento/35'},
-};
+const COR_BORDA = {
+    neutro: 'border-borda-padrao',
+    critico: 'border-gravidade-critico/35',
+    instavel: 'border-gravidade-instavel/35',
+    vigilancia: 'border-gravidade-watcher/35',
+    estavel: 'border-gravidade-estavel/35',
+    acento: 'border-acento/35',
+} as const;
+
+export type TomStatPill = keyof typeof COR_TEXTO;
 
 export function StatPill({
     valor,
     rotulo,
     tom = 'neutro',
 }: {
-    valor: React.ReactNode;
+    valor: string | number;
     rotulo: string;
-    tom?: TomEstatistica;
+    tom?: TomStatPill;
 }) {
-    const t = TOM[tom];
     return (
         <div
-            className={`flex min-w-[104px] flex-col gap-0.5 rounded-lg border bg-superficie-card px-3 py-2 shadow-card ${t.borda}`}
+            className={`flex min-w-26 flex-col gap-0.5 rounded-lg border bg-superficie-card px-3 py-2 shadow-card ${COR_BORDA[tom]}`}
         >
             <span className="sasi-eyebrow">{rotulo}</span>
-            <span data-clinical-number className={`text-xl leading-none font-semibold ${t.valor}`}>
+            <span data-clinical-number className={`text-xl leading-none font-semibold ${COR_TEXTO[tom]}`}>
                 {valor}
             </span>
         </div>
