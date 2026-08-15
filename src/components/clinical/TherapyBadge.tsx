@@ -7,7 +7,12 @@
  * Cada terapia tem cor própria e fixa. Isso não é decoração: na grade de 33
  * leitos o olho aprende a cor antes de ler a palavra, e "quem está em DVA"
  * vira uma varredura de um segundo em vez de leitura leito a leito.
+ *
+ * A FORMA mora em `core/Badge`, junto com a do selo de gravidade. Aqui fica só
+ * o que é clínico: os 7 pares de cor, os rótulos e o texto que explica a sigla.
  */
+import {Badge} from '@/components/core/Badge';
+
 export type TipoTerapia = 'dva' | 'sed' | 'vm' | 'vni' | 'atb' | 'pend' | 'sepse';
 
 const ESTILO: Record<TipoTerapia, {classe: string; rotulo: string; titulo: string}> = {
@@ -67,16 +72,16 @@ export function TherapyBadge({
         contagem !== null && contagem !== undefined && Number.isFinite(contagem) && contagem > 0;
 
     return (
-        <span
-            title={e.titulo}
-            className={`inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 text-2xs font-semibold tracking-wide ${e.classe} ${pulsar ? 'sasi-critical-pulse' : ''}`}
-        >
+        // `tamanho="sm"` porque o selo de terapia é o menor degrau da escala: ele
+        // aparece em fileira de 5 dentro do card, e um degrau acima quebraria a
+        // linha no celular.
+        <Badge classe={e.classe} tamanho="sm" titulo={e.titulo} pulsar={pulsar}>
             {rotulo ?? e.rotulo}
             {mostraContagem && (
                 <span data-clinical-number className="font-bold">
                     {contagem}
                 </span>
             )}
-        </span>
+        </Badge>
     );
 }
