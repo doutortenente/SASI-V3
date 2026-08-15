@@ -5,8 +5,100 @@ Painel de plantão de UTI. Next.js 16 · React 19 · TypeScript 6 · Tailwind 4 
 Quem usa: **um** médico intensivista, sozinho, em plantão noturno. Iniciante em programação,
 dislexia — todo termo de dev leva tradução de 1 linha na primeira vez que aparece.
 
-Desenho completo, com o porquê de cada decisão: **`docs/ARQUITETURA.md`**. Leia antes de propor
-estrutura nova.
+Desenho completo, com o porquê de cada decisão: **`~/projetos/_material/docs/ARQUITETURA.md`**.
+Leia antes de propor estrutura nova. **A pasta `docs/` saiu do repositório em 14-ago-2026** — os 5
+arquivos do manual humano moraram aqui até então e agora vivem fora, junto do material do v1/v2.
+
+## As regras em detalhe — `.claude/rules/`
+
+Este arquivo é a constituição curta. O **como** de cada assunto mora numa regra própria, que carrega
+sozinha quando é preciso. Elas são autossuficientes de propósito: nada aqui depende de outro
+repositório estar aberto ou anexado.
+
+| Regra                      | Vale quando                                                               |
+| -------------------------- | ------------------------------------------------------------------------- |
+| `communication.md`         | em toda resposta — tradução de jargão, formato, `[SEM_FONTE]`, escopo     |
+| `repository-navigation.md` | ao procurar qualquer coisa aqui — buscar pelo índice da IDE, não varrer   |
+| `git-workflow.md`          | ao terminar em mudança de arquivo — ramo, commit, push, PR, merge         |
+| `security-and-secrets.md`  | ao tocar chave, `.env`, credencial ou dado de paciente                    |
+| `supabase.md`              | ao abrir arquivo de banco (`supabase/**`, `*.sql`, `src/lib/supabase/**`) |
+
+Um gatilho automático acompanha: `.claude/hooks/prefer-ide-tools.sh` empurra a busca para o MCP da
+IDE em vez de `grep`, e barra troca em massa com `sed -i`. Ele avisa **uma vez por sessão e por
+classe** — repetir a mesma chamada passa. Desligar: `IDE_HOOK=off`.
+
+## O arsenal — `.claude/` e `EXTRACAO-CLINICA-SASI/`
+
+Medido em 14-ago-2026: **108 KB em 14 arquivos** — 6 subagentes, 5 regras, 1 gatilho, 2 arquivos de
+configuração. **Zero skill.** Chegou a ter 2,8 MB em 237 arquivos e foi cortado no mesmo dia; o porquê
+está na seção seguinte, e não se desfaz.
+
+**Leia `EXTRACAO-CLINICA-SASI/BRIEFING.md` antes de tocar em qualquer folha, lab ou prescrição.** É a
+lei do formato: as 3 leis mais quebradas, a ordem fixa das 8 seções por leito, os limiares de flag e
+o checklist final.
+
+| Pasta             | O que tem                                                             |
+| ----------------- | --------------------------------------------------------------------- |
+| `.claude/agents/` | 6 subagentes, só a definição — nada mais, para não sujar a descoberta |
+| `.claude/rules/`  | 5 regras, carregadas por `paths:` quando o assunto aparece            |
+| `.claude/hooks/`  | 1 gatilho, `prefer-ide-tools.sh`                                      |
+
+### Por que não existe `.claude/skills/` aqui — e não deve passar a existir
+
+Skill tem **três casas**, e a do meio não depende de repositório nenhum:
+
+| Casa    | Caminho                  | Carrega quando                |
+| ------- | ------------------------ | ----------------------------- |
+| Projeto | `<repo>/.claude/skills/` | só dentro deste repo          |
+| Usuário | **`~/.claude/skills/`**  | **toda sessão, todo projeto** |
+| Plugin  | `~/.claude/plugins/…`    | quando o plugin está ativo    |
+
+As **38 skills** do operador moram na casa do usuário, e `~/.claude/skills` é **pasta real** — não é
+atalho para `~/projetos/claude`. Elas ligam sozinhas em qualquer projeto, inclusive neste, e
+sobrevivem se aquela pasta sair do disco.
+
+Copiar skill para cá foi tentado em 14-ago-2026: 20 skills, 2,7 MB. Conferido depois por `diff -r`,
+**20 de 20 eram idênticas** à gêmea global — duplicata pura, com o custo de existir uma segunda
+versão para esquecer de atualizar. Apagadas no mesmo dia. Se faltar skill, o conserto é na casa do
+usuário; não é aqui.
+
+**Subagente é o caso oposto, e é por isso que 6 deles ficam.** `~/.claude/agents` é **atalho** para
+`~/projetos/claude/agents` — some com aquela pasta do disco e a frota morre junto. A frota tem
+**18 agentes**, contados em 14-ago-2026 pelo critério "pasta com `<nome>/<nome>.md` e frontmatter
+`name:`" — um `ls` cru devolve 22 porque soma `CHANGELOG.md`, `CONTRIBUTING.md`, `README.md` e
+`docs/`, que não são agente. A conta fecha assim:
+
+| Onde                      | Quantos | Quais                                                                                                        |
+| ------------------------- | ------- | ------------------------------------------------------------------------------------------------------------ |
+| Copiados para cá, 24 KB   | **6**   | `residente`, `fiscal`, `deploy-sentinel`, `clinical-data-auditor`, `code-explainer`, `batedor`               |
+| Fora — função não é daqui | **7**   | `testador`, `refatorador`, `segurador`, `otimizador`, `documentador`, `onboarder`, `pubmed-evidence-checker` |
+| Fora — cuidam da máquina  | **5**   | `chefe`, `caco`, `zelador`, `secretaria`, `arquiteto`                                                        |
+
+Detalhe medido que separa skill de agente: **subagente aceita subpasta** (a casa global usa
+`agents/<nome>/<nome>.md` e os 18 aparecem na lista), **skill não** — ela precisa de
+`skills/<nome>/SKILL.md`, um nível só, e subpasta de pacote a esconde em vez de organizá-la.
+
+### `EXTRACAO-CLINICA-SASI/` — a porta de entrada humana
+
+O `BRIEFING.md` mais **8 atalhos**: um por skill clínica (`admissao-uti`, `analise-ecott`,
+`controles-vitais-janela`, `hemodinamica-calculada`, `plantao`, `sasi-ingest-export`) e um para cada
+script que o briefing chama pelo nome (`build_passagem.py`, `calc_hemo.py`).
+
+Os 8 apontam para `~/.claude/skills/…`, a casa do usuário. **Atalho não liga skill nenhuma** — quem
+liga é a casa do usuário; o atalho serve para você abrir a pasta e ler o arquivo sem procurar. Eles
+**quebram quando uma skill clínica é movida ou renomeada** — quebraram três vezes em 14-ago. Depois
+de mexer, confira que os 8 resolvem:
+
+```bash
+for l in EXTRACAO-CLINICA-SASI/*; do [ -L "$l" ] && { [ -e "$l" ] && echo "OK $l" || echo "MORTO $l"; }; done
+```
+
+O código não copia as regras clínicas — ele as **implementa**. `references/00-estilo-texto-clinico.md`,
+`04-export-evolucao-template.md` e `05-export-passagem-turno.md` de `sasi-ingest-export` são a fonte
+do que `src/lib/formatters/fechamento.ts` monta, e o teste dele cita esses arquivos por número.
+Citação em comentário, não leitura em tempo de execução — medido: **nenhum arquivo de `src/` ou
+`tests/` abre caminho de skill**. Mudar o template sem mudar o teste, ou o contrário, é divergência
+silenciosa.
 
 ## Por que o V4 existe
 
@@ -53,20 +145,12 @@ pnpm build      # monta o app como vai para produção — antes de considerar e
 pnpm gen:types  # regenera src/types/supabase.ts (só depois de aplicar migration)
 pnpm db:diff <nome>  # escreve nova migration a partir do que mudou no banco local
 pnpm db:push         # aplica as migrations pendentes no banco
-pnpm test:e2e   # fumaça em navegador de verdade (Playwright): sobe o app e abre as 4 rotas
 ```
 
-Node 24 (`.nvmrc`). Gerenciador **pnpm** — o v2 usa npm, não confundir os dois repos.
+Node 24. Gerenciador **pnpm** — o v2 usa npm, não confundir os dois repos.
 
-Medido em 13-ago-2026, após o bloco 3 das telas (Fechamento): `pnpm test` = **303 testes em 18
-arquivos**, todos passando. `pnpm typecheck`, `pnpm lint` e `pnpm build` fecham **sem erro**.
-
-**Fumaça de ponta a ponta**, no mesmo dia: `pnpm test:e2e` = **7 testes, todos passando** — as 4
-rotas de servidor (`/`, `/captura`, `/fechamento`, `/fechamento/passagem`) respondem 200 contra o
-banco vivo, com título e navegação renderizados. O e2e **não clica em Salvar**: o app aponta para
-produção com paciente real, e gravar por robô sujaria prontuário. Config em `playwright.config.ts`,
-teste em `tests/e2e/fumaca.spec.ts`. O Chromium já está na máquina (`/opt/pw-browsers`) e o config o
-acha por prefixo de pasta — **não rodar `playwright install`**, não há rede para baixar navegador.
+Medido em 15-ago-2026: `pnpm test` = **402 testes em 23 arquivos**, todos passando. `pnpm typecheck`,
+`pnpm lint` e `pnpm build` fecham **sem erro**.
 
 ## Onde mora o quê
 
@@ -77,14 +161,27 @@ acha por prefixo de pasta — **não rodar `playwright install`**, não há rede
 | `src/components/clinical/` · `core/` | peças de UI portadas do design system do v2                             |
 | `src/components/ui/`                 | gerado pelo shadcn (`pnpm dlx shadcn@latest add <comp>`) — fora do lint |
 | `src/lib/clinical/`                  | cálculo clínico: função pura, com teste, fonte no cabeçalho             |
-| `src/lib/supabase/`                  | `client.ts` (navegador) · `server.ts` · `realtime.ts` (ao vivo)         |
+| `src/lib/supabase/`                  | `client.ts` (navegador) · `server.ts` · `realtime.ts` · `config.ts`     |
 | `src/lib/formatters/`                | texto clínico. Casa única — não redeclarar em componente                |
 | `src/lib/ai/`                        | casa reservada da geração de texto do Fechamento — **ainda não existe** |
 | `src/stores/`                        | estado de UI (Zustand). Dado vindo do banco NÃO mora aqui               |
 | `src/types/`                         | `clinical.ts` (à mão) · `supabase.ts` (gerado — não editar)             |
 | `src/styles/globals.css`             | o tema inteiro — Tailwind 4 é CSS-first                                 |
 | `supabase/migrations/`               | migrations. Desde 11-ago-2026 **é** retrato fiel do banco vivo          |
-| `tests/`                             | `unit/` (Vitest) · `e2e/` (Playwright — `fumaca.spec.ts` desde 13-ago)  |
+| `tests/`                             | `unit/` (Vitest)                                                        |
+| `memory/`                            | índice de busca **gerado**, 31 MB, fora do git — ver nota abaixo        |
+
+**Duas pastas que não são código e confundem quem abre o repo pela primeira vez:**
+
+`memory/` **não é memória de projeto e não se edita à mão.** São dois arquivos gerados por
+`~/projetos/scripts/indices/build_sasi_index.py`: `sasi_index.db` (SQLite, a fonte de verdade) e
+`MAPA-SASI.md` (o inventário legível). Ficou no `.gitignore` em 14-ago-2026 — 31 MB de índice
+derivado não versiona. Para regenerar, rode o script; não escreva nos dois arquivos.
+
+`docs/` **não existe mais aqui.** Os 5 arquivos do manual humano — `ARQUITETURA.md`,
+`AUDITORIA-E-PLANO.md`, `INVENTARIO-MATERIAL.md`, `MAPA-BANCO-TELAS.md` e `README.md` — foram
+para `~/projetos/_material/docs/` em 14-ago-2026. Toda referência a `docs/<algo>` neste repositório
+é resíduo: o arquivo está lá fora.
 
 Recontado em 13-ago-2026, ao fim do bloco 3: `src/app/` tem **6 rotas** (6 `page.tsx`, mais
 `layout.tsx` e `error.tsx` na raiz) — `/`, `/captura`, `/captura/[pacienteId]`, `/fechamento`,
@@ -93,10 +190,9 @@ Recontado em 13-ago-2026, ao fim do bloco 3: `src/app/` tem **6 rotas** (6 `page
 `beds/`, `patients/`, `rounds/`, `war-room/` e `api/` continuam **vazias**: são nomes herdados do
 V3, não trabalho começado — a Tela 1 mora na raiz, não em `beds/`.
 
-Teste não mora todo em `tests/`: dos 18 arquivos de unidade, a maioria fica **ao lado do código** em
-`src/` (`sofa.test.ts` junto de `sofa.ts`). O Vitest varre `tests/unit/**` e `src/**/*.test.ts(x)` e
-**ignora `tests/e2e/**`** — os dois primeiros valem, mas teste de cálculo clínico vai junto do
-cálculo, e a fumaça de navegador é do Playwright, não do Vitest.
+Teste não mora todo em `tests/`: dos 23 arquivos de unidade, a maioria fica **ao lado do código** em
+`src/` (`sofa.test.ts` junto de `sofa.ts`). O Vitest varre `tests/unit/**` e `src/**/*.test.ts(x)` —
+teste de cálculo clínico vai junto do cálculo.
 
 `supabase/migrations/` tem **28 arquivos** — 27 conferidos em 11-ago-2026 contra
 `supabase_migrations.schema_migrations`, mais `20260813014857_evolucoes_intercorrencias.sql` do
@@ -160,12 +256,16 @@ mora no cofre `~/projetos/.env`, que o wrapper carrega na hora de subir o conect
 
 ## Antes de criar arquivo, procure se ele já existe
 
-`_material/` (fora do git) tem o v1/v2 inteiro. Já foi reescrito do zero, por ninguém conferir:
+`~/projetos/_material/` tem o v1/v2 inteiro. Já foi reescrito do zero, por ninguém conferir:
 card de leito, tokens de cor, lógica de triagem e tipos do domínio. Índice em
-`docs/INVENTARIO-MATERIAL.md`.
+`~/projetos/_material/docs/INVENTARIO-MATERIAL.md`.
 
-`_material/` e `**/amostras/` têm **dado real de paciente** e estão no `.gitignore` (o repo é
-público). Não copiar de lá para `src/` nem para `tests/` — fixture de teste é sintética.
+**Atenção ao caminho: `_material/` não está dentro deste repositório.** Ele é irmão dele, em
+`~/projetos/`. Escrever `_material/...` como caminho relativo à raiz do repo aponta para o vazio.
+
+`~/projetos/_material/` e `**/amostras/` têm **dado real de paciente**. O `_material/` está fora
+do repo e o `amostras/` no `.gitignore` — este repositório é público. Não copiar de lá para `src/`
+nem para `tests/` — fixture de teste é sintética.
 
 ## O banco vivo vai à frente do repo
 
@@ -187,8 +287,8 @@ foi ingerido nelas desde então. `alert_rules` tem 25 regras ativas — já foi 
 não falha de código.
 
 **O app fala com 15 desses 27 objetos** desde o bloco 3 (13-ago-2026) — eram 9 após o bloco 2 —,
-mais a rotina `save_ficha`, que não entra na conta dos 27. O que cada uma das 3 telas ainda precisa
-ligar está medido, objeto por objeto, em `docs/MAPA-BANCO-TELAS.md`.
+mais a rotina `save_ficha`, que não entra na conta dos 27. O que cada uma das 3 telas ainda precisa ligar está
+medido, objeto por objeto, em `~/projetos/_material/docs/MAPA-BANCO-TELAS.md`.
 
 ### P0 do modelo de dados v3 (10-ago-2026) — aplicado no banco vivo, testado em réplica antes
 

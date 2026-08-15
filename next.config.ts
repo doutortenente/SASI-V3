@@ -2,7 +2,8 @@ import type {NextConfig} from 'next';
 
 /**
  * Configuração do Next.js 16.
- * - Turbopack é o bundler PADRÃO no 16 (não precisa mais da flag --turbopack).
+ * - Bundler é o Webpack, não o Turbopack (padrão do 16): `dev`/`build` rodam
+ *   com a flag `--webpack` em `package.json`, por decisão do operador.
  * - `typedRoutes` faz o TypeScript reclamar de link para rota que não existe.
  *   Numa UTI, link quebrado é tempo perdido à beira-leito.
  */

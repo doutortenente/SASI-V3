@@ -181,6 +181,12 @@
     --chrome-active: rgba(59, 130, 246, 0.22);
     --chrome-active-bar: #3b82f6;
 
+    /* A barra do TOPO é branca — só o rail lateral é navy. */
+    --topbar-bg: #ffffff;
+    --topbar-borda: #e2e8f0;
+    --topbar-eyebrow: #64748b;
+    --topbar-titulo: #0f172a;
+
     --sucesso: #059669;
     --aviso: #d97706;
     --perigo: #dc2626;
@@ -239,6 +245,12 @@
     --chrome-borda: rgba(255, 255, 255, 0.06);
     --chrome-active: rgba(220, 38, 38, 0.22);
     --chrome-active-bar: #dc2626;
+
+    /* Tactical: barra do topo é slate escuro, não branco puro. */
+    --topbar-bg: #1e293b;
+    --topbar-borda: #273449;
+    --topbar-eyebrow: #94a3b8;
+    --topbar-titulo: #f8fafc;
 
     --sucesso: #10b981;
     --aviso: #f59e0b;
@@ -321,6 +333,11 @@
 
     --color-chrome-texto: var(--chrome-texto);
     --color-chrome-suave: var(--chrome-suave);
+
+    --color-topbar-bg: var(--topbar-bg);
+    --color-topbar-borda: var(--topbar-borda);
+    --color-topbar-eyebrow: var(--topbar-eyebrow);
+    --color-topbar-titulo: var(--topbar-titulo);
 
     --color-sucesso: var(--sucesso);
     --color-aviso: var(--aviso);

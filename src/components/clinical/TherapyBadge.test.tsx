@@ -89,6 +89,18 @@ describe('TherapyBadge — pulsação de atenção', () => {
     });
 });
 
+describe('TherapyBadge — ícone', () => {
+    it.each(TIPOS)('%s carrega um glifo Lucide, nunca SVG à mão', (tipo) => {
+        const {container} = render(<TherapyBadge tipo={tipo} />);
+        expect(container.querySelector('svg')).not.toBeNull();
+    });
+
+    it('ícone não muda o texto — continua só a sigla', () => {
+        const {container} = render(<TherapyBadge tipo="dva" />);
+        expect(container.textContent).toBe('DVA');
+    });
+});
+
 describe('TherapyBadge — forma', () => {
     it('mantém a escala de selo pequeno do painel', () => {
         const {container} = render(<TherapyBadge tipo="atb" />);

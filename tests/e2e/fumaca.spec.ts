@@ -1,9 +1,9 @@
 /**
  * Fumaça das rotas do SASI — o portão do bloco 3 (`docs/ARQUITETURA.md`).
  *
- * O que ele prova: as rotas das 3 telas RESPONDEM 200, o HTML chega com o
- * título certo e a navegação das 3 telas está desenhada. É o equivalente a
- * ligar o monitor e ver os 3 traçados aparecerem — não diz que o paciente está
+ * O que ele prova: as rotas das telas RESPONDEM 200, o HTML chega com o
+ * título certo e a navegação está desenhada em cada uma. É o equivalente a
+ * ligar o monitor e ver os traçados aparecerem — não diz que o paciente está
  * bem, diz que o aparelho está ligado.
  *
  * O que ele NÃO faz, por decisão: nenhuma escrita. O app aponta para o banco
@@ -19,15 +19,17 @@
 import {expect, test} from '@playwright/test';
 
 /**
- * As 3 telas + a passagem, com o título que o `metadata` de cada rota promete.
+ * As telas do app, com o título que o `metadata` de cada rota promete.
  *
  * A raiz é a exceção e isso NÃO é defeito: o molde `'%s · SASI'` do
  * `layout.tsx` só vale para rota FILHA. A página da própria raiz mora no mesmo
- * nível do molde e por isso substitui o título inteiro — sai "Meu plantão",
+ * nível do molde e por isso substitui o título inteiro — sai "War Room",
  * sem o sufixo. Comportamento do Next, medido em 13-ago-2026.
  */
 const ROTAS = [
-    {caminho: '/', titulo: 'Meu plantão', tela: 'Meu plantão'},
+    {caminho: '/', titulo: 'War Room', tela: 'War Room'},
+    {caminho: '/pacientes', titulo: 'Pacientes · SASI', tela: 'Pacientes'},
+    {caminho: '/round', titulo: 'Round · SASI', tela: 'Round'},
     {caminho: '/captura', titulo: 'Captura · SASI', tela: 'Captura'},
     {caminho: '/fechamento', titulo: 'Fechamento · SASI', tela: 'Fechamento'},
     {caminho: '/fechamento/passagem', titulo: 'Passagem do plantão · SASI', tela: 'Passagem'},
@@ -50,14 +52,14 @@ for (const rota of ROTAS) {
     });
 }
 
-test('a navegação das 3 telas está em todas as rotas', async ({page}) => {
+test('a navegação dos 4 destinos está em todas as rotas', async ({page}) => {
     for (const rota of ROTAS) {
         await page.goto(rota.caminho, {waitUntil: 'domcontentloaded'});
 
         const nav = page.getByRole('navigation', {name: 'Navegação principal'});
         await expect(nav, `nav ausente em ${rota.caminho}`).toBeVisible();
 
-        for (const destino of ['Meu plantão', 'Captura', 'Fechamento']) {
+        for (const destino of ['War Room', 'Pacientes', 'Round', 'Passagem']) {
             await expect(nav.getByRole('link', {name: destino})).toBeVisible();
         }
     }

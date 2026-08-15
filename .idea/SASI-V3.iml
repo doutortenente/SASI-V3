@@ -1,15 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="WEB_MODULE" version="4">
   <component name="NewModuleRootManager">
-    <content url="file://$MODULE_DIR$/../SASI-V3">
-      <excludeFolder url="file://$MODULE_DIR$/../SASI-V3/.next" />
-      <excludeFolder url="file://$MODULE_DIR$/../SASI-V3/_material" />
-      <excludeFolder url="file://$MODULE_DIR$/../SASI-V3/test-results" />
+    <content url="file://$MODULE_DIR$">
+      <excludeFolder url="file://$MODULE_DIR$/.next" />
+      <excludeFolder url="file://$MODULE_DIR$/_material" />
+      <excludeFolder url="file://$MODULE_DIR$/test-results" />
+      <excludeFolder url="file://$MODULE_DIR$/memory" />
+      <excludeFolder url="file://$MODULE_DIR$/coverage" />
+      <excludeFolder url="file://$MODULE_DIR$/playwright-report" />
+      <excludeFolder url="file://$MODULE_DIR$/.pnpm-store" />
     </content>
-    <content url="file://$MODULE_DIR$/../claude" />
-    <content url="file://$MODULE_DIR$/../scripts" />
+    <content url="file://$MODULE_DIR$/../scripts">
+      <excludeFolder url="file://$MODULE_DIR$/../scripts" />
+    </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="claude" />
+    <orderEntry type="module" module-name="typescript-sdk" />
   </component>
   <component name="PyDocumentationSettings">
     <option name="renderExternalDocumentation" value="true" />

@@ -5,7 +5,7 @@ Três pastas, três donos:
 | Pasta       | O que mora aqui                                                           | Quem escreve |
 | ----------- | ------------------------------------------------------------------------- | ------------ |
 | `ui/`       | primitivas do shadcn (`pnpm dlx shadcn@latest add <comp>`) — fora do lint | gerador      |
-| `core/`     | peça genérica, sem regra clínica: `Badge`, `StatPill`, nav, tema          | nós          |
+| `core/`     | peça genérica, sem regra clínica: `Badge`, nav, tema                     | nós          |
 | `clinical/` | peça que carrega vocabulário clínico: gravidade, SOFA, terapia            | nós          |
 
 ## A regra da casa
@@ -23,7 +23,7 @@ não passa por ele — ela entra por `classe`, vinda de quem conhece o domínio.
 
 ## O que este código promete e o teste cobra
 
-`GravityBadge`, `SofaBadge`, `TherapyBadge` e `StatPill` têm teste que **congela a aparência** —
+`GravityBadge`, `SofaBadge`, `TherapyBadge` e `AcuidadePill` têm teste que **congela a aparência** —
 par de cor por nível, escala de tamanho, caixa alta e rótulo. Refatorar é permitido; mudar o que
 o médico vê, não. Se o teste quebrou depois de um refactor, o refactor é que está errado.
 

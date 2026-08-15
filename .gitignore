@@ -49,6 +49,16 @@ blob-report/
 !.idea/SASI-V3.iml
 !.idea/runConfigurations/
 !.idea/runConfigurations/**
+# Camada 2 do ide-ops.md (estágio 04): sem `codeStyles/` versionado, o code style
+# "Project" não chega em clone nenhum e o IDE cai no Default dele — que usa 2 espaços
+# em JS e TAB em JSON, brigando com o `.prettierrc`. `jsLinters/` carrega o
+# `eslint --fix on save` e `inspectionProfiles/` o perfil compartilhado.
+!.idea/codeStyles/
+!.idea/codeStyles/**
+!.idea/inspectionProfiles/
+!.idea/inspectionProfiles/**
+!.idea/jsLinters/
+!.idea/jsLinters/**
 *.log
 npm-debug.log*
 pnpm-debug.log*

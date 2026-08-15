@@ -11,9 +11,22 @@
  * A FORMA mora em `core/Badge`, junto com a do selo de gravidade. Aqui fica só
  * o que é clínico: os 7 pares de cor, os rótulos e o texto que explica a sigla.
  */
+import {AlertTriangle, Droplets, Flame, Heart, Pill, Wind} from 'lucide-react';
+
 import {Badge} from '@/components/core/Badge';
 
 export type TipoTerapia = 'dva' | 'sed' | 'vm' | 'vni' | 'atb' | 'pend' | 'sepse';
+
+/** Glifo por tipo — Lucide sempre, nunca SVG à mão (doutrina do design system). */
+const ICONE: Record<TipoTerapia, typeof Heart> = {
+    dva: Heart,
+    sed: Droplets,
+    vm: Wind,
+    vni: Wind,
+    atb: Pill,
+    pend: AlertTriangle,
+    sepse: Flame,
+};
 
 const ESTILO: Record<TipoTerapia, {classe: string; rotulo: string; titulo: string}> = {
     dva: {
@@ -68,6 +81,7 @@ export function TherapyBadge({
     pulsar?: boolean;
 }) {
     const e = ESTILO[tipo];
+    const Icone = ICONE[tipo];
     const mostraContagem =
         contagem !== null && contagem !== undefined && Number.isFinite(contagem) && contagem > 0;
 
@@ -76,6 +90,7 @@ export function TherapyBadge({
         // aparece em fileira de 5 dentro do card, e um degrau acima quebraria a
         // linha no celular.
         <Badge classe={e.classe} tamanho="sm" titulo={e.titulo} pulsar={pulsar}>
+            <Icone className="size-3 shrink-0" aria-hidden="true" />
             {rotulo ?? e.rotulo}
             {mostraContagem && (
                 <span data-clinical-number className="font-bold">

@@ -19,7 +19,7 @@
 import {ChevronDown, ChevronUp} from 'lucide-react';
 import {useState} from 'react';
 
-import {ROTULO_ACUIDADE, TEXTO_ACUIDADE} from '@/components/clinical/GravityBadge';
+import {GravityBadge} from '@/components/clinical/GravityBadge';
 import {SofaBadge} from '@/components/clinical/SofaBadge';
 import {TherapyBadge} from '@/components/clinical/TherapyBadge';
 import type {Acuidade} from '@/lib/clinical/sasi';
@@ -152,14 +152,17 @@ export function BedCard({
             />
 
             <div className="flex flex-col gap-2.5 p-3.5">
-                {/* Linha 1 — leito, semáforo, SOFA + ΔSOFA (a gravidade vai em
-                    palavra na linha de metadado, não num selo aqui). */}
+                {/* Linha 1 — leito numa fileira só (rótulo, número, unidade),
+                    igual ao `LeitoCard` real: o número é a âncora do card. */}
                 <header className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                        <p className="sasi-eyebrow">{leito.uti ?? SEM_DADO}</p>
+                    <div className="flex min-w-0 items-baseline gap-1.5">
+                        <span className="sasi-eyebrow">Leito</span>
                         <h3 data-clinical-number className="text-xl leading-none font-bold text-texto-titulo">
                             {numeroDoLeito(leito.leito ?? '')}
                         </h3>
+                        <span data-clinical-number className="text-2xs text-texto-suave">
+                            {leito.uti ?? SEM_DADO}
+                        </span>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
                         <SofaBadge escore={leito.sofa_total} delta={leito.delta_sofa_24h} />
@@ -217,9 +220,9 @@ export function BedCard({
                     </p>
                 )}
 
-                {/* Linha 2 — identificação. Gravidade em PALAVRA colorida, junto de
-                    idade/dias — não um selo à parte: um selo a mais aqui só empilha
-                    chrome em cima do que a barra lateral e o lavado já dizem. */}
+                {/* Linha 2 — identificação. A gravidade não repete em palavra aqui:
+                    a barra lateral, o lavado de fundo e o selo na fileira de baixo
+                    já dizem — um quarto lugar seria repetir o mesmo fato. */}
                 <div className="min-w-0">
                     <p
                         className="truncate text-sm font-semibold text-texto-titulo"
@@ -231,41 +234,64 @@ export function BedCard({
                         <span>{leito.idade == null ? SEM_DADO : `${leito.idade} anos`}</span>
                         <span aria-hidden="true">·</span>
                         <span>{txt(leito.dias_internacao)} dias internado</span>
-                        <span aria-hidden="true">·</span>
-                        <span className={`font-semibold ${TEXTO_ACUIDADE[leito.acuidade]}`}>
-                            {ROTULO_ACUIDADE[leito.acuidade]}
-                        </span>
                     </p>
-                    <p className="mt-1 line-clamp-2 text-xs text-texto-corpo" title={leito.hd ?? undefined}>
+                </div>
+
+                {/* Problema ativo — caixa tingida, igual ao `sasi-leito__hero` do
+                    `LeitoCard` real. Sem vetor de tendência: a view do dashboard não
+                    carrega piora/melhora por problema (isso mora em `problemas_ativos`
+                    da evolução, não em `vw_dashboard_uti`) — inventar a seta aqui seria
+                    alucinar dado que a fonte não tem. */}
+                <div className="rounded-lg border border-borda-sutil bg-superficie-elevada px-2.5 py-2">
+                    <p className="sasi-eyebrow">Problema ativo</p>
+                    <p
+                        className="mt-0.5 line-clamp-2 text-xs font-semibold text-texto-titulo"
+                        title={leito.hd ?? undefined}
+                    >
                         {txt(leito.hd)}
                     </p>
                 </div>
 
-                {/* Linha 3 — selos de terapia, o resumo de um segundo. Pendência
-                    não entra aqui: tem linha própria embaixo, com a tarefa. */}
-                {(dvas.length > 0 || sedativos.length > 0 || emVM || isolamento) && (
-                    <ul className="flex flex-wrap gap-1">
-                        {isolamento && (
-                            <li>
-                                <TherapyBadge tipo="pend" rotulo={`Isolamento ${isolamento}`} />
-                            </li>
-                        )}
-                        {dvas.length > 0 && (
-                            <li>
-                                <TherapyBadge tipo="dva" contagem={dvas.length} />
-                            </li>
-                        )}
-                        {sedativos.length > 0 && (
-                            <li>
-                                <TherapyBadge tipo="sed" contagem={sedativos.length} />
-                            </li>
-                        )}
-                        {emVM && (
-                            <li>
-                                <TherapyBadge tipo="vm" />
-                            </li>
-                        )}
-                    </ul>
+                {/* Linha 3 — a fileira do `LeitoCard` real: selo de gravidade primeiro,
+                    depois as terapias, pendência empurrada pra ponta com `ml-auto`.
+                    Sempre existe — todo leito tem gravidade. */}
+                <ul className="flex flex-wrap items-center gap-1">
+                    <li>
+                        <GravityBadge nivel={leito.acuidade} tamanho="sm" />
+                    </li>
+                    {isolamento && (
+                        <li>
+                            <TherapyBadge tipo="pend" rotulo={`Isolamento ${isolamento}`} />
+                        </li>
+                    )}
+                    {dvas.length > 0 && (
+                        <li>
+                            <TherapyBadge tipo="dva" contagem={dvas.length} />
+                        </li>
+                    )}
+                    {sedativos.length > 0 && (
+                        <li>
+                            <TherapyBadge tipo="sed" contagem={sedativos.length} />
+                        </li>
+                    )}
+                    {emVM && (
+                        <li>
+                            <TherapyBadge tipo="vm" />
+                        </li>
+                    )}
+                    {pendencias > 0 && (
+                        <li className="ml-auto">
+                            <TherapyBadge tipo="pend" contagem={pendencias} />
+                        </li>
+                    )}
+                </ul>
+                {pendencias > 0 && pendenciaMaisUrgente && (
+                    <p
+                        className="-mt-1 truncate text-xs text-texto-suave"
+                        title={pendenciaMaisUrgente.tarefa}
+                    >
+                        {pendenciaMaisUrgente.tarefa}
+                    </p>
                 )}
 
                 {/*
@@ -312,25 +338,6 @@ export function BedCard({
                             </li>
                         ))}
                     </ul>
-                )}
-
-                {/*
-          Pendências — casa única do card (nada de repetir o selo em duas
-          fileiras): a contagem e, quando o dado ao vivo já respondeu, a
-          tarefa mais urgente na mesma linha.
-        */}
-                {pendencias > 0 && (
-                    <div className="flex flex-wrap items-center gap-2 border-t border-borda-sutil pt-2">
-                        <TherapyBadge tipo="pend" contagem={pendencias} />
-                        {pendenciaMaisUrgente && (
-                            <span
-                                className="min-w-0 flex-1 truncate text-xs text-texto-suave"
-                                title={pendenciaMaisUrgente.tarefa}
-                            >
-                                {pendenciaMaisUrgente.tarefa}
-                            </span>
-                        )}
-                    </div>
                 )}
             </div>
 
