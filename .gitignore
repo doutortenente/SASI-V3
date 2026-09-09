@@ -28,37 +28,8 @@ blob-report/
 .turbo
 .DS_Store
 
-# ---- WebStorm ----
-# A pasta é quase toda estado de sessão (workspace.xml muda a cada clique) e fica
-# de fora. Escapam só os arquivos que configuram a FERRAMENTA para ESTE projeto e
-# que valem para qualquer máquina — todos usam $PROJECT_DIR$/$MODULE_DIR$, nunca
-# caminho absoluto. `.idea/*` com asterisco, e não `.idea/`, porque o git não
-# entra numa pasta ignorada: sem o asterisco as exceções abaixo não valeriam.
-#
-# `misc.xml` fica FORA de propósito: aponta o interpretador Node por caminho
-# absoluto da máquina (`/home/dr/.nvm/...`), que não existe em outro computador.
-# A versão exigida já está no `.nvmrc`, e o WebStorm a detecta a partir dele.
-#
-# `!.idea/` na primeira linha é obrigatório: existe um `~/.gitignore_global` que
-# ignora `.idea/` em TODOS os repositórios da máquina. Sem desfazer a regra aqui,
-# o git nunca entra na pasta e as exceções abaixo não têm efeito nenhum.
-!.idea/
-.idea/*
-!.idea/compiler.xml
-!.idea/prettier.xml
-!.idea/SASI-V3.iml
-!.idea/runConfigurations/
-!.idea/runConfigurations/**
-# Camada 2 do ide-ops.md (estágio 04): sem `codeStyles/` versionado, o code style
-# "Project" não chega em clone nenhum e o IDE cai no Default dele — que usa 2 espaços
-# em JS e TAB em JSON, brigando com o `.prettierrc`. `jsLinters/` carrega o
-# `eslint --fix on save` e `inspectionProfiles/` o perfil compartilhado.
-!.idea/codeStyles/
-!.idea/codeStyles/**
-!.idea/inspectionProfiles/
-!.idea/inspectionProfiles/**
-!.idea/jsLinters/
-!.idea/jsLinters/**
+# IDE state
+.idea/
 *.log
 npm-debug.log*
 pnpm-debug.log*
@@ -90,3 +61,12 @@ _material/
 # dado de paciente real e do `.env.local`. Proteger só o arquivo original e
 # deixar a CÓPIA passar anula a trava acima.
 memory/
+
+# Config de IDE/agente local e export clinico - nunca no git (05-set-2026)
+/.codex/
+/.zed/
+/analysis/data/
+
+# repos independentes, com remote proprio no GitHub
+EXTRACAO-CLINICA-SASI/
+AUTOMACAO-SASI/
